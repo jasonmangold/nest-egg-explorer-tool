@@ -38,10 +38,19 @@ const Index = () => {
     return data;
   }, [currentSavings, monthlySpending]);
 
-  // Calculate safe withdrawal amount (4% rule adjusted for our assumptions)
+  // Calculate safe withdrawal amount using proper present value formula
   const safeMonthlyAmount = useMemo(() => {
-    // Using a more conservative 3.5% withdrawal rate given the assumptions
-    const safeAnnualAmount = currentSavings * 0.035;
+    // Formula for withdrawals that increase by inflation rate over 30 years
+    // This calculates the initial withdrawal amount that can be sustained
+    const returnRate = 0.06;
+    const inflationRate = 0.03;
+    const years = 30;
+    const realReturnRate = (1 + returnRate) / (1 + inflationRate) - 1;
+    
+    // Present value of annuity with inflation adjustments
+    const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
+    const safeAnnualAmount = currentSavings / presentValueFactor;
+    
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings]);
 
@@ -50,8 +59,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      {/* Header with Logo */}
+      <header className="pt-6 pb-4">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex items-center">
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Calculator className="w-6 h-6 text-white" />
+            </div>
+            <span className="ml-3 text-xl font-bold text-gray-900">RetireCalc</span>
+          </div>
+        </div>
+      </header>
+
       {/* Hero Section */}
-      <section className="pt-12 pb-20">
+      <section className="pb-20">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
@@ -123,7 +144,7 @@ const Index = () => {
                     <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
                       <h3 className="font-semibold text-lg text-blue-800">Safe Monthly Spending</h3>
                       <p className="text-2xl font-bold text-blue-600">${safeMonthlyAmount.toLocaleString()}</p>
-                      <p className="text-sm text-blue-600">Based on a conservative 3.5% withdrawal rate</p>
+                      <p className="text-sm text-blue-600">Sustainable for 30 years with 3% annual increases</p>
                     </div>
                   </div>
                 </div>
@@ -139,22 +160,57 @@ const Index = () => {
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={projectionData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <LineChart 
+                      data={projectionData}
+                      margin={{ top: 20, right: 20, left: 40, bottom: 60 }}
+                    >
+                      <CartesianGrid 
+                        strokeDasharray="3 3" 
+                        stroke="#e2e8f0" 
+                        strokeOpacity={0.6}
+                      />
                       <XAxis 
                         dataKey="year" 
                         stroke="#64748b"
-                        label={{ value: 'Years in Retirement', position: 'insideBottom', offset: -10 }}
+                        fontSize={12}
+                        fontWeight={500}
+                        tickMargin={10}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
+                        tickLine={{ stroke: '#cbd5e1' }}
+                        label={{ 
+                          value: 'Years in Retirement', 
+                          position: 'insideBottom', 
+                          offset: -5,
+                          style: { textAnchor: 'middle', fontSize: '12px', fontWeight: '500', fill: '#64748b' }
+                        }}
                       />
                       <YAxis 
                         stroke="#64748b"
+                        fontSize={12}
+                        fontWeight={500}
+                        tickMargin={10}
+                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
+                        tickLine={{ stroke: '#cbd5e1' }}
                         tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                        label={{ value: 'Remaining Balance', angle: -90, position: 'insideLeft' }}
+                        label={{ 
+                          value: 'Remaining Balance', 
+                          angle: -90, 
+                          position: 'insideLeft',
+                          style: { textAnchor: 'middle', fontSize: '12px', fontWeight: '500', fill: '#64748b' }
+                        }}
                       />
                       <Tooltip 
                         formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
                         labelFormatter={(year) => `Year ${year}`}
-                        contentStyle={{ backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}
+                        contentStyle={{ 
+                          backgroundColor: 'white', 
+                          border: '1px solid #e2e8f0', 
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }}
+                        cursor={{ stroke: '#3b82f6', strokeWidth: 1, strokeDasharray: '4 4' }}
                       />
                       <Line 
                         type="monotone" 
@@ -162,7 +218,15 @@ const Index = () => {
                         stroke="#2563eb" 
                         strokeWidth={3}
                         dot={false}
-                        activeDot={{ r: 6, fill: '#2563eb' }}
+                        activeDot={{ 
+                          r: 6, 
+                          fill: '#2563eb',
+                          stroke: '#ffffff',
+                          strokeWidth: 2
+                        }}
+                        style={{
+                          filter: 'drop-shadow(0 2px 4px rgba(37, 99, 235, 0.2))'
+                        }}
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -298,13 +362,15 @@ const Index = () => {
               <p className="text-lg text-purple-100 mb-6 max-w-2xl mx-auto">
                 Listen to our financial experts discuss this retirement spending calculator, share real-world examples, and answer common questions about sustainable withdrawal strategies.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="secondary" className="bg-white text-purple-600 hover:bg-purple-50">
+              <div className="flex justify-center">
+                <Button 
+                  size="lg" 
+                  variant="secondary" 
+                  className="bg-white text-purple-600 hover:bg-purple-50"
+                  onClick={() => window.open('/retirement-podcast.mp4', '_blank')}
+                >
                   <Headphones className="w-5 h-5 mr-2" />
                   Listen Now
-                </Button>
-                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-purple-600">
-                  View Transcript
                 </Button>
               </div>
             </CardContent>
