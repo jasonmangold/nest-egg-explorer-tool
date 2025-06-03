@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank } from "lucide-react";
+import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb } from "lucide-react";
 
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
@@ -187,11 +187,61 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* Moved Assumptions here */}
+                {/* Assumptions Section */}
                 <div className="pt-4 border-t border-slate-200">
-                  <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
-                    <p className="font-medium mb-1">Assumptions:</p>
-                    <p>• 30-year retirement period • 3% annual inflation • 6% annual return</p>
+                  <div className="flex items-center mb-3">
+                    <Info className="w-5 h-5 text-emerald-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-slate-800">Calculation Assumptions</h3>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
+                      <span className="text-sm font-medium text-slate-700">Retirement Period</span>
+                      <span className="text-sm font-bold text-emerald-700">30 years</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                      <span className="text-sm font-medium text-slate-700">Annual Inflation</span>
+                      <span className="text-sm font-bold text-blue-700">3%</span>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                      <span className="text-sm font-medium text-slate-700">Annual Return</span>
+                      <span className="text-sm font-bold text-purple-700">6%</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* How It Works Section */}
+                <div className="pt-4 border-t border-slate-200">
+                  <div className="flex items-center mb-3">
+                    <Calculator className="w-5 h-5 text-teal-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-slate-800">How It Works</h3>
+                  </div>
+                  <div className="space-y-3 text-sm text-slate-600">
+                    <p>• We calculate how your savings will change over 30 years of retirement</p>
+                    <p>• Your spending increases each year with inflation (3% annually)</p>
+                    <p>• Your remaining savings earn a 6% annual return</p>
+                    <p>• The "safe" amount ensures your money lasts the full 30 years</p>
+                  </div>
+                </div>
+
+                {/* Planning Tips Section */}
+                <div className="pt-4 border-t border-slate-200">
+                  <div className="flex items-center mb-3">
+                    <Lightbulb className="w-5 h-5 text-amber-600 mr-2" />
+                    <h3 className="text-lg font-semibold text-slate-800">Planning Tips</h3>
+                  </div>
+                  <div className="space-y-2 text-sm text-slate-600">
+                    <div className="flex items-start">
+                      <span className="text-amber-600 mr-2">•</span>
+                      <span>Consider additional income sources like Social Security</span>
+                    </div>
+                    <div className="flex items-start">
+                      <span className="text-amber-600 mr-2">•</span>
+                      <span>Healthcare costs may be higher than typical spending</span>
+                    </div>
+                    <div className="flex items-start">
+                      <span className="text-amber-600 mr-2">•</span>
+                      <span>Review and adjust your plan annually</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -278,25 +328,23 @@ const Index = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                {/* Moved Results here */}
-                <div className="mt-4 space-y-3">
-                  <div className="space-y-4">
-                    <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
-                      <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
-                        {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
-                      </h3>
-                      <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
-                        {isMoneyLasting 
-                          ? 'Your spending plan looks sustainable for a 30-year retirement.'
-                          : 'Consider reducing spending or saving more to extend your money.'}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
-                      <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
-                      <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
-                      <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
-                    </div>
+                {/* Results Section */}
+                <div className="mt-6 space-y-4">
+                  <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+                    <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
+                      {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
+                    </h3>
+                    <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {isMoneyLasting 
+                        ? 'Your spending plan looks sustainable for a 30-year retirement.'
+                        : 'Consider reducing spending or saving more to extend your money.'}
+                    </p>
+                  </div>
+                  
+                  <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                    <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
+                    <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
+                    <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
                   </div>
                   
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -385,48 +433,54 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The 4% Rule Explained</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Understanding the classic withdrawal strategy and when it works best.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Retirement Income Strategies</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Explore different approaches to generating sustainable income in retirement.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Optimization</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Maximize your Social Security benefits through strategic claiming decisions.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -443,48 +497,54 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Tax-Efficient Investing</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Maximize your returns by minimizing your tax burden through strategic planning.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Estate Planning Basics</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Protect your legacy and ensure your assets are distributed according to your wishes.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-36">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Emergency Fund Strategies</h3>
-                        <p className="text-slate-600 text-sm mb-3">
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Build financial resilience with the right emergency fund for your situation.
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
+                      Read Report
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
