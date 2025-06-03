@@ -440,7 +440,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Tax-Efficient Investing</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Managing Your Debt</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Maximize your returns by minimizing your tax burden through strategic planning.
                         </p>
@@ -457,7 +457,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Estate Planning Basics</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">How Individual Disability Income Insurance Works</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Protect your legacy and ensure your assets are distributed according to your wishes.
                         </p>
@@ -474,7 +474,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Emergency Fund Strategies</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">General Purposes of Life Insurance</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Build financial resilience with the right emergency fund for your situation.
                         </p>
