@@ -54,11 +54,12 @@ const Index = () => {
 
   const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
-      // Create a higher resolution canvas with better proportions
+      // Create a square canvas for better proportions
       const canvas = document.createElement('canvas');
       const scale = 2; // Higher resolution for crisp rendering
-      canvas.width = 600 * scale; // Increased width
-      canvas.height = 300 * scale; // Better aspect ratio (2:1)
+      const size = 400; // Square dimensions
+      canvas.width = size * scale;
+      canvas.height = size * scale;
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
@@ -71,13 +72,13 @@ const Index = () => {
 
       // Set background
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, 600, 300);
+      ctx.fillRect(0, 0, size, size);
 
-      // Chart area with better proportions
-      const chartX = 80;
-      const chartY = 40;
-      const chartWidth = 480;
-      const chartHeight = 200;
+      // Chart area with square proportions
+      const chartX = 60;
+      const chartY = 50;
+      const chartWidth = 280;
+      const chartHeight = 280;
 
       // Draw grid lines with better styling
       ctx.strokeStyle = '#e2e8f0';
@@ -135,10 +136,10 @@ const Index = () => {
 
       // Add labels with better typography
       ctx.fillStyle = '#64748b';
-      ctx.font = '14px Arial';
+      ctx.font = '12px Arial';
       ctx.textAlign = 'center';
       
-      // X-axis labels
+      // X-axis labels (every 5 years)
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         const year = i * 5;
@@ -155,21 +156,21 @@ const Index = () => {
 
       // Axis labels
       ctx.fillStyle = '#475569';
-      ctx.font = 'bold 16px Arial';
+      ctx.font = 'bold 14px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 50);
+      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 45);
       
       ctx.save();
-      ctx.translate(30, chartY + chartHeight/2);
+      ctx.translate(25, chartY + chartHeight/2);
       ctx.rotate(-Math.PI/2);
       ctx.fillText('Remaining Balance', 0, 0);
       ctx.restore();
 
       // Title with better styling
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 20px Arial';
+      ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Retirement Balance Projection', 300, 25);
+      ctx.fillText('Retirement Balance Projection', size/2, 25);
 
       // Convert to data URL with better quality
       resolve(canvas.toDataURL('image/png', 1.0));
@@ -249,15 +250,15 @@ const Index = () => {
       
       currentY += 30;
       
-      // Add the improved graph with better dimensions
+      // Add the improved square graph
       try {
         const graphImage = await generateGraphImage();
         if (graphImage) {
-          // Use better proportions and positioning for the graph
-          const graphWidth = pageWidth - 30;
-          const graphHeight = 45; // Reduced height to fit better on one page
-          pdf.addImage(graphImage, 'PNG', 15, currentY, graphWidth, graphHeight);
-          currentY += graphHeight + 10;
+          // Use square dimensions for the graph - centered on page
+          const graphSize = 60; // Square size
+          const graphX = (pageWidth - graphSize) / 2; // Center horizontally
+          pdf.addImage(graphImage, 'PNG', graphX, currentY, graphSize, graphSize);
+          currentY += graphSize + 10;
         }
       } catch (error) {
         console.log('Could not add graph to PDF:', error);
@@ -464,42 +465,63 @@ const Index = () => {
                     <LineChart data={projectionData} margin={{
                     top: 20,
                     right: 20,
-                    left: 60,
+                    left: 80,
                     bottom: 80
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
-                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={15} axisLine={{
-                      stroke: '#cbd5e1',
-                      strokeWidth: 1
-                    }} tickLine={{
-                      stroke: '#cbd5e1'
-                    }} label={{
-                      value: 'Years in Retirement',
-                      position: 'insideBottom',
-                      offset: -10,
-                      style: {
-                        textAnchor: 'middle',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        fill: '#64748b'
-                      }
-                    }} domain={[0, 30]} type="number" />
-                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={15} axisLine={{
-                      stroke: '#cbd5e1',
-                      strokeWidth: 1
-                    }} tickLine={{
-                      stroke: '#cbd5e1'
-                    }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
-                      value: 'Remaining Balance',
-                      angle: -90,
-                      position: 'insideLeft',
-                      style: {
-                        textAnchor: 'middle',
-                        fontSize: '12px',
-                        fontWeight: '500',
-                        fill: '#64748b'
-                      }
-                    }} />
+                      <XAxis 
+                        dataKey="year" 
+                        stroke="#64748b" 
+                        fontSize={12} 
+                        fontWeight={500} 
+                        tickMargin={15} 
+                        axisLine={{
+                          stroke: '#cbd5e1',
+                          strokeWidth: 1
+                        }} 
+                        tickLine={{
+                          stroke: '#cbd5e1'
+                        }} 
+                        label={{
+                          value: 'Years in Retirement',
+                          position: 'insideBottom',
+                          offset: -10,
+                          style: {
+                            textAnchor: 'middle',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            fill: '#64748b'
+                          }
+                        }} 
+                        domain={[0, 30]} 
+                        type="number" 
+                        ticks={[0, 5, 10, 15, 20, 25, 30]}
+                      />
+                      <YAxis 
+                        stroke="#64748b" 
+                        fontSize={12} 
+                        fontWeight={500} 
+                        tickMargin={15} 
+                        axisLine={{
+                          stroke: '#cbd5e1',
+                          strokeWidth: 1
+                        }} 
+                        tickLine={{
+                          stroke: '#cbd5e1'
+                        }} 
+                        tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} 
+                        label={{
+                          value: 'Remaining Balance',
+                          angle: -90,
+                          position: 'insideLeft',
+                          style: {
+                            textAnchor: 'middle',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            fill: '#64748b'
+                          }
+                        }} 
+                      />
                       <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
                       backgroundColor: 'white',
                       border: '1px solid #e2e8f0',
