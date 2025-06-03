@@ -39,14 +39,11 @@ const Index = () => {
 
   // Calculate safe withdrawal amount using proper present value formula
   const safeMonthlyAmount = useMemo(() => {
-    // Formula for withdrawals that increase by inflation rate over 30 years
-    // This calculates the initial withdrawal amount that can be sustained
     const returnRate = 0.06;
     const inflationRate = 0.03;
     const years = 30;
     const realReturnRate = (1 + returnRate) / (1 + inflationRate) - 1;
 
-    // Present value of annuity with inflation adjustments
     const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
@@ -57,10 +54,11 @@ const Index = () => {
 
   const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
-      // Create a canvas element to draw the chart
+      // Create a higher resolution canvas with better proportions
       const canvas = document.createElement('canvas');
-      canvas.width = 400;
-      canvas.height = 200;
+      const scale = 2; // Higher resolution for crisp rendering
+      canvas.width = 600 * scale; // Increased width
+      canvas.height = 300 * scale; // Better aspect ratio (2:1)
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
@@ -68,21 +66,24 @@ const Index = () => {
         return;
       }
 
+      // Scale the context for high DPI rendering
+      ctx.scale(scale, scale);
+
       // Set background
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, 600, 300);
 
-      // Chart area
-      const chartX = 50;
-      const chartY = 20;
-      const chartWidth = 320;
-      const chartHeight = 140;
+      // Chart area with better proportions
+      const chartX = 80;
+      const chartY = 40;
+      const chartWidth = 480;
+      const chartHeight = 200;
 
-      // Draw grid lines
+      // Draw grid lines with better styling
       ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 0.5;
       
-      // Vertical grid lines
+      // Vertical grid lines (every 5 years)
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         ctx.beginPath();
@@ -92,18 +93,20 @@ const Index = () => {
       }
       
       // Horizontal grid lines
-      for (let i = 0; i <= 4; i++) {
-        const y = chartY + (i * chartHeight / 4);
+      for (let i = 0; i <= 5; i++) {
+        const y = chartY + (i * chartHeight / 5);
         ctx.beginPath();
         ctx.moveTo(chartX, y);
         ctx.lineTo(chartX + chartWidth, y);
         ctx.stroke();
       }
 
-      // Draw data line
+      // Draw data line with better styling
       const maxBalance = Math.max(...projectionData.map(d => d.balance));
       ctx.strokeStyle = '#059669';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.beginPath();
 
       projectionData.forEach((point, index) => {
@@ -118,29 +121,58 @@ const Index = () => {
       });
       ctx.stroke();
 
-      // Add labels
+      // Add data points
+      ctx.fillStyle = '#059669';
+      projectionData.forEach((point, index) => {
+        if (index % 5 === 0) { // Show points every 5 years
+          const x = chartX + (point.year / 30) * chartWidth;
+          const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
+          ctx.beginPath();
+          ctx.arc(x, y, 4, 0, 2 * Math.PI);
+          ctx.fill();
+        }
+      });
+
+      // Add labels with better typography
       ctx.fillStyle = '#64748b';
-      ctx.font = '10px Arial';
+      ctx.font = '14px Arial';
       ctx.textAlign = 'center';
       
       // X-axis labels
-      ctx.fillText('0', chartX, chartY + chartHeight + 15);
-      ctx.fillText('15', chartX + chartWidth/2, chartY + chartHeight + 15);
-      ctx.fillText('30', chartX + chartWidth, chartY + chartHeight + 15);
+      for (let i = 0; i <= 6; i++) {
+        const x = chartX + (i * chartWidth / 6);
+        const year = i * 5;
+        ctx.fillText(year.toString(), x, chartY + chartHeight + 20);
+      }
       
       // Y-axis labels
       ctx.textAlign = 'right';
-      ctx.fillText(`$${(maxBalance/1000).toFixed(0)}k`, chartX - 5, chartY + 5);
-      ctx.fillText('$0', chartX - 5, chartY + chartHeight + 5);
+      for (let i = 0; i <= 5; i++) {
+        const y = chartY + chartHeight - (i * chartHeight / 5);
+        const value = (maxBalance / 5) * i;
+        ctx.fillText(`$${(value/1000).toFixed(0)}k`, chartX - 10, y + 5);
+      }
 
-      // Title
-      ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 12px Arial';
+      // Axis labels
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Retirement Balance Projection', canvas.width / 2, 15);
+      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 50);
+      
+      ctx.save();
+      ctx.translate(30, chartY + chartHeight/2);
+      ctx.rotate(-Math.PI/2);
+      ctx.fillText('Remaining Balance', 0, 0);
+      ctx.restore();
 
-      // Convert to data URL
-      resolve(canvas.toDataURL());
+      // Title with better styling
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Retirement Balance Projection', 300, 25);
+
+      // Convert to data URL with better quality
+      resolve(canvas.toDataURL('image/png', 1.0));
     });
   };
 
@@ -217,12 +249,15 @@ const Index = () => {
       
       currentY += 30;
       
-      // Add the graph
+      // Add the improved graph with better dimensions
       try {
         const graphImage = await generateGraphImage();
         if (graphImage) {
-          pdf.addImage(graphImage, 'PNG', 15, currentY, pageWidth - 30, 50);
-          currentY += 60;
+          // Use better proportions and positioning for the graph
+          const graphWidth = pageWidth - 30;
+          const graphHeight = 45; // Reduced height to fit better on one page
+          pdf.addImage(graphImage, 'PNG', 15, currentY, graphWidth, graphHeight);
+          currentY += graphHeight + 10;
         }
       } catch (error) {
         console.log('Could not add graph to PDF:', error);
