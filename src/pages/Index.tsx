@@ -377,9 +377,7 @@ const Index = () => {
                       <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Understanding the classic withdrawal strategy and when it works best.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security and peace of mind.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
@@ -394,9 +392,7 @@ const Index = () => {
                       <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">How a Roth IRA Works</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Explore different approaches to generating sustainable income in retirement.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
@@ -411,9 +407,7 @@ const Index = () => {
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Maximize your Social Security benefits through strategic claiming decisions.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-24">
@@ -441,9 +435,7 @@ const Index = () => {
                       <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Managing Your Debt</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Maximize your returns by minimizing your tax burden through strategic planning.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
@@ -458,9 +450,7 @@ const Index = () => {
                       <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">How Individual Disability Income Insurance Works</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Protect your legacy and ensure your assets are distributed according to your wishes.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings if you're unable to work due to illness or injury.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
@@ -475,9 +465,7 @@ const Index = () => {
                       <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">General Purposes of Life Insurance</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">
-                          Build financial resilience with the right emergency fund for your situation.
-                        </p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-24">
