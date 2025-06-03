@@ -78,8 +78,8 @@ const generateGraphImage = (): Promise<string> => {
       // Chart area with adjusted spacing
       const chartX = 120; // Increased left margin
       const chartY = 90; // Increased top margin
-      const chartWidth = 600; // Wider chart
-      const chartHeight = 300; // Taller chart
+      const chartWidth = 500; // Wider chart
+      const chartHeight = 312.5; // Taller chart
 
       // Draw grid lines
       ctx.strokeStyle = '#e2e8f0';
