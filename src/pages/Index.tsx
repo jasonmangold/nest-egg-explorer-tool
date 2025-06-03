@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
@@ -58,12 +57,59 @@ const Index = () => {
   const isMoneyLasting = yearsUntilEmpty >= 30;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="fixed inset-0 -z-10">
+        {/* Primary gradient background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-indigo-50 via-purple-50 to-blue-100"></div>
+        
+        {/* Floating geometric shapes */}
+        <div className="absolute top-10 left-10 w-32 h-32 bg-blue-200/30 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-indigo-200/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-40 left-20 w-40 h-40 bg-purple-200/25 rounded-full blur-xl animate-pulse delay-2000"></div>
+        <div className="absolute bottom-10 right-10 w-60 h-60 bg-blue-300/15 rounded-full blur-3xl animate-pulse delay-500"></div>
+        
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 opacity-30" style={{
+          backgroundImage: `
+            linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px'
+        }}></div>
+        
+        {/* Flowing lines */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+          <path
+            d="M0,300 Q250,100 500,300 T1000,300 V0 H0 Z"
+            fill="url(#gradient1)"
+            fillOpacity="0.1"
+          />
+          <path
+            d="M0,600 Q250,400 500,600 T1000,600 V1000 H0 Z"
+            fill="url(#gradient2)"
+            fillOpacity="0.1"
+          />
+          <defs>
+            <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.4" />
+              <stop offset="50%" stopColor="#6366f1" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.1" />
+            </linearGradient>
+            <linearGradient id="gradient2" x1="0%" y1="100%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.3" />
+              <stop offset="50%" stopColor="#6366f1" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+
       {/* Header with Logo */}
-      <header className="pt-6 pb-4">
+      <header className="relative pt-6 pb-4 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center">
-            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg">
               <Calculator className="w-6 h-6 text-white" />
             </div>
             <span className="ml-3 text-xl font-bold text-gray-900">RetireCalc</span>
@@ -72,18 +118,18 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="pb-20">
+      <section className="relative pb-20">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 bg-white/70 backdrop-blur-sm text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6 shadow-lg border border-blue-200/50">
               <Calculator className="w-4 h-4" />
               Retirement Planning Calculator
             </div>
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               What Can I Safely<br />
-              <span className="text-blue-600">Spend in Retirement?</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Spend in Retirement?</span>
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto mb-8">
               Plan your retirement spending with confidence. Our calculator shows you exactly how much you can spend monthly without running out of money.
             </p>
           </div>
@@ -91,7 +137,7 @@ const Index = () => {
           {/* Calculator Section */}
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             {/* Inputs */}
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/90 backdrop-blur-lg border-0 shadow-2xl ring-1 ring-blue-200/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-900">Your Financial Situation</CardTitle>
                 <CardDescription>Enter your current savings and spending to see your retirement projection</CardDescription>
@@ -152,7 +198,7 @@ const Index = () => {
             </Card>
 
             {/* Graph */}
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <Card className="bg-white/90 backdrop-blur-lg border-0 shadow-2xl ring-1 ring-blue-200/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-900">Retirement Spend-Down Projection</CardTitle>
                 <CardDescription>How your savings will change over 30 years</CardDescription>
@@ -243,7 +289,7 @@ const Index = () => {
 
           {/* CTA Section */}
           <div className="text-center mt-12">
-            <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 shadow-xl max-w-2xl mx-auto">
+            <Card className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
               <CardContent className="p-8">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-90" />
                 <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
@@ -261,7 +307,7 @@ const Index = () => {
       </section>
 
       {/* Learn More Section */}
-      <section className="py-16 bg-white">
+      <section className="relative py-16 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <BookOpen className="w-12 h-12 mx-auto text-blue-600 mb-4" />
@@ -272,7 +318,7 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <TrendingDown className="w-8 h-8 text-blue-600 mb-4" />
                 <h3 className="font-semibold text-lg mb-3">The 4% Rule Explained</h3>
@@ -283,7 +329,7 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <Calculator className="w-8 h-8 text-blue-600 mb-4" />
                 <h3 className="font-semibold text-lg mb-3">Retirement Income Strategies</h3>
@@ -294,7 +340,7 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <Users className="w-8 h-8 text-blue-600 mb-4" />
                 <h3 className="font-semibold text-lg mb-3">Healthcare Costs in Retirement</h3>
@@ -309,7 +355,7 @@ const Index = () => {
       </section>
 
       {/* Related Topics Section */}
-      <section className="py-16 bg-gray-50">
+      <section className="relative py-16 bg-gradient-to-br from-gray-50/80 to-blue-50/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Related Financial Topics</h2>
@@ -319,7 +365,7 @@ const Index = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-3">Tax-Efficient Investing</h3>
                 <p className="text-gray-600 mb-4">
@@ -329,7 +375,7 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-3">Estate Planning Basics</h3>
                 <p className="text-gray-600 mb-4">
@@ -339,7 +385,7 @@ const Index = () => {
               </CardContent>
             </Card>
             
-            <Card className="hover:shadow-lg transition-shadow">
+            <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-gray-200/50 hover:ring-blue-300/50 hover:transform hover:scale-105">
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-3">Emergency Fund Strategies</h3>
                 <p className="text-gray-600 mb-4">
@@ -353,9 +399,9 @@ const Index = () => {
       </section>
 
       {/* Podcast Section */}
-      <section className="py-16 bg-white">
+      <section className="relative py-16 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-4xl">
-          <Card className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white border-0 shadow-xl">
+          <Card className="bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 text-white border-0 shadow-2xl ring-1 ring-white/20">
             <CardContent className="p-8 text-center">
               <Headphones className="w-16 h-16 mx-auto mb-6 opacity-90" />
               <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
@@ -379,7 +425,7 @@ const Index = () => {
       </section>
 
       {/* Disclaimer */}
-      <section className="py-12 bg-gray-100">
+      <section className="relative py-12 bg-gradient-to-t from-gray-100/90 to-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Important Disclaimer</h3>
