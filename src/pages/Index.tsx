@@ -114,7 +114,7 @@ const Index = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img alt="Financial Planning Company" src="/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png" className="h-17 w-auto object-contain" />
+              <img alt="Financial Planning Company" src="/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png" className="h-12 w-auto object-contain" />
             </div>
             <Button onClick={scrollToContact} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Contact Me
