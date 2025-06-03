@@ -51,100 +51,224 @@ const Index = () => {
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings]);
+
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
-  const handleExportPDF = () => {
+
+  const generateGraphImage = () => {
+    return new Promise((resolve) => {
+      // Create a canvas element to draw the chart
+      const canvas = document.createElement('canvas');
+      canvas.width = 400;
+      canvas.height = 200;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        resolve('');
+        return;
+      }
+
+      // Set background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Chart area
+      const chartX = 50;
+      const chartY = 20;
+      const chartWidth = 320;
+      const chartHeight = 140;
+
+      // Draw grid lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      
+      // Vertical grid lines
+      for (let i = 0; i <= 6; i++) {
+        const x = chartX + (i * chartWidth / 6);
+        ctx.beginPath();
+        ctx.moveTo(x, chartY);
+        ctx.lineTo(x, chartY + chartHeight);
+        ctx.stroke();
+      }
+      
+      // Horizontal grid lines
+      for (let i = 0; i <= 4; i++) {
+        const y = chartY + (i * chartHeight / 4);
+        ctx.beginPath();
+        ctx.moveTo(chartX, y);
+        ctx.lineTo(chartX + chartWidth, y);
+        ctx.stroke();
+      }
+
+      // Draw data line
+      const maxBalance = Math.max(...projectionData.map(d => d.balance));
+      ctx.strokeStyle = '#059669';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+
+      projectionData.forEach((point, index) => {
+        const x = chartX + (point.year / 30) * chartWidth;
+        const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
+        
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // Add labels
+      ctx.fillStyle = '#64748b';
+      ctx.font = '10px Arial';
+      ctx.textAlign = 'center';
+      
+      // X-axis labels
+      ctx.fillText('0', chartX, chartY + chartHeight + 15);
+      ctx.fillText('15', chartX + chartWidth/2, chartY + chartHeight + 15);
+      ctx.fillText('30', chartX + chartWidth, chartY + chartHeight + 15);
+      
+      // Y-axis labels
+      ctx.textAlign = 'right';
+      ctx.fillText(`$${(maxBalance/1000).toFixed(0)}k`, chartX - 5, chartY + 5);
+      ctx.fillText('$0', chartX - 5, chartY + chartHeight + 5);
+
+      // Title
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Retirement Balance Projection', canvas.width / 2, 15);
+
+      // Convert to data URL
+      resolve(canvas.toDataURL());
+    });
+  };
+
+  const handleExportPDF = async () => {
     if (firstName && email) {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
       
-      // Header
-      pdf.setFontSize(24);
-      pdf.setTextColor(5, 150, 105); // emerald-600
-      pdf.text('Retirement Spending Analysis', pageWidth / 2, 30, { align: 'center' });
+      // Header with gradient effect (simulated with colors)
+      pdf.setFillColor(5, 150, 105); // emerald-600
+      pdf.rect(0, 0, pageWidth, 25, 'F');
       
-      // Client info
-      pdf.setFontSize(12);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(`Prepared for: ${firstName}`, 20, 50);
-      pdf.text(`Email: ${email}`, 20, 60);
-      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 70);
+      // Title in header
+      pdf.setFontSize(20);
+      pdf.setTextColor(255, 255, 255);
+      pdf.text('Retirement Spending Analysis', pageWidth / 2, 16, { align: 'center' });
       
-      // Inputs section
-      pdf.setFontSize(16);
-      pdf.setTextColor(15, 118, 110); // teal-600
-      pdf.text('Your Financial Situation', 20, 90);
+      // Client info section with background
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.rect(0, 25, pageWidth, 20, 'F');
       
-      pdf.setFontSize(12);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(`Current Amount Saved: $${currentSavings.toLocaleString()}`, 20, 105);
-      pdf.text(`Monthly Spending Goal: $${monthlySpending.toLocaleString()}`, 20, 115);
+      pdf.setFontSize(11);
+      pdf.setTextColor(51, 65, 85); // slate-700
+      pdf.text(`Prepared for: ${firstName}`, 15, 35);
+      pdf.text(`Email: ${email}`, 15, 42);
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 35, { align: 'right' });
       
-      // Assumptions
-      pdf.text('Calculation Assumptions:', 20, 135);
-      pdf.text('• Retirement Period: 30 years', 25, 145);
-      pdf.text('• Annual Inflation: 3%', 25, 155);
-      pdf.text('• Annual Return: 6%', 25, 165);
+      // Main content area
+      let currentY = 55;
       
-      // Results section
-      pdf.setFontSize(16);
-      pdf.setTextColor(15, 118, 110);
-      pdf.text('Analysis Results', 20, 185);
+      // Financial Situation Section
+      pdf.setFillColor(236, 253, 245); // emerald-50
+      pdf.rect(15, currentY, pageWidth - 30, 25, 'F');
       
-      pdf.setFontSize(12);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text(`Safe Monthly Spending: $${safeMonthlyAmount.toLocaleString()}`, 20, 200);
-      pdf.text(`Money Duration: ${isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`}`, 20, 210);
-      
-      const statusText = isMoneyLasting 
-        ? 'Your spending plan looks sustainable for a 30-year retirement.'
-        : 'Consider reducing spending or saving more to extend your money.';
-      pdf.text(`Status: ${statusText}`, 20, 220);
-      
-      // How it works
       pdf.setFontSize(14);
-      pdf.setTextColor(15, 118, 110);
-      pdf.text('How This Calculation Works', 20, 245);
+      pdf.setTextColor(5, 150, 105); // emerald-600
+      pdf.text('Your Financial Situation', 20, currentY + 8);
       
       pdf.setFontSize(10);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text('• We calculate how your savings will change over 30 years of retirement', 20, 255);
-      pdf.text('• Your spending increases each year with inflation (3% annually)', 20, 265);
-      pdf.text('• Your remaining savings earn a 6% annual return', 20, 275);
-      pdf.text('• The "safe" amount ensures your money lasts the full 30 years', 20, 285);
+      pdf.setTextColor(71, 85, 105); // slate-600
+      pdf.text(`Current Savings: $${currentSavings.toLocaleString()}`, 20, currentY + 16);
+      pdf.text(`Monthly Spending: $${monthlySpending.toLocaleString()}`, 20, currentY + 22);
       
-      // Start new page for advisor info
-      pdf.addPage();
+      currentY += 35;
       
-      // Advisor contact section
-      pdf.setFontSize(16);
-      pdf.setTextColor(15, 118, 110);
-      pdf.text('Your Financial Advisor', 20, 30);
+      // Results Section - Two columns
+      const leftCol = 15;
+      const rightCol = pageWidth / 2 + 5;
       
-      pdf.setFontSize(14);
-      pdf.setTextColor(0, 0, 0);
-      pdf.text('Sarah Johnson, CFP®', 20, 50);
-      pdf.text('Certified Financial Planner', 20, 60);
-      pdf.text('15+ years experience helping clients achieve their retirement goals', 20, 70);
+      // Safe Monthly Amount (left)
+      pdf.setFillColor(220, 252, 231); // green-100
+      pdf.rect(leftCol, currentY, (pageWidth - 40) / 2, 20, 'F');
       
       pdf.setFontSize(12);
-      pdf.text('Contact Information:', 20, 90);
-      pdf.text('Phone: (555) 123-4567', 25, 105);
-      pdf.text('Email: advisor@financialplanning.com', 25, 115);
-      pdf.text('Office: 123 Financial Street, Suite 456', 25, 125);
-      pdf.text('        Financial City, FC 12345', 25, 135);
+      pdf.setTextColor(5, 150, 105);
+      pdf.text('Safe Monthly Spending', leftCol + 5, currentY + 8);
+      pdf.setFontSize(16);
+      pdf.setTextColor(22, 101, 52); // green-800
+      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, leftCol + 5, currentY + 16);
       
-      // Disclaimer footer
-      const disclaimerY = pageHeight - 50;
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 100, 100);
-      pdf.text('Important Disclaimer', 20, disclaimerY);
+      // Status (right)
+      const statusColor = isMoneyLasting ? [220, 252, 231] : [254, 226, 226]; // green-100 or red-100
+      const statusTextColor = isMoneyLasting ? [22, 101, 52] : [153, 27, 27]; // green-800 or red-800
       
-      const disclaimerText = 'This calculator is provided for educational and informational purposes only and should not be considered personalized investment advice. The calculations are based on simplified assumptions and may not reflect your actual financial situation. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making any investment or retirement planning decisions. All investments carry risk, including the potential loss of principal.';
+      pdf.setFillColor(...statusColor);
+      pdf.rect(rightCol, currentY, (pageWidth - 40) / 2, 20, 'F');
       
-      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 40);
-      pdf.text(lines, 20, disclaimerY + 10);
+      pdf.setFontSize(12);
+      pdf.setTextColor(...statusTextColor);
+      pdf.text('Money Duration', rightCol + 5, currentY + 8);
+      pdf.setFontSize(16);
+      const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`;
+      pdf.text(durationText, rightCol + 5, currentY + 16);
+      
+      currentY += 30;
+      
+      // Add the graph
+      try {
+        const graphImage = await generateGraphImage();
+        if (graphImage) {
+          pdf.addImage(graphImage, 'PNG', 15, currentY, pageWidth - 30, 50);
+          currentY += 60;
+        }
+      } catch (error) {
+        console.log('Could not add graph to PDF:', error);
+        currentY += 10;
+      }
+      
+      // Assumptions section
+      pdf.setFillColor(241, 245, 249); // slate-100
+      pdf.rect(15, currentY, pageWidth - 30, 18, 'F');
+      
+      pdf.setFontSize(11);
+      pdf.setTextColor(15, 118, 110); // teal-600
+      pdf.text('Calculation Assumptions', 20, currentY + 8);
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('• 30-year retirement period  • 3% annual inflation  • 6% annual return', 20, currentY + 14);
+      
+      currentY += 25;
+      
+      // Advisor Contact Section
+      pdf.setFillColor(240, 253, 250); // emerald-50
+      pdf.rect(15, currentY, pageWidth - 30, 28, 'F');
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(5, 150, 105);
+      pdf.text('Your Financial Advisor', 20, currentY + 8);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(51, 65, 85);
+      pdf.text('Sarah Johnson, CFP® - Certified Financial Planner', 20, currentY + 16);
+      pdf.text('Phone: (555) 123-4567  |  Email: advisor@financialplanning.com', 20, currentY + 22);
+      
+      // Disclaimer at bottom
+      const disclaimerY = 265;
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.rect(0, disclaimerY, pageWidth, 30, 'F');
+      
+      pdf.setFontSize(7);
+      pdf.setTextColor(100, 116, 139); // slate-500
+      pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, disclaimerY + 6, { align: 'center' });
+      
+      const disclaimerText = 'This calculator is for educational purposes only and should not be considered personalized investment advice. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making investment decisions. All investments carry risk, including potential loss of principal.';
+      
+      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 20);
+      pdf.text(lines, 10, disclaimerY + 12);
       
       // Download the PDF
       pdf.save(`${firstName}_Retirement_Analysis.pdf`);
@@ -305,11 +429,11 @@ const Index = () => {
                     <LineChart data={projectionData} margin={{
                     top: 20,
                     right: 20,
-                    left: 40,
-                    bottom: 60
+                    left: 60,
+                    bottom: 80
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
-                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={15} axisLine={{
                       stroke: '#cbd5e1',
                       strokeWidth: 1
                     }} tickLine={{
@@ -317,15 +441,15 @@ const Index = () => {
                     }} label={{
                       value: 'Years in Retirement',
                       position: 'insideBottom',
-                      offset: -5,
+                      offset: -10,
                       style: {
                         textAnchor: 'middle',
                         fontSize: '12px',
                         fontWeight: '500',
                         fill: '#64748b'
                       }
-                    }} />
-                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                    }} domain={[0, 30]} type="number" />
+                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={15} axisLine={{
                       stroke: '#cbd5e1',
                       strokeWidth: 1
                     }} tickLine={{
