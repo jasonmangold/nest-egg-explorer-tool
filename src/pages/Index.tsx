@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb } from "lucide-react";
-
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -22,23 +20,18 @@ const Index = () => {
     const annualSpending = monthlySpending * 12;
     const inflationRate = 0.03;
     const returnRate = 0.06;
-    
     for (let year = 0; year <= 30; year++) {
       const adjustedSpending = annualSpending * Math.pow(1 + inflationRate, year);
-      
       if (year > 0) {
         balance = balance * (1 + returnRate) - adjustedSpending;
       }
-      
       data.push({
         year,
         balance: Math.max(0, balance),
         spending: adjustedSpending
       });
-      
       if (balance <= 0) break;
     }
-    
     return data;
   }, [currentSavings, monthlySpending]);
 
@@ -50,17 +43,14 @@ const Index = () => {
     const inflationRate = 0.03;
     const years = 30;
     const realReturnRate = (1 + returnRate) / (1 + inflationRate) - 1;
-    
+
     // Present value of annuity with inflation adjustments
     const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
     const safeAnnualAmount = currentSavings / presentValueFactor;
-    
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings]);
-
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
-
   const handleExportPDF = () => {
     if (firstName && email) {
       // In a real implementation, this would generate and download a PDF
@@ -73,9 +63,7 @@ const Index = () => {
       setEmail("");
     }
   };
-
-  return (
-    <div className="min-h-screen relative overflow-hidden bg-slate-50">
+  return <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
       <div className="fixed inset-0 -z-10">
         {/* Primary gradient background */}
@@ -89,25 +77,17 @@ const Index = () => {
         
         {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 opacity-20" style={{
-          backgroundImage: `
+        backgroundImage: `
             linear-gradient(rgba(15, 118, 110, 0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(15, 118, 110, 0.03) 1px, transparent 1px)
           `,
-          backgroundSize: '60px 60px'
-        }}></div>
+        backgroundSize: '60px 60px'
+      }}></div>
         
         {/* Flowing lines */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-          <path
-            d="M0,300 Q250,100 500,300 T1000,300 V0 H0 Z"
-            fill="url(#gradient1)"
-            fillOpacity="0.08"
-          />
-          <path
-            d="M0,600 Q250,400 500,600 T1000,600 V1000 H0 Z"
-            fill="url(#gradient2)"
-            fillOpacity="0.08"
-          />
+          <path d="M0,300 Q250,100 500,300 T1000,300 V0 H0 Z" fill="url(#gradient1)" fillOpacity="0.08" />
+          <path d="M0,600 Q250,400 500,600 T1000,600 V1000 H0 Z" fill="url(#gradient2)" fillOpacity="0.08" />
           <defs>
             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#059669" stopOpacity="0.3" />
@@ -161,14 +141,7 @@ const Index = () => {
                   <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input
-                      id="savings"
-                      type="number"
-                      value={currentSavings}
-                      onChange={(e) => setCurrentSavings(Number(e.target.value))}
-                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
-                      placeholder="500,000"
-                    />
+                    <Input id="savings" type="number" value={currentSavings} onChange={e => setCurrentSavings(Number(e.target.value))} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="500,000" />
                   </div>
                 </div>
                 
@@ -176,14 +149,7 @@ const Index = () => {
                   <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input
-                      id="spending"
-                      type="number"
-                      value={monthlySpending}
-                      onChange={(e) => setMonthlySpending(Number(e.target.value))}
-                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
-                      placeholder="3,000"
-                    />
+                    <Input id="spending" type="number" value={monthlySpending} onChange={e => setMonthlySpending(Number(e.target.value))} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="3,000" />
                   </div>
                 </div>
 
@@ -256,74 +222,65 @@ const Index = () => {
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={projectionData}
-                      margin={{ top: 20, right: 20, left: 40, bottom: 60 }}
-                    >
-                      <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        stroke="#e2e8f0" 
-                        strokeOpacity={0.6}
-                      />
-                      <XAxis 
-                        dataKey="year" 
-                        stroke="#64748b"
-                        fontSize={12}
-                        fontWeight={500}
-                        tickMargin={10}
-                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
-                        tickLine={{ stroke: '#cbd5e1' }}
-                        label={{ 
-                          value: 'Years in Retirement', 
-                          position: 'insideBottom', 
-                          offset: -5,
-                          style: { textAnchor: 'middle', fontSize: '12px', fontWeight: '500', fill: '#64748b' }
-                        }}
-                      />
-                      <YAxis 
-                        stroke="#64748b"
-                        fontSize={12}
-                        fontWeight={500}
-                        tickMargin={10}
-                        axisLine={{ stroke: '#cbd5e1', strokeWidth: 1 }}
-                        tickLine={{ stroke: '#cbd5e1' }}
-                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-                        label={{ 
-                          value: 'Remaining Balance', 
-                          angle: -90, 
-                          position: 'insideLeft',
-                          style: { textAnchor: 'middle', fontSize: '12px', fontWeight: '500', fill: '#64748b' }
-                        }}
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']}
-                        labelFormatter={(year) => `Year ${year}`}
-                        contentStyle={{ 
-                          backgroundColor: 'white', 
-                          border: '1px solid #e2e8f0', 
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px',
-                          fontWeight: '500'
-                        }}
-                        cursor={{ stroke: '#059669', strokeWidth: 1, strokeDasharray: '4 4' }}
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="balance" 
-                        stroke="#059669" 
-                        strokeWidth={3}
-                        dot={false}
-                        activeDot={{ 
-                          r: 6, 
-                          fill: '#059669',
-                          stroke: '#ffffff',
-                          strokeWidth: 2
-                        }}
-                        style={{
-                          filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
-                        }}
-                      />
+                    <LineChart data={projectionData} margin={{
+                    top: 20,
+                    right: 20,
+                    left: 40,
+                    bottom: 60
+                  }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
+                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                      stroke: '#cbd5e1',
+                      strokeWidth: 1
+                    }} tickLine={{
+                      stroke: '#cbd5e1'
+                    }} label={{
+                      value: 'Years in Retirement',
+                      position: 'insideBottom',
+                      offset: -5,
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        fill: '#64748b'
+                      }
+                    }} />
+                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                      stroke: '#cbd5e1',
+                      strokeWidth: 1
+                    }} tickLine={{
+                      stroke: '#cbd5e1'
+                    }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                      value: 'Remaining Balance',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        fill: '#64748b'
+                      }
+                    }} />
+                      <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }} cursor={{
+                      stroke: '#059669',
+                      strokeWidth: 1,
+                      strokeDasharray: '4 4'
+                    }} />
+                      <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
+                      r: 6,
+                      fill: '#059669',
+                      stroke: '#ffffff',
+                      strokeWidth: 2
+                    }} style={{
+                      filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                    }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -335,9 +292,7 @@ const Index = () => {
                       {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
                     </h3>
                     <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {isMoneyLasting 
-                        ? 'Your spending plan looks sustainable for a 30-year retirement.'
-                        : 'Consider reducing spending or saving more to extend your money.'}
+                      {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
                     </p>
                   </div>
                   
@@ -364,30 +319,13 @@ const Index = () => {
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <Label htmlFor="firstName" className="text-slate-700">First Name</Label>
-                          <Input
-                            id="firstName"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
-                            placeholder="Enter your first name"
-                            className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
-                          />
+                          <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter your first name" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="email" className="text-slate-700">Email Address</Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500"
-                          />
+                          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
                         </div>
-                        <Button 
-                          onClick={handleExportPDF} 
-                          disabled={!firstName || !email}
-                          className="w-full bg-emerald-600 hover:bg-emerald-700"
-                        >
+                        <Button onClick={handleExportPDF} disabled={!firstName || !email} className="w-full bg-emerald-600 hover:bg-emerald-700">
                           <Download className="w-4 h-4 mr-2" />
                           Generate PDF
                         </Button>
@@ -438,7 +376,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">The 4% Rule Explained</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Understanding the classic withdrawal strategy and when it works best.
                         </p>
@@ -455,7 +393,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Retirement Income Strategies</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">How a Roth IRA Works</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Explore different approaches to generating sustainable income in retirement.
                         </p>
@@ -472,7 +410,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Optimization</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">
                           Maximize your Social Security benefits through strategic claiming decisions.
                         </p>
@@ -564,12 +502,7 @@ const Index = () => {
                 Listen to our financial experts discuss this retirement spending calculator, share real-world examples, and answer common questions about sustainable withdrawal strategies.
               </p>
               <div className="flex justify-center">
-                <Button 
-                  size="lg" 
-                  variant="secondary" 
-                  className="bg-white text-slate-700 hover:bg-slate-50"
-                  onClick={() => window.open('/retirement-podcast.mp4', '_blank')}
-                >
+                <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={() => window.open('/retirement-podcast.mp4', '_blank')}>
                   <Headphones className="w-5 h-5 mr-2" />
                   Listen Now
                 </Button>
@@ -593,8 +526,6 @@ const Index = () => {
           </div>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
