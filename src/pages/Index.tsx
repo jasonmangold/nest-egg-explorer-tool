@@ -65,7 +65,9 @@ const Index = () => {
   };
   const scrollToContact = () => {
     const contactSection = document.getElementById('contact-section');
-    contactSection?.scrollIntoView({ behavior: 'smooth' });
+    contactSection?.scrollIntoView({
+      behavior: 'smooth'
+    });
   };
   return <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -112,16 +114,9 @@ const Index = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img 
-                src="/lovable-uploads/b4217adc-f1a6-42f7-b285-1d1484247664.png" 
-                alt="Financial Planning Company" 
-                className="h-12 w-auto"
-              />
+              <img alt="Financial Planning Company" src="/lovable-uploads/c15a38cf-5c13-4195-9581-19d928041aab.png" className="h-12 w-auto object-fill" />
             </div>
-            <Button 
-              onClick={scrollToContact}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
+            <Button onClick={scrollToContact} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Contact Me
             </Button>
           </div>
