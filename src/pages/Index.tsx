@@ -54,12 +54,13 @@ const Index = () => {
 
   const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
-      // Create a square canvas for better proportions
+      // Create a wider rectangular canvas for better proportions
       const canvas = document.createElement('canvas');
       const scale = 2; // Higher resolution for crisp rendering
-      const size = 400; // Square dimensions
-      canvas.width = size * scale;
-      canvas.height = size * scale;
+      const width = 500; // Wider for better aspect ratio
+      const height = 350; // Rectangular dimensions
+      canvas.width = width * scale;
+      canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
@@ -72,13 +73,13 @@ const Index = () => {
 
       // Set background
       ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, size, size);
+      ctx.fillRect(0, 0, width, height);
 
-      // Chart area with square proportions
-      const chartX = 60;
-      const chartY = 50;
-      const chartWidth = 280;
-      const chartHeight = 280;
+      // Chart area with better proportions
+      const chartX = 80;
+      const chartY = 60;
+      const chartWidth = 360;
+      const chartHeight = 220;
 
       // Draw grid lines with better styling
       ctx.strokeStyle = '#e2e8f0';
@@ -134,43 +135,43 @@ const Index = () => {
         }
       });
 
-      // Add labels with better typography
+      // Add labels with better typography and spacing
       ctx.fillStyle = '#64748b';
       ctx.font = '12px Arial';
       ctx.textAlign = 'center';
       
-      // X-axis labels (every 5 years)
+      // X-axis labels (every 5 years) with more space
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         const year = i * 5;
-        ctx.fillText(year.toString(), x, chartY + chartHeight + 20);
+        ctx.fillText(year.toString(), x, chartY + chartHeight + 25);
       }
       
-      // Y-axis labels
+      // Y-axis labels with more space
       ctx.textAlign = 'right';
       for (let i = 0; i <= 5; i++) {
         const y = chartY + chartHeight - (i * chartHeight / 5);
         const value = (maxBalance / 5) * i;
-        ctx.fillText(`$${(value/1000).toFixed(0)}k`, chartX - 10, y + 5);
+        ctx.fillText(`$${(value/1000).toFixed(0)}k`, chartX - 15, y + 5);
       }
 
-      // Axis labels
+      // Axis labels with better positioning
       ctx.fillStyle = '#475569';
       ctx.font = 'bold 14px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 45);
+      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 50);
       
       ctx.save();
-      ctx.translate(25, chartY + chartHeight/2);
+      ctx.translate(30, chartY + chartHeight/2);
       ctx.rotate(-Math.PI/2);
       ctx.fillText('Remaining Balance', 0, 0);
       ctx.restore();
 
       // Title with better styling
       ctx.fillStyle = '#1e293b';
-      ctx.font = 'bold 16px Arial';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Retirement Balance Projection', size/2, 25);
+      ctx.fillText('Retirement Balance Projection', width/2, 30);
 
       // Convert to data URL with better quality
       resolve(canvas.toDataURL('image/png', 1.0));
@@ -250,15 +251,16 @@ const Index = () => {
       
       currentY += 30;
       
-      // Add the improved square graph
+      // Add the improved wider rectangular graph
       try {
         const graphImage = await generateGraphImage();
         if (graphImage) {
-          // Use square dimensions for the graph - centered on page
-          const graphSize = 60; // Square size
-          const graphX = (pageWidth - graphSize) / 2; // Center horizontally
-          pdf.addImage(graphImage, 'PNG', graphX, currentY, graphSize, graphSize);
-          currentY += graphSize + 10;
+          // Use wider rectangular dimensions for the graph - centered on page
+          const graphWidth = 80; // Wider rectangle
+          const graphHeight = 56; // Maintains good aspect ratio
+          const graphX = (pageWidth - graphWidth) / 2; // Center horizontally
+          pdf.addImage(graphImage, 'PNG', graphX, currentY, graphWidth, graphHeight);
+          currentY += graphHeight + 10;
         }
       } catch (error) {
         console.log('Could not add graph to PDF:', error);
@@ -459,14 +461,14 @@ const Index = () => {
                 <CardTitle className="text-2xl text-slate-800">Retirement Spend-Down Projection</CardTitle>
                 <CardDescription className="text-slate-600">How your savings will change over 30 years</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="h-80">
+              <CardContent className="p-6">
+                <div className="h-80 -mx-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={projectionData} margin={{
-                    top: 20,
-                    right: 20,
-                    left: 80,
-                    bottom: 80
+                    top: 30,
+                    right: 30,
+                    left: 100,
+                    bottom: 100
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
                       <XAxis 
@@ -474,7 +476,7 @@ const Index = () => {
                         stroke="#64748b" 
                         fontSize={12} 
                         fontWeight={500} 
-                        tickMargin={15} 
+                        tickMargin={20} 
                         axisLine={{
                           stroke: '#cbd5e1',
                           strokeWidth: 1
@@ -485,7 +487,7 @@ const Index = () => {
                         label={{
                           value: 'Years in Retirement',
                           position: 'insideBottom',
-                          offset: -10,
+                          offset: -20,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
@@ -501,7 +503,7 @@ const Index = () => {
                         stroke="#64748b" 
                         fontSize={12} 
                         fontWeight={500} 
-                        tickMargin={15} 
+                        tickMargin={20} 
                         axisLine={{
                           stroke: '#cbd5e1',
                           strokeWidth: 1
@@ -513,7 +515,8 @@ const Index = () => {
                         label={{
                           value: 'Remaining Balance',
                           angle: -90,
-                          position: 'insideLeft',
+                          position: 'outside',
+                          offset: 20,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
