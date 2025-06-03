@@ -76,8 +76,8 @@ const generateGraphImage = (): Promise<string> => {
       ctx.fillRect(0, 0, width, height);
 
       // Chart area with adjusted spacing
-      const chartX = 90; // Increased left margin
-      const chartY = 60; // Increased top margin
+      const chartX = 45; // Increased left margin
+      const chartY = 30; // Increased top margin
       const chartWidth = 500; // Wider chart
       const chartHeight = 312.5; // Taller chart
 
