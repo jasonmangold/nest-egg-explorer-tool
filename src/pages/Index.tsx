@@ -468,7 +468,7 @@ const Index = () => {
                     top: 30,
                     right: 30,
                     left: 30,
-                    bottom: 100
+                    bottom: 50
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
                       <XAxis 
