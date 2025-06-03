@@ -52,13 +52,13 @@ const Index = () => {
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
 
-  const generateGraphImage = (): Promise<string> => {
+const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
-      // Create a much larger canvas with better proportions for PDF
+      // Create a larger canvas
       const canvas = document.createElement('canvas');
-      const scale = 3; // Higher resolution for crisp PDF rendering
-      const width = 600; // Much wider for better readability
-      const height = 400; // Taller for better proportions
+      const scale = 3;
+      const width = 800; // Increased width
+      const height = 500; // Increased height
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
@@ -68,24 +68,24 @@ const Index = () => {
         return;
       }
 
-      // Scale the context for high DPI rendering
+      // Scale the context
       ctx.scale(scale, scale);
 
       // Set background
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
 
-      // Chart area with much better spacing
-      const chartX = 100; // More left margin for Y-axis labels
-      const chartY = 80; // More top margin for title
-      const chartWidth = 450; // Wider chart area
-      const chartHeight = 250; // Taller chart area
+      // Chart area with adjusted spacing
+      const chartX = 120; // Increased left margin
+      const chartY = 90; // Increased top margin
+      const chartWidth = 600; // Wider chart
+      const chartHeight = 300; // Taller chart
 
-      // Draw grid lines with better styling
+      // Draw grid lines
       ctx.strokeStyle = '#e2e8f0';
       ctx.lineWidth = 1;
       
-      // Vertical grid lines (every 5 years)
+      // Vertical grid lines
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         ctx.beginPath();
@@ -103,10 +103,10 @@ const Index = () => {
         ctx.stroke();
       }
 
-      // Draw data line with better styling
+      // Draw data line
       const maxBalance = Math.max(...projectionData.map(d => d.balance));
       ctx.strokeStyle = '#059669';
-      ctx.lineWidth = 4; // Thicker line for better visibility
+      ctx.lineWidth = 4;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -123,38 +123,37 @@ const Index = () => {
       });
       ctx.stroke();
 
-      // Add data points with better visibility
+      // Add data points
       ctx.fillStyle = '#059669';
       projectionData.forEach((point, index) => {
-        if (index % 3 === 0) { // Show points every 3 years for better visibility
+        if (index % 3 === 0) {
           const x = chartX + (point.year / 30) * chartWidth;
           const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
           ctx.beginPath();
-          ctx.arc(x, y, 6, 0, 2 * Math.PI); // Larger points
+          ctx.arc(x, y, 6, 0, 2 * Math.PI);
           ctx.fill();
           
-          // Add white border to points for better contrast
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 2;
           ctx.stroke();
-          ctx.strokeStyle = '#e2e8f0'; // Reset for grid
+          ctx.strokeStyle = '#e2e8f0';
           ctx.lineWidth = 1;
         }
       });
 
-      // Add labels with much better typography and spacing
-      ctx.fillStyle = '#374151'; // Darker for better readability
-      ctx.font = 'bold 16px Arial'; // Larger, bold font
+      // Add labels
+      ctx.fillStyle = '#374151';
+      ctx.font = 'bold 16px Arial';
       ctx.textAlign = 'center';
       
-      // X-axis labels (every 5 years) with better spacing
+      // X-axis labels
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         const year = i * 5;
-        ctx.fillText(year.toString(), x, chartY + chartHeight + 35);
+        ctx.fillText(year.toString(), x, chartY + chartHeight + 40);
       }
       
-      // Y-axis labels with better spacing and formatting
+      // Y-axis labels
       ctx.textAlign = 'right';
       ctx.font = 'bold 14px Arial';
       for (let i = 0; i <= 5; i++) {
@@ -163,34 +162,34 @@ const Index = () => {
         const formattedValue = value >= 1000000 
           ? `$${(value/1000000).toFixed(1)}M`
           : `$${(value/1000).toFixed(0)}k`;
-        ctx.fillText(formattedValue, chartX - 20, y + 6);
+        ctx.fillText(formattedValue, chartX - 30, y + 6); // Moved labels farther left
       }
 
-      // Axis labels with better positioning and styling
-      ctx.fillStyle = '#1f2937'; // Even darker for axis labels
+      // Axis labels
+      ctx.fillStyle = '#1f2937';
       ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 70);
+      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 80);
       
       // Rotate and draw Y-axis label
       ctx.save();
-      ctx.translate(40, chartY + chartHeight/2);
+      ctx.translate(20, chartY + chartHeight/2); // Moved farther left
       ctx.rotate(-Math.PI/2);
       ctx.fillText('Remaining Balance', 0, 0);
       ctx.restore();
 
-      // Title with much better styling
+      // Title
       ctx.fillStyle = '#111827';
-      ctx.font = 'bold 24px Arial'; // Larger title
+      ctx.font = 'bold 24px Arial';
       ctx.textAlign = 'center';
       ctx.fillText('Retirement Balance Projection', width/2, 40);
 
-      // Add a subtle border around the entire chart area
+      // Add border
       ctx.strokeStyle = '#d1d5db';
       ctx.lineWidth = 2;
       ctx.strokeRect(chartX - 10, chartY - 10, chartWidth + 20, chartHeight + 20);
 
-      // Convert to data URL with maximum quality
+      // Convert to data URL
       resolve(canvas.toDataURL('image/png', 1.0));
     });
   };
