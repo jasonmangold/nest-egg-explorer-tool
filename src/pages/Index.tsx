@@ -57,7 +57,7 @@ const Index = () => {
       // Create a wider rectangular canvas for better proportions
       const canvas = document.createElement('canvas');
       const scale = 2; // Higher resolution for crisp rendering
-      const width = 600; // Wider for better aspect ratio
+      const width = 800; // Wider for better aspect ratio
       const height = 350; // Rectangular dimensions
       canvas.width = width * scale;
       canvas.height = height * scale;
