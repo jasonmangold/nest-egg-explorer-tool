@@ -1,3 +1,4 @@
+
 import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
 import jsPDF from 'jspdf';
 
@@ -14,6 +16,16 @@ const Index = () => {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Format number with commas
+  const formatNumberWithCommas = (num: number) => {
+    return num.toLocaleString();
+  };
+
+  // Parse number from formatted string
+  const parseFormattedNumber = (str: string) => {
+    return parseInt(str.replace(/,/g, '')) || 0;
+  };
 
   // Calculate retirement projections
   const projectionData = useMemo(() => {
@@ -54,11 +66,11 @@ const Index = () => {
 
 const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
-      // Create a larger canvas
+      // Create a much larger canvas for better quality
       const canvas = document.createElement('canvas');
       const scale = 3;
-      const width = 800; // Increased width
-      const height = 500; // Increased height
+      const width = 1000; // Much wider
+      const height = 600; // Taller
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
@@ -75,11 +87,11 @@ const generateGraphImage = (): Promise<string> => {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
 
-      // Chart area with adjusted spacing
-      const chartX = 120; // Increased left margin
-      const chartY = 90; // Increased top margin
-      const chartWidth = 600; // Wider chart
-      const chartHeight = 300; // Taller chart
+      // Chart area with better proportions
+      const chartX = 150; // More left margin
+      const chartY = 100; // More top margin
+      const chartWidth = 750; // Much wider chart
+      const chartHeight = 350; // Taller chart
 
       // Draw grid lines
       ctx.strokeStyle = '#e2e8f0';
@@ -106,7 +118,7 @@ const generateGraphImage = (): Promise<string> => {
       // Draw data line
       const maxBalance = Math.max(...projectionData.map(d => d.balance));
       ctx.strokeStyle = '#059669';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
@@ -130,11 +142,11 @@ const generateGraphImage = (): Promise<string> => {
           const x = chartX + (point.year / 30) * chartWidth;
           const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
           ctx.beginPath();
-          ctx.arc(x, y, 6, 0, 2 * Math.PI);
+          ctx.arc(x, y, 8, 0, 2 * Math.PI);
           ctx.fill();
           
           ctx.strokeStyle = '#ffffff';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 3;
           ctx.stroke();
           ctx.strokeStyle = '#e2e8f0';
           ctx.lineWidth = 1;
@@ -143,51 +155,51 @@ const generateGraphImage = (): Promise<string> => {
 
       // Add labels
       ctx.fillStyle = '#374151';
-      ctx.font = 'bold 16px Arial';
+      ctx.font = 'bold 18px Arial';
       ctx.textAlign = 'center';
       
       // X-axis labels
       for (let i = 0; i <= 6; i++) {
         const x = chartX + (i * chartWidth / 6);
         const year = i * 5;
-        ctx.fillText(year.toString(), x, chartY + chartHeight + 40);
+        ctx.fillText(year.toString(), x, chartY + chartHeight + 50);
       }
       
       // Y-axis labels
       ctx.textAlign = 'right';
-      ctx.font = 'bold 14px Arial';
+      ctx.font = 'bold 16px Arial';
       for (let i = 0; i <= 5; i++) {
         const y = chartY + chartHeight - (i * chartHeight / 5);
         const value = (maxBalance / 5) * i;
         const formattedValue = value >= 1000000 
           ? `$${(value/1000000).toFixed(1)}M`
           : `$${(value/1000).toFixed(0)}k`;
-        ctx.fillText(formattedValue, chartX - 30, y + 6); // Moved labels farther left
+        ctx.fillText(formattedValue, chartX - 40, y + 8);
       }
 
       // Axis labels
       ctx.fillStyle = '#1f2937';
-      ctx.font = 'bold 18px Arial';
+      ctx.font = 'bold 20px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 80);
+      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 90);
       
       // Rotate and draw Y-axis label
       ctx.save();
-      ctx.translate(20, chartY + chartHeight/2); // Moved farther left
+      ctx.translate(30, chartY + chartHeight/2);
       ctx.rotate(-Math.PI/2);
       ctx.fillText('Remaining Balance', 0, 0);
       ctx.restore();
 
       // Title
       ctx.fillStyle = '#111827';
-      ctx.font = 'bold 24px Arial';
+      ctx.font = 'bold 28px Arial';
       ctx.textAlign = 'center';
-      ctx.fillText('Retirement Balance Projection', width/2, 40);
+      ctx.fillText('Retirement Balance Projection', width/2, 50);
 
       // Add border
       ctx.strokeStyle = '#d1d5db';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(chartX - 10, chartY - 10, chartWidth + 20, chartHeight + 20);
+      ctx.lineWidth = 3;
+      ctx.strokeRect(chartX - 15, chartY - 15, chartWidth + 30, chartHeight + 30);
 
       // Convert to data URL
       resolve(canvas.toDataURL('image/png', 1.0));
@@ -267,13 +279,13 @@ const generateGraphImage = (): Promise<string> => {
       
       currentY += 30;
       
-      // Add the improved wider rectangular graph
+      // Add the larger graph
       try {
         const graphImage = await generateGraphImage();
         if (graphImage) {
-          // Use wider rectangular dimensions for the graph - centered on page
-          const graphWidth = 80; // Wider rectangle
-          const graphHeight = 56; // Maintains good aspect ratio
+          // Use much larger dimensions for the graph
+          const graphWidth = 120; // Much wider
+          const graphHeight = 72; // Proportionally taller
           const graphX = (pageWidth - graphWidth) / 2; // Center horizontally
           pdf.addImage(graphImage, 'PNG', graphX, currentY, graphWidth, graphHeight);
           currentY += graphHeight + 10;
@@ -415,18 +427,56 @@ const generateGraphImage = (): Promise<string> => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <p className="text-sm text-slate-600">
+                          Total amount you will have saved at the start of retirement
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="savings" type="number" value={currentSavings} onChange={e => setCurrentSavings(Number(e.target.value))} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="500,000" />
+                    <Input 
+                      id="savings" 
+                      type="text" 
+                      value={formatNumberWithCommas(currentSavings)} 
+                      onChange={e => setCurrentSavings(parseFormattedNumber(e.target.value))} 
+                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" 
+                      placeholder="500,000" 
+                    />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Info className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                      </HoverCardTrigger>
+                      <HoverCardContent className="w-80">
+                        <p className="text-sm text-slate-600">
+                          Enter the amount you plan to spend each month during retirement.
+                        </p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="spending" type="number" value={monthlySpending} onChange={e => setMonthlySpending(Number(e.target.value))} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="3,000" />
+                    <Input 
+                      id="spending" 
+                      type="text" 
+                      value={formatNumberWithCommas(monthlySpending)} 
+                      onChange={e => setMonthlySpending(parseFormattedNumber(e.target.value))} 
+                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" 
+                      placeholder="3,000" 
+                    />
                   </div>
                 </div>
 
@@ -483,8 +533,8 @@ const generateGraphImage = (): Promise<string> => {
                     <LineChart data={projectionData} margin={{
                     top: 30,
                     right: 30,
-                    left: 30,
-                    bottom: 50
+                    left: 100,
+                    bottom: 100
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
                       <XAxis 
@@ -503,7 +553,7 @@ const generateGraphImage = (): Promise<string> => {
                         label={{
                           value: 'Years in Retirement',
                           position: 'insideBottom',
-                          offset: -30,
+                          offset: -40,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
@@ -531,8 +581,8 @@ const generateGraphImage = (): Promise<string> => {
                         label={{
                           value: 'Remaining Balance',
                           angle: -90,
-                          position: 'insideLeft',
-                          offset: -20,
+                          position: 'outside',
+                          offset: -80,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
