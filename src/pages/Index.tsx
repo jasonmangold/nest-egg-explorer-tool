@@ -57,8 +57,8 @@ const generateGraphImage = (): Promise<string> => {
       // Create a larger canvas
       const canvas = document.createElement('canvas');
       const scale = 3;
-      const width = 500; // Increased width
-      const height = 312.5; // Increased height
+      const width = 800; // Increased width
+      const height = 500; // Increased height
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
@@ -76,10 +76,10 @@ const generateGraphImage = (): Promise<string> => {
       ctx.fillRect(0, 0, width, height);
 
       // Chart area with adjusted spacing
-      const chartX = 45; // Increased left margin
-      const chartY = 30; // Increased top margin
-      const chartWidth = 500; // Wider chart
-      const chartHeight = 312.5; // Taller chart
+      const chartX = 120; // Increased left margin
+      const chartY = 90; // Increased top margin
+      const chartWidth = 600; // Wider chart
+      const chartHeight = 300; // Taller chart
 
       // Draw grid lines
       ctx.strokeStyle = '#e2e8f0';
