@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
-
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -21,8 +20,6 @@ const Index = () => {
     const annualSpending = monthlySpending * 12;
     const inflationRate = 0.03;
     const returnRate = 0.06;
-    
-    // Always generate data for 30 years
     for (let year = 0; year <= 30; year++) {
       const adjustedSpending = annualSpending * Math.pow(1 + inflationRate, year);
       if (year > 0) {
@@ -33,6 +30,7 @@ const Index = () => {
         balance: Math.max(0, balance),
         spending: adjustedSpending
       });
+      if (balance <= 0) break;
     }
     return data;
   }, [currentSavings, monthlySpending]);
@@ -213,102 +211,65 @@ const Index = () => {
               <CardContent>
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart 
-                      data={projectionData} 
-                      margin={{
-                        top: 20,
-                        right: 30,
-                        left: 60,
-                        bottom: 80
-                      }}
-                    >
+                    <LineChart data={projectionData} margin={{
+                    top: 20,
+                    right: 20,
+                    left: 40,
+                    bottom: 60
+                  }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
-                      <XAxis 
-                        dataKey="year" 
-                        stroke="#64748b" 
-                        fontSize={12} 
-                        fontWeight={500} 
-                        tickMargin={15}
-                        domain={[0, 30]}
-                        type="number"
-                        ticks={[0, 5, 10, 15, 20, 25, 30]}
-                        axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} 
-                        tickLine={{
-                          stroke: '#cbd5e1'
-                        }} 
-                        label={{
-                          value: 'Years in Retirement',
-                          position: 'insideBottom',
-                          offset: -10,
-                          style: {
-                            textAnchor: 'middle',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            fill: '#64748b'
-                          }
-                        }} 
-                      />
-                      <YAxis 
-                        stroke="#64748b" 
-                        fontSize={12} 
-                        fontWeight={500} 
-                        tickMargin={15}
-                        axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} 
-                        tickLine={{
-                          stroke: '#cbd5e1'
-                        }} 
-                        tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} 
-                        label={{
-                          value: 'Remaining Balance',
-                          angle: -90,
-                          position: 'insideLeft',
-                          style: {
-                            textAnchor: 'middle',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            fill: '#64748b'
-                          }
-                        }} 
-                      />
-                      <Tooltip 
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} 
-                        labelFormatter={year => `Year ${year}`} 
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px',
-                          fontWeight: '500'
-                        }} 
-                        cursor={{
-                          stroke: '#059669',
-                          strokeWidth: 1,
-                          strokeDasharray: '4 4'
-                        }} 
-                      />
-                      <Line 
-                        type="monotone" 
-                        dataKey="balance" 
-                        stroke="#059669" 
-                        strokeWidth={3} 
-                        dot={false} 
-                        activeDot={{
-                          r: 6,
-                          fill: '#059669',
-                          stroke: '#ffffff',
-                          strokeWidth: 2
-                        }} 
-                        style={{
-                          filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
-                        }} 
-                      />
+                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                      stroke: '#cbd5e1',
+                      strokeWidth: 1
+                    }} tickLine={{
+                      stroke: '#cbd5e1'
+                    }} label={{
+                      value: 'Years in Retirement',
+                      position: 'insideBottom',
+                      offset: -5,
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        fill: '#64748b'
+                      }
+                    }} />
+                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={10} axisLine={{
+                      stroke: '#cbd5e1',
+                      strokeWidth: 1
+                    }} tickLine={{
+                      stroke: '#cbd5e1'
+                    }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                      value: 'Remaining Balance',
+                      angle: -90,
+                      position: 'insideLeft',
+                      style: {
+                        textAnchor: 'middle',
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        fill: '#64748b'
+                      }
+                    }} />
+                      <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }} cursor={{
+                      stroke: '#059669',
+                      strokeWidth: 1,
+                      strokeDasharray: '4 4'
+                    }} />
+                      <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
+                      r: 6,
+                      fill: '#059669',
+                      stroke: '#ffffff',
+                      strokeWidth: 2
+                    }} style={{
+                      filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                    }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -601,5 +562,4 @@ const Index = () => {
       </section>
     </div>;
 };
-
 export default Index;
