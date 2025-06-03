@@ -467,7 +467,7 @@ const Index = () => {
                     <LineChart data={projectionData} margin={{
                     top: 30,
                     right: 30,
-                    left: 100,
+                    left: 30,
                     bottom: 100
                   }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
@@ -487,7 +487,7 @@ const Index = () => {
                         label={{
                           value: 'Years in Retirement',
                           position: 'insideBottom',
-                          offset: -20,
+                          offset: -30,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
