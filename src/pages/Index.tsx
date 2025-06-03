@@ -338,7 +338,7 @@ const Index = () => {
       </section>
 
       {/* Learn More and Related Topics Section */}
-      <section className="relative py-16 bg-gradient-to-br from-slate-500 via-emerald-400 to-blue-400 backdrop-blur-sm">
+      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-emerald-100 to-blue-100 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Learn More Section - Left Side */}
