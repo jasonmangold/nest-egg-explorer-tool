@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
+import jsPDF from 'jspdf';
+
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -53,11 +55,100 @@ const Index = () => {
   const isMoneyLasting = yearsUntilEmpty >= 30;
   const handleExportPDF = () => {
     if (firstName && email) {
-      // In a real implementation, this would generate and download a PDF
-      console.log("Exporting PDF for:", firstName, email);
-      console.log("Current Savings:", currentSavings);
-      console.log("Monthly Spending:", monthlySpending);
-      console.log("Safe Monthly Amount:", safeMonthlyAmount);
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      
+      // Header
+      pdf.setFontSize(24);
+      pdf.setTextColor(5, 150, 105); // emerald-600
+      pdf.text('Retirement Spending Analysis', pageWidth / 2, 30, { align: 'center' });
+      
+      // Client info
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Prepared for: ${firstName}`, 20, 50);
+      pdf.text(`Email: ${email}`, 20, 60);
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, 20, 70);
+      
+      // Inputs section
+      pdf.setFontSize(16);
+      pdf.setTextColor(15, 118, 110); // teal-600
+      pdf.text('Your Financial Situation', 20, 90);
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Current Amount Saved: $${currentSavings.toLocaleString()}`, 20, 105);
+      pdf.text(`Monthly Spending Goal: $${monthlySpending.toLocaleString()}`, 20, 115);
+      
+      // Assumptions
+      pdf.text('Calculation Assumptions:', 20, 135);
+      pdf.text('• Retirement Period: 30 years', 25, 145);
+      pdf.text('• Annual Inflation: 3%', 25, 155);
+      pdf.text('• Annual Return: 6%', 25, 165);
+      
+      // Results section
+      pdf.setFontSize(16);
+      pdf.setTextColor(15, 118, 110);
+      pdf.text('Analysis Results', 20, 185);
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Safe Monthly Spending: $${safeMonthlyAmount.toLocaleString()}`, 20, 200);
+      pdf.text(`Money Duration: ${isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`}`, 20, 210);
+      
+      const statusText = isMoneyLasting 
+        ? 'Your spending plan looks sustainable for a 30-year retirement.'
+        : 'Consider reducing spending or saving more to extend your money.';
+      pdf.text(`Status: ${statusText}`, 20, 220);
+      
+      // How it works
+      pdf.setFontSize(14);
+      pdf.setTextColor(15, 118, 110);
+      pdf.text('How This Calculation Works', 20, 245);
+      
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('• We calculate how your savings will change over 30 years of retirement', 20, 255);
+      pdf.text('• Your spending increases each year with inflation (3% annually)', 20, 265);
+      pdf.text('• Your remaining savings earn a 6% annual return', 20, 275);
+      pdf.text('• The "safe" amount ensures your money lasts the full 30 years', 20, 285);
+      
+      // Start new page for advisor info
+      pdf.addPage();
+      
+      // Advisor contact section
+      pdf.setFontSize(16);
+      pdf.setTextColor(15, 118, 110);
+      pdf.text('Your Financial Advisor', 20, 30);
+      
+      pdf.setFontSize(14);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Sarah Johnson, CFP®', 20, 50);
+      pdf.text('Certified Financial Planner', 20, 60);
+      pdf.text('15+ years experience helping clients achieve their retirement goals', 20, 70);
+      
+      pdf.setFontSize(12);
+      pdf.text('Contact Information:', 20, 90);
+      pdf.text('Phone: (555) 123-4567', 25, 105);
+      pdf.text('Email: advisor@financialplanning.com', 25, 115);
+      pdf.text('Office: 123 Financial Street, Suite 456', 25, 125);
+      pdf.text('        Financial City, FC 12345', 25, 135);
+      
+      // Disclaimer footer
+      const disclaimerY = pageHeight - 50;
+      pdf.setFontSize(8);
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('Important Disclaimer', 20, disclaimerY);
+      
+      const disclaimerText = 'This calculator is provided for educational and informational purposes only and should not be considered personalized investment advice. The calculations are based on simplified assumptions and may not reflect your actual financial situation. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making any investment or retirement planning decisions. All investments carry risk, including the potential loss of principal.';
+      
+      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 40);
+      pdf.text(lines, 20, disclaimerY + 10);
+      
+      // Download the PDF
+      pdf.save(`${firstName}_Retirement_Analysis.pdf`);
+      
       setIsDialogOpen(false);
       setFirstName("");
       setEmail("");
