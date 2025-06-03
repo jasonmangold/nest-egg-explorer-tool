@@ -198,18 +198,7 @@ const Index = () => {
                 </div>
 
                 {/* Planning Tips Section */}
-                <div className="pt-4 border-t border-slate-200">
-                  <div className="flex items-center mb-3">
-                    <Lightbulb className="w-5 h-5 text-amber-600 mr-2" />
-                    <h3 className="text-lg font-semibold text-slate-800">Planning Tips</h3>
-                  </div>
-                  <div className="space-y-3 text-sm text-slate-600">
-                    <p>• Consider healthcare costs that may increase with age</p>
-                    <p>• Plan for unexpected expenses and emergencies</p>
-                    <p>• Review and adjust your plan regularly</p>
-                    <p>• Consult with a financial advisor for personalized guidance</p>
-                  </div>
-                </div>
+                
               </CardContent>
             </Card>
 
