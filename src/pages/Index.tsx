@@ -515,8 +515,8 @@ const Index = () => {
                         label={{
                           value: 'Remaining Balance',
                           angle: -90,
-                          position: 'outside',
-                          offset: 20,
+                          position: 'insideLeft',
+                          offset: -20,
                           style: {
                             textAnchor: 'middle',
                             fontSize: '12px',
