@@ -467,9 +467,7 @@ const Index = () => {
             <CardContent className="p-8 text-center">
               <Headphones className="w-16 h-16 mx-auto mb-6 opacity-90" />
               <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
-              <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">
-                Listen to our financial experts discuss this retirement spending calculator, share real-world examples, and answer common questions about sustainable withdrawal strategies.
-              </p>
+              <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
               <div className="flex justify-center">
                 <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={() => window.open('/retirement-podcast.mp4', '_blank')}>
                   <Headphones className="w-5 h-5 mr-2" />
