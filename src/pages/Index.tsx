@@ -187,31 +187,17 @@ const Index = () => {
                   </div>
                 </div>
 
-                {/* Results */}
+                {/* Moved Assumptions here */}
                 <div className="pt-4 border-t border-slate-200">
-                  <div className="space-y-4">
-                    <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
-                      <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
-                        {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
-                      </h3>
-                      <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
-                        {isMoneyLasting 
-                          ? 'Your spending plan looks sustainable for a 30-year retirement.'
-                          : 'Consider reducing spending or saving more to extend your money.'}
-                      </p>
-                    </div>
-                    
-                    <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
-                      <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
-                      <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
-                      <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
-                    </div>
+                  <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
+                    <p className="font-medium mb-1">Assumptions:</p>
+                    <p>• 30-year retirement period • 3% annual inflation • 6% annual return</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Graph */}
+            {/* Graph and Results */}
             <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-slate-800">Retirement Spend-Down Projection</CardTitle>
@@ -292,11 +278,25 @@ const Index = () => {
                   </ResponsiveContainer>
                 </div>
                 
-                {/* Assumptions and Export */}
+                {/* Moved Results here */}
                 <div className="mt-4 space-y-3">
-                  <div className="p-3 bg-slate-50 rounded-lg text-sm text-slate-600">
-                    <p className="font-medium mb-1">Assumptions:</p>
-                    <p>• 30-year retirement period • 3% annual inflation • 6% annual return</p>
+                  <div className="space-y-4">
+                    <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+                      <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
+                        {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
+                      </h3>
+                      <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
+                        {isMoneyLasting 
+                          ? 'Your spending plan looks sustainable for a 30-year retirement.'
+                          : 'Consider reducing spending or saving more to extend your money.'}
+                      </p>
+                    </div>
+                    
+                    <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                      <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
+                      <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
+                      <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
+                    </div>
                   </div>
                   
                   <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -385,8 +385,8 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -394,14 +394,14 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Understanding the classic withdrawal strategy and when it works best.
                         </p>
-                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -409,14 +409,14 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Explore different approaches to generating sustainable income in retirement.
                         </p>
-                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -424,9 +424,9 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Maximize your Social Security benefits through strategic claiming decisions.
                         </p>
-                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start">Read Report</Button>
                   </CardContent>
                 </Card>
               </div>
@@ -443,8 +443,8 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -452,14 +452,14 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Maximize your returns by minimizing your tax burden through strategic planning.
                         </p>
-                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -467,14 +467,14 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Protect your legacy and ensure your assets are distributed according to your wishes.
                         </p>
-                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
-                  <CardContent className="p-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-32">
+                  <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
                       <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
@@ -482,9 +482,9 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3">
                           Build financial resilience with the right emergency fund for your situation.
                         </p>
-                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start">Learn More</Button>
                   </CardContent>
                 </Card>
               </div>
