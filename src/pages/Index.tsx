@@ -57,8 +57,8 @@ const Index = () => {
       // Create a higher resolution canvas with better proportions
       const canvas = document.createElement('canvas');
       const scale = 2; // Higher resolution for crisp rendering
-      canvas.width = 400 * scale; // Increased width
-      canvas.height = 400 * scale; // Better aspect ratio (2:1)
+      canvas.width = 600 * scale; // Increased width
+      canvas.height = 300 * scale; // Better aspect ratio (2:1)
       const ctx = canvas.getContext('2d');
       
       if (!ctx) {
