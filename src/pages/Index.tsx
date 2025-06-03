@@ -371,7 +371,7 @@ const Index = () => {
       </section>
 
       {/* Learn More and Related Topics Section */}
-      <section className="relative py-16 bg-white/60 backdrop-blur-sm">
+      <section className="relative py-16 bg-gradient-to-br from-slate-100 via-emerald-50 to-blue-50 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Learn More Section - Left Side */}
@@ -384,48 +384,49 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="space-y-6">
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <TrendingDown className="w-8 h-8 text-emerald-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">The 4% Rule Explained</h3>
-                    <p className="text-slate-600 mb-4">
-                      Understanding the classic withdrawal strategy and when it works best for your situation.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+              <div className="space-y-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">The 4% Rule Explained</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Understanding the classic withdrawal strategy and when it works best.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <Calculator className="w-8 h-8 text-emerald-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Retirement Income Strategies</h3>
-                    <p className="text-slate-600 mb-4">
-                      Explore different approaches to generating sustainable income in retirement.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Retirement Income Strategies</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Explore different approaches to generating sustainable income in retirement.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <Users className="w-8 h-8 text-emerald-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Healthcare Costs in Retirement</h3>
-                    <p className="text-slate-600 mb-4">
-                      Planning for one of the largest expenses you'll face during retirement.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
-                  </CardContent>
-                </Card>
-
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <PiggyBank className="w-8 h-8 text-emerald-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Social Security Optimization</h3>
-                    <p className="text-slate-600 mb-4">
-                      Maximize your Social Security benefits through strategic claiming decisions.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Optimization</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Maximize your Social Security benefits through strategic claiming decisions.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">Read Report</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
@@ -441,37 +442,49 @@ const Index = () => {
                 </p>
               </div>
               
-              <div className="space-y-6">
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <TrendingDown className="w-8 h-8 text-teal-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Tax-Efficient Investing</h3>
-                    <p className="text-slate-600 mb-4">
-                      Maximize your returns by minimizing your tax burden through strategic investment planning.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+              <div className="space-y-4">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Tax-Efficient Investing</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Maximize your returns by minimizing your tax burden through strategic planning.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <Shield className="w-8 h-8 text-teal-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Estate Planning Basics</h3>
-                    <p className="text-slate-600 mb-4">
-                      Protect your legacy and ensure your assets are distributed according to your wishes.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Estate Planning Basics</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Protect your legacy and ensure your assets are distributed according to your wishes.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 hover:transform hover:scale-105">
-                  <CardContent className="p-6">
-                    <PiggyBank className="w-8 h-8 text-teal-600 mb-4" />
-                    <h3 className="font-semibold text-lg mb-3 text-slate-800">Emergency Fund Strategies</h3>
-                    <p className="text-slate-600 mb-4">
-                      Build financial resilience with the right emergency fund for your situation.
-                    </p>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50">
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Emergency Fund Strategies</h3>
+                        <p className="text-slate-600 text-sm mb-3">
+                          Build financial resilience with the right emergency fund for your situation.
+                        </p>
+                        <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50">Learn More</Button>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </div>
