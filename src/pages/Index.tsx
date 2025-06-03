@@ -57,8 +57,8 @@ const generateGraphImage = (): Promise<string> => {
       // Create a larger canvas
       const canvas = document.createElement('canvas');
       const scale = 3;
-      const width = 1000; // Increased width
-      const height = 625; // Increased height
+      const width = 500; // Increased width
+      const height = 312.5; // Increased height
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
