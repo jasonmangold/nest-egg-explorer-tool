@@ -55,7 +55,7 @@ const Index = () => {
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
 
-  const generateGraphImage = () => {
+  const generateGraphImage = (): Promise<string> => {
     return new Promise((resolve) => {
       // Create a canvas element to draw the chart
       const canvas = document.createElement('canvas');
@@ -202,14 +202,14 @@ const Index = () => {
       pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, leftCol + 5, currentY + 16);
       
       // Status (right)
-      const statusColor = isMoneyLasting ? [220, 252, 231] : [254, 226, 226]; // green-100 or red-100
-      const statusTextColor = isMoneyLasting ? [22, 101, 52] : [153, 27, 27]; // green-800 or red-800
+      const statusColor: [number, number, number] = isMoneyLasting ? [220, 252, 231] : [254, 226, 226]; // green-100 or red-100
+      const statusTextColor: [number, number, number] = isMoneyLasting ? [22, 101, 52] : [153, 27, 27]; // green-800 or red-800
       
-      pdf.setFillColor(...statusColor);
+      pdf.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.rect(rightCol, currentY, (pageWidth - 40) / 2, 20, 'F');
       
       pdf.setFontSize(12);
-      pdf.setTextColor(...statusTextColor);
+      pdf.setTextColor(statusTextColor[0], statusTextColor[1], statusTextColor[2]);
       pdf.text('Money Duration', rightCol + 5, currentY + 8);
       pdf.setFontSize(16);
       const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`;
