@@ -527,6 +527,7 @@ const Index = () => {
   };
 
   const handleListenNow = () => {
+    console.log('Listen Now clicked - loading audio');
     audioPlayer.loadAudio('/retirement-podcast.mp4');
   };
 
@@ -1093,11 +1094,14 @@ const Index = () => {
         volume={audioPlayer.volume}
         isVisible={audioPlayer.isVisible}
         isMinimized={audioPlayer.isMinimized}
+        isLoading={audioPlayer.isLoading}
+        error={audioPlayer.error}
         onTogglePlay={audioPlayer.togglePlay}
         onSeek={audioPlayer.seek}
         onVolumeChange={audioPlayer.changeVolume}
         onClose={audioPlayer.closePlayer}
         onToggleMinimize={audioPlayer.toggleMinimize}
+        onRetryLoad={audioPlayer.retryLoad}
       />
     </div>
   </TooltipProvider>;
