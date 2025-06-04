@@ -1,5 +1,6 @@
 
 import { useState, useRef, useEffect } from 'react';
+import { showLoadingToast } from '@/components/LoadingToast';
 
 export const useAudioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -10,6 +11,7 @@ export const useAudioPlayer = () => {
   const [isMinimized, setIsMinimized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSeeking, setIsSeeking] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const checkFileExists = async (url: string): Promise<boolean> => {
@@ -27,8 +29,13 @@ export const useAudioPlayer = () => {
   const loadAudio = async (src: string) => {
     console.log('=== Starting audio load process ===');
     console.log('Loading audio from:', src);
-    setError(null);
+    
+    // Show immediate feedback
+    showLoadingToast();
+    setIsVisible(true);
     setIsLoading(true);
+    setError(null);
+    setIsMinimized(false);
     
     // First check if file exists
     const fileExists = await checkFileExists(src);
@@ -44,8 +51,6 @@ export const useAudioPlayer = () => {
     if (audioRef.current) {
       console.log('Audio element found, setting src...');
       audioRef.current.src = src;
-      setIsVisible(true);
-      setIsMinimized(false);
       
       // Try to load the audio
       console.log('Calling audio.load()...');
@@ -100,9 +105,27 @@ export const useAudioPlayer = () => {
   };
 
   const seek = (time: number) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-      setCurrentTime(time);
+    console.log('=== Seek function called ===');
+    console.log('Seeking to time:', time);
+    console.log('Current audio time:', audioRef.current?.currentTime);
+    console.log('Audio duration:', audioRef.current?.duration);
+    
+    if (audioRef.current && !isNaN(time) && time >= 0) {
+      setIsSeeking(true);
+      
+      try {
+        audioRef.current.currentTime = time;
+        setCurrentTime(time);
+        console.log('Successfully set currentTime to:', time);
+        console.log('Audio currentTime after setting:', audioRef.current.currentTime);
+      } catch (error) {
+        console.error('Error seeking audio:', error);
+      }
+      
+      // Reset seeking flag after a short delay
+      setTimeout(() => setIsSeeking(false), 100);
+    } else {
+      console.warn('Invalid seek time or no audio element:', { time, hasAudio: !!audioRef.current });
     }
   };
 
@@ -143,8 +166,11 @@ export const useAudioPlayer = () => {
     if (!audio) return;
 
     const updateTime = () => {
-      console.log('Time update:', audio.currentTime);
-      setCurrentTime(audio.currentTime);
+      // Only update time if we're not actively seeking
+      if (!isSeeking) {
+        console.log('Time update:', audio.currentTime);
+        setCurrentTime(audio.currentTime);
+      }
     };
     
     const updateDuration = () => {
@@ -250,7 +276,7 @@ export const useAudioPlayer = () => {
       audio.removeEventListener('suspend', handleSuspend);
       audio.removeEventListener('stalled', handleStalled);
     };
-  }, []);
+  }, [isSeeking]);
 
   return {
     audioRef,
