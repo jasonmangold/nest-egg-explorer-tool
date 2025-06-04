@@ -112,7 +112,7 @@ const Index = () => {
       return lines.length * (fontSize * 0.4) + 5;
     };
 
-    // Add icon using text symbols (since we can't import actual icons in PDF)
+    // Add icon using text symbols
     const addIcon = (iconType: string, x: number, y: number, size: number = 12, color: string = colors.primary) => {
       const iconColor = hexToRgb(color);
       if (iconColor) {
@@ -137,22 +137,16 @@ const Index = () => {
       pdf.text(icons[iconType] || '●', x, y);
     };
 
-    // Modern header with gradient effect
+    // Modern header
     const primaryColor = hexToRgb(colors.primary);
     const accentColor = hexToRgb(colors.accent);
     
-    if (primaryColor && accentColor) {
-      // Create gradient effect with overlapping rectangles
+    if (primaryColor) {
       pdf.setFillColor(primaryColor.r, primaryColor.g, primaryColor.b);
       pdf.rect(0, 0, pageWidth, 35, 'F');
-      
-      pdf.setFillColor(accentColor.r, accentColor.g, accentColor.b);
-      pdf.setGState(new pdf.GState({opacity: 0.3}));
-      pdf.rect(0, 20, pageWidth, 20, 'F');
-      pdf.setGState(new pdf.GState({opacity: 1}));
     }
     
-    // Title with modern typography
+    // Title
     pdf.setFontSize(26);
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
@@ -160,14 +154,13 @@ const Index = () => {
     
     currentY = 55;
 
-    // Section 1: Introduction with alternating background
+    // Section 1: Introduction
     const grayColor = hexToRgb(colors.gray);
     if (grayColor) {
       pdf.setFillColor(grayColor.r, grayColor.g, grayColor.b);
       pdf.rect(0, currentY - 5, pageWidth, 45, 'F');
     }
 
-    // Add planning icon
     addIcon('planning', margin, currentY + 5, 16, colors.primary);
     
     pdf.setTextColor(0, 0, 0);
@@ -194,11 +187,10 @@ const Index = () => {
     }
     currentY += 15;
 
-    // Section 2: Longer Lives with white background and life expectancy infographic
+    // Section 2: Longer Lives
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, currentY - 5, pageWidth, 50, 'F');
 
-    // Add life icon
     addIcon('life', margin, currentY + 5, 16, colors.accent);
 
     if (primaryColor) {
@@ -258,13 +250,12 @@ const Index = () => {
       currentY = margin;
     }
 
-    // Section 3: Common Issues with alternating background
+    // Section 3: Common Issues
     if (grayColor) {
       pdf.setFillColor(grayColor.r, grayColor.g, grayColor.b);
       pdf.rect(0, currentY - 5, pageWidth, pageHeight - currentY + 5, 'F');
     }
 
-    // Add planning icon
     addIcon('planning', margin, currentY + 5, 16, colors.primaryDark);
 
     if (primaryColor) {
@@ -355,11 +346,10 @@ const Index = () => {
     pdf.addPage();
     currentY = margin;
 
-    // Final section with white background
+    // Final section
     pdf.setFillColor(255, 255, 255);
     pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-    // Add star icon
     addIcon('star', margin, currentY + 5, 16, colors.primaryDark);
 
     if (primaryColor) {
