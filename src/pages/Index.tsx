@@ -528,7 +528,7 @@ const Index = () => {
 
   const handleListenNow = () => {
     console.log('Listen Now clicked - loading audio');
-    audioPlayer.loadAudio('/retirement-podcast.mp4');
+    audioPlayer.loadAudio('/retirement-podcast.mp3');
   };
 
   return <TooltipProvider>
