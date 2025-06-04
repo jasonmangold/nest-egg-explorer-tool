@@ -10,7 +10,6 @@ import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Do
 import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
-
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -36,7 +35,6 @@ const Index = () => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
   };
-
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setMonthlySpending(value);
@@ -70,21 +68,18 @@ const Index = () => {
     const inflationRate = 0.03;
     const years = 30;
     const realReturnRate = (1 + returnRate) / (1 + inflationRate) - 1;
-
     const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings]);
-
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
-
   const generateRetirementPlanningPDF = () => {
     const pdf = new jsPDF();
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const margin = 20;
-    const contentWidth = pageWidth - (margin * 2);
+    const contentWidth = pageWidth - margin * 2;
     let currentY = margin;
 
     // Helper function to add text with word wrapping
@@ -99,31 +94,25 @@ const Index = () => {
     // Header with gradient effect
     pdf.setFillColor(5, 150, 105);
     pdf.rect(0, 0, pageWidth, 30, 'F');
-    
+
     // Title
     pdf.setFontSize(22);
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
-    pdf.text('The Need for Retirement Planning', pageWidth / 2, 20, { align: 'center' });
-    
+    pdf.text('The Need for Retirement Planning', pageWidth / 2, 20, {
+      align: 'center'
+    });
     currentY = 50;
-
-
 
     // Body text
     pdf.setTextColor(51, 65, 85);
     const bodyText1 = "Traditionally, retirement in America has been defined in terms of its relationship to participation in the active work force. An individual would work full-time until a certain age, and then leave employment to spend a few years quietly rocking on the front porch. Declining health often made retirement short and unpleasant. Retirement planning, as such, typically focused on saving enough to guarantee minimal survival for a relatively brief period of time.";
-    
     currentY += addWrappedText(bodyText1, margin, currentY, contentWidth);
     currentY += 5;
-
     const bodyText2 = "More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favorite hobbies or sports.";
-    
     currentY += addWrappedText(bodyText2, margin, currentY, contentWidth);
     currentY += 5;
-
     const bodyText3 = "This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.";
-    
     currentY += addWrappedText(bodyText3, margin, currentY, contentWidth);
     currentY += 10;
 
@@ -133,9 +122,7 @@ const Index = () => {
     pdf.setFont('helvetica', 'bold');
     pdf.text('Longer Lives', margin, currentY);
     currentY += 8;
-
     const longerLivesText = "The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years.";
-    
     pdf.setTextColor(51, 65, 85);
     currentY += addWrappedText(longerLivesText, margin, currentY, contentWidth);
     currentY += 10;
@@ -152,38 +139,29 @@ const Index = () => {
     pdf.setFont('helvetica', 'bold');
     pdf.text('Common Retirement Planning Issues', margin, currentY);
     currentY += 8;
-
     const issuesIntro = "Planning for a much longer life span involves addressing problems not faced by earlier generations. Some of the key issues include the following:";
-    
     pdf.setTextColor(51, 65, 85);
     currentY += addWrappedText(issuesIntro, margin, currentY, contentWidth);
     currentY += 10;
 
     // Bullet points
-    const bulletPoints = [
-      {
-        title: "Paying for retirement:",
-        text: "Providing a steady income is often the key problem involved in retirement planning. Longer life spans raise the issue of the impact of inflation on fixed dollar payments, as well as the possibility of outliving accumulated personal savings. Social Security retirement benefits and income from employer-sponsored retirement plans typically provide only a portion of the total income required. If income is insufficient, a retiree may be forced to either continue working, or face a reduced standard of living."
-      },
-      {
-        title: "Health care:",
-        text: "The health benefits provided through the federal government's Medicare program are generally considered to be only a foundation. Often a supplemental Medigap policy is needed, as is a long-term care policy, to provide needed benefits not available through Medicare. Health care planning should also consider a health care proxy, allowing someone else to make medical decisions when an individual is temporarily incapacitated, as well as a living will that expresses an individual's wishes when no hope of recovery is possible."
-      },
-      {
-        title: "Estate planning:",
-        text: "Retirement planning inevitably must consider what happens to an individual's assets after retirement is over. Estate planning should ensure not only that assets are transferred to the individuals or organizations chosen by the owner, but also that the transfer is done with the least amount of tax and administrative expense."
-      },
-      {
-        title: "Housing:",
-        text: "This question involves not only the size and type of home (condo, house, shared housing, assisted living), but also its location. Such factors as climate and proximity to close family members and medical care are often important. Completely paying off a home loan can reduce monthly income needs. A reverse mortgage may provide additional monthly income."
-      },
-      {
-        title: "Lifestyle:",
-        text: "Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier."
-      }
-    ];
-
-    bulletPoints.forEach((point) => {
+    const bulletPoints = [{
+      title: "Paying for retirement:",
+      text: "Providing a steady income is often the key problem involved in retirement planning. Longer life spans raise the issue of the impact of inflation on fixed dollar payments, as well as the possibility of outliving accumulated personal savings. Social Security retirement benefits and income from employer-sponsored retirement plans typically provide only a portion of the total income required. If income is insufficient, a retiree may be forced to either continue working, or face a reduced standard of living."
+    }, {
+      title: "Health care:",
+      text: "The health benefits provided through the federal government's Medicare program are generally considered to be only a foundation. Often a supplemental Medigap policy is needed, as is a long-term care policy, to provide needed benefits not available through Medicare. Health care planning should also consider a health care proxy, allowing someone else to make medical decisions when an individual is temporarily incapacitated, as well as a living will that expresses an individual's wishes when no hope of recovery is possible."
+    }, {
+      title: "Estate planning:",
+      text: "Retirement planning inevitably must consider what happens to an individual's assets after retirement is over. Estate planning should ensure not only that assets are transferred to the individuals or organizations chosen by the owner, but also that the transfer is done with the least amount of tax and administrative expense."
+    }, {
+      title: "Housing:",
+      text: "This question involves not only the size and type of home (condo, house, shared housing, assisted living), but also its location. Such factors as climate and proximity to close family members and medical care are often important. Completely paying off a home loan can reduce monthly income needs. A reverse mortgage may provide additional monthly income."
+    }, {
+      title: "Lifestyle:",
+      text: "Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier."
+    }];
+    bulletPoints.forEach(point => {
       // Check if we need a new page
       if (currentY > pageHeight - 80) {
         pdf.addPage();
@@ -194,12 +172,12 @@ const Index = () => {
       pdf.setFontSize(11);
       pdf.setFont('helvetica', 'normal');
       pdf.text('•', margin, currentY);
-      
+
       // Title in bold
       pdf.setFont('helvetica', 'bold');
       const titleLines = pdf.splitTextToSize(point.title, contentWidth - 10);
       pdf.text(titleLines, margin + 10, currentY);
-      
+
       // Text
       pdf.setFont('helvetica', 'normal');
       const textLines = pdf.splitTextToSize(point.text, contentWidth - 10);
@@ -220,9 +198,7 @@ const Index = () => {
     pdf.setFont('helvetica', 'bold');
     pdf.text('Seek Professional Guidance', margin, currentY);
     currentY += 8;
-
     const guidanceText = "Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.";
-    
     pdf.setTextColor(51, 65, 85);
     currentY += addWrappedText(guidanceText, margin, currentY, contentWidth);
 
@@ -230,17 +206,17 @@ const Index = () => {
     const footerY = pageHeight - 15;
     pdf.setFillColor(248, 250, 252);
     pdf.rect(0, footerY - 5, pageWidth, 20, 'F');
-    
     pdf.setFontSize(8);
     pdf.setTextColor(100, 116, 139);
-    pdf.text('This report is provided for educational purposes. Please consult with a qualified financial advisor for personalized advice.', pageWidth / 2, footerY, { align: 'center' });
+    pdf.text('This report is provided for educational purposes. Please consult with a qualified financial advisor for personalized advice.', pageWidth / 2, footerY, {
+      align: 'center'
+    });
 
     // Download the PDF
     pdf.save('The_Need_for_Retirement_Planning.pdf');
   };
-
   const generateGraphImage = (): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       // Create a larger canvas for better PDF quality
       const canvas = document.createElement('canvas');
       const scale = 4; // Increased scale for higher resolution
@@ -249,7 +225,6 @@ const Index = () => {
       canvas.width = width * scale;
       canvas.height = height * scale;
       const ctx = canvas.getContext('2d');
-      
       if (!ctx) {
         resolve('');
         return;
@@ -271,19 +246,19 @@ const Index = () => {
       // Draw grid lines
       ctx.strokeStyle = '#e2e8f0';
       ctx.lineWidth = 1;
-      
+
       // Vertical grid lines
       for (let i = 0; i <= 6; i++) {
-        const x = chartX + (i * chartWidth / 6);
+        const x = chartX + i * chartWidth / 6;
         ctx.beginPath();
         ctx.moveTo(x, chartY);
         ctx.lineTo(x, chartY + chartHeight);
         ctx.stroke();
       }
-      
+
       // Horizontal grid lines
       for (let i = 0; i <= 5; i++) {
-        const y = chartY + (i * chartHeight / 5);
+        const y = chartY + i * chartHeight / 5;
         ctx.beginPath();
         ctx.moveTo(chartX, y);
         ctx.lineTo(chartX + chartWidth, y);
@@ -297,11 +272,9 @@ const Index = () => {
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.beginPath();
-
       projectionData.forEach((point, index) => {
-        const x = chartX + (point.year / 30) * chartWidth;
-        const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
-        
+        const x = chartX + point.year / 30 * chartWidth;
+        const y = chartY + chartHeight - point.balance / maxBalance * chartHeight;
         if (index === 0) {
           ctx.moveTo(x, y);
         } else {
@@ -314,12 +287,11 @@ const Index = () => {
       ctx.fillStyle = '#059669';
       projectionData.forEach((point, index) => {
         if (index % 3 === 0) {
-          const x = chartX + (point.year / 30) * chartWidth;
-          const y = chartY + chartHeight - (point.balance / maxBalance) * chartHeight;
+          const x = chartX + point.year / 30 * chartWidth;
+          const y = chartY + chartHeight - point.balance / maxBalance * chartHeight;
           ctx.beginPath();
           ctx.arc(x, y, 8, 0, 2 * Math.PI); // Larger dots
           ctx.fill();
-          
           ctx.strokeStyle = '#ffffff';
           ctx.lineWidth = 3;
           ctx.stroke();
@@ -332,23 +304,21 @@ const Index = () => {
       ctx.fillStyle = '#374151';
       ctx.font = 'bold 18px Arial'; // Larger font
       ctx.textAlign = 'center';
-      
+
       // X-axis labels
       for (let i = 0; i <= 6; i++) {
-        const x = chartX + (i * chartWidth / 6);
+        const x = chartX + i * chartWidth / 6;
         const year = i * 5;
         ctx.fillText(year.toString(), x, chartY + chartHeight + 50);
       }
-      
+
       // Y-axis labels
       ctx.textAlign = 'right';
       ctx.font = 'bold 16px Arial'; // Larger font
       for (let i = 0; i <= 5; i++) {
-        const y = chartY + chartHeight - (i * chartHeight / 5);
-        const value = (maxBalance / 5) * i;
-        const formattedValue = value >= 1000000 
-          ? `$${(value/1000000).toFixed(1)}M`
-          : `$${(value/1000).toFixed(0)}k`;
+        const y = chartY + chartHeight - i * chartHeight / 5;
+        const value = maxBalance / 5 * i;
+        const formattedValue = value >= 1000000 ? `$${(value / 1000000).toFixed(1)}M` : `$${(value / 1000).toFixed(0)}k`;
         ctx.fillText(formattedValue, chartX - 40, y + 8);
       }
 
@@ -356,12 +326,12 @@ const Index = () => {
       ctx.fillStyle = '#1f2937';
       ctx.font = 'bold 20px Arial'; // Larger font
       ctx.textAlign = 'center';
-      ctx.fillText('Years in Retirement', chartX + chartWidth/2, chartY + chartHeight + 100);
-      
+      ctx.fillText('Years in Retirement', chartX + chartWidth / 2, chartY + chartHeight + 100);
+
       // Rotate and draw Y-axis label
       ctx.save();
-      ctx.translate(30, chartY + chartHeight/2);
-      ctx.rotate(-Math.PI/2);
+      ctx.translate(30, chartY + chartHeight / 2);
+      ctx.rotate(-Math.PI / 2);
       ctx.fillText('Remaining Balance', 0, 0);
       ctx.restore();
 
@@ -369,7 +339,7 @@ const Index = () => {
       ctx.fillStyle = '#111827';
       ctx.font = 'bold 28px Arial'; // Larger title
       ctx.textAlign = 'center';
-      ctx.fillText('Retirement Balance Projection', width/2, 50);
+      ctx.fillText('Retirement Balance Projection', width / 2, 50);
 
       // Add border
       ctx.strokeStyle = '#d1d5db';
@@ -380,80 +350,76 @@ const Index = () => {
       resolve(canvas.toDataURL('image/png', 1.0));
     });
   };
-
   const handleExportPDF = async () => {
     if (firstName && email) {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
-      
+
       // Header with gradient effect (simulated with colors)
       pdf.setFillColor(5, 150, 105); // emerald-600
       pdf.rect(0, 0, pageWidth, 25, 'F');
-      
+
       // Title in header
       pdf.setFontSize(20);
       pdf.setTextColor(255, 255, 255);
-      pdf.text('Retirement Spending Analysis', pageWidth / 2, 16, { align: 'center' });
-      
+      pdf.text('Retirement Spending Analysis', pageWidth / 2, 16, {
+        align: 'center'
+      });
+
       // Client info section with background
       pdf.setFillColor(248, 250, 252); // slate-50
       pdf.rect(0, 25, pageWidth, 20, 'F');
-      
       pdf.setFontSize(11);
       pdf.setTextColor(51, 65, 85); // slate-700
       pdf.text(`Prepared for: ${firstName}`, 15, 35);
       pdf.text(`Email: ${email}`, 15, 42);
-      pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 35, { align: 'right' });
-      
+      pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 35, {
+        align: 'right'
+      });
+
       // Main content area
       let currentY = 55;
-      
+
       // Financial Situation Section
       pdf.setFillColor(236, 253, 245); // emerald-50
       pdf.rect(15, currentY, pageWidth - 30, 25, 'F');
-      
       pdf.setFontSize(14);
       pdf.setTextColor(5, 150, 105); // emerald-600
       pdf.text('Your Financial Situation', 20, currentY + 8);
-      
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
       pdf.text(`Current Savings: $${currentSavings.toLocaleString()}`, 20, currentY + 16);
       pdf.text(`Monthly Spending: $${monthlySpending.toLocaleString()}`, 20, currentY + 22);
-      
       currentY += 35;
-      
+
       // Results Section - Two columns
       const leftCol = 15;
       const rightCol = pageWidth / 2 + 5;
-      
+
       // Safe Monthly Amount (left)
       pdf.setFillColor(220, 252, 231); // green-100
       pdf.rect(leftCol, currentY, (pageWidth - 40) / 2, 20, 'F');
-      
       pdf.setFontSize(12);
       pdf.setTextColor(5, 150, 105);
       pdf.text('Safe Monthly Spending', leftCol + 5, currentY + 8);
       pdf.setFontSize(16);
       pdf.setTextColor(22, 101, 52); // green-800
       pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, leftCol + 5, currentY + 16);
-      
+
       // Status (right)
       const statusColor: [number, number, number] = isMoneyLasting ? [220, 252, 231] : [254, 226, 226]; // green-100 or red-100
       const statusTextColor: [number, number, number] = isMoneyLasting ? [22, 101, 52] : [153, 27, 27]; // green-800 or red-800
-      
+
       pdf.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.rect(rightCol, currentY, (pageWidth - 40) / 2, 20, 'F');
-      
       pdf.setFontSize(12);
       pdf.setTextColor(statusTextColor[0], statusTextColor[1], statusTextColor[2]);
       pdf.text('Money Duration', rightCol + 5, currentY + 8);
       pdf.setFontSize(16);
       const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`;
       pdf.text(durationText, rightCol + 5, currentY + 16);
-      
       currentY += 30;
-      
+
       // Add the improved larger graph
       try {
         const graphImage = await generateGraphImage();
@@ -469,51 +435,44 @@ const Index = () => {
         console.log('Could not add graph to PDF:', error);
         currentY += 10;
       }
-      
+
       // Assumptions section
       pdf.setFillColor(241, 245, 249); // slate-100
       pdf.rect(15, currentY, pageWidth - 30, 18, 'F');
-      
       pdf.setFontSize(11);
       pdf.setTextColor(15, 118, 110); // teal-600
       pdf.text('Calculation Assumptions', 20, currentY + 8);
-      
       pdf.setFontSize(9);
       pdf.setTextColor(71, 85, 105);
       pdf.text('• 30-year retirement period  • 3% annual inflation  • 6% annual return', 20, currentY + 14);
-      
       currentY += 25;
-      
+
       // Advisor Contact Section
       pdf.setFillColor(240, 253, 250); // emerald-50
       pdf.rect(15, currentY, pageWidth - 30, 28, 'F');
-      
       pdf.setFontSize(12);
       pdf.setTextColor(5, 150, 105);
       pdf.text('Your Financial Advisor', 20, currentY + 8);
-      
       pdf.setFontSize(10);
       pdf.setTextColor(51, 65, 85);
       pdf.text('Sarah Johnson, CFP® - Certified Financial Planner', 20, currentY + 16);
       pdf.text('Phone: (555) 123-4567  |  Email: advisor@financialplanning.com', 20, currentY + 22);
-      
+
       // Disclaimer at bottom
       const disclaimerY = 265;
       pdf.setFillColor(248, 250, 252); // slate-50
       pdf.rect(0, disclaimerY, pageWidth, 30, 'F');
-      
       pdf.setFontSize(7);
       pdf.setTextColor(100, 116, 139); // slate-500
-      pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, disclaimerY + 6, { align: 'center' });
-      
+      pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, disclaimerY + 6, {
+        align: 'center'
+      });
       const disclaimerText = 'This calculator is for educational purposes only and should not be considered personalized investment advice. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making investment decisions. All investments carry risk, including potential loss of principal.';
-      
       const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 20);
       pdf.text(lines, 10, disclaimerY + 12);
-      
+
       // Download the PDF
       pdf.save(`${firstName}_Retirement_Analysis.pdf`);
-      
       setIsDialogOpen(false);
       setFirstName("");
       setEmail("");
@@ -525,27 +484,20 @@ const Index = () => {
       behavior: 'smooth'
     });
   };
-
   const handleListenNow = async () => {
     console.log('=== Listen Now button clicked ===');
     console.log('About to load audio file...');
-    
+
     // Test multiple potential paths
-    const possiblePaths = [
-      '/retirement-podcast.mp3',
-      './retirement-podcast.mp3',
-      'retirement-podcast.mp3',
-      '/public/retirement-podcast.mp3'
-    ];
-    
+    const possiblePaths = ['/retirement-podcast.mp3', './retirement-podcast.mp3', 'retirement-podcast.mp3', '/public/retirement-podcast.mp3'];
     console.log('Testing possible file paths:', possiblePaths);
-    
     for (const path of possiblePaths) {
       try {
         console.log(`Testing path: ${path}`);
-        const response = await fetch(path, { method: 'HEAD' });
+        const response = await fetch(path, {
+          method: 'HEAD'
+        });
         console.log(`Path ${path} response:`, response.status);
-        
         if (response.ok) {
           console.log(`Found audio file at: ${path}`);
           audioPlayer.loadAudio(path);
@@ -555,12 +507,10 @@ const Index = () => {
         console.log(`Path ${path} failed:`, error);
       }
     }
-    
     console.error('No valid audio file found at any tested path');
     // If no file found, still try the default path and let the audio player handle the error
     audioPlayer.loadAudio('/retirement-podcast.mp3');
   };
-
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -576,12 +526,12 @@ const Index = () => {
         
         {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 opacity-20" style={{
-        backgroundImage: `
+          backgroundImage: `
             linear-gradient(rgba(15, 118, 110, 0.03) 1px, transparent 1px),
             linear-gradient(90deg, rgba(15, 118, 110, 0.03) 1px, transparent 1px)
           `,
-        backgroundSize: '60px 60px'
-      }}></div>
+          backgroundSize: '60px 60px'
+        }}></div>
         
         {/* Flowing lines */}
         <svg className="absolute inset-0 w-full h-full" viewBox="0 0 1000 1000" preserveAspectRatio="none">
@@ -652,14 +602,7 @@ const Index = () => {
                   </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input 
-                      id="savings" 
-                      type="text" 
-                      value={formatNumber(currentSavings)} 
-                      onChange={handleSavingsChange} 
-                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" 
-                      placeholder="500,000" 
-                    />
+                    <Input id="savings" type="text" value={formatNumber(currentSavings)} onChange={handleSavingsChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="500,000" />
                   </div>
                 </div>
                 
@@ -677,14 +620,7 @@ const Index = () => {
                   </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input 
-                      id="spending" 
-                      type="text" 
-                      value={formatNumber(monthlySpending)} 
-                      onChange={handleSpendingChange} 
-                      className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" 
-                      placeholder="3,000" 
-                    />
+                    <Input id="spending" type="text" value={formatNumber(monthlySpending)} onChange={handleSpendingChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="3,000" />
                   </div>
                 </div>
 
@@ -739,86 +675,65 @@ const Index = () => {
                 <div className="h-80 -mx-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={projectionData} margin={{
-                    top: 30,
-                    right: 30,
-                    left: 30,
-                    bottom: 50
-                  }}>
+                      top: 30,
+                      right: 30,
+                      left: 30,
+                      bottom: 50
+                    }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
-                      <XAxis 
-                        dataKey="year" 
-                        stroke="#64748b" 
-                        fontSize={12} 
-                        fontWeight={500} 
-                        tickMargin={20} 
-                        axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} 
-                        tickLine={{
-                          stroke: '#cbd5e1'
-                        }} 
-                        label={{
-                          value: 'Years in Retirement',
-                          position: 'insideBottom',
-                          offset: -30,
-                          style: {
-                            textAnchor: 'middle',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            fill: '#64748b'
-                          }
-                        }} 
-                        domain={[0, 30]} 
-                        type="number" 
-                        ticks={[0, 5, 10, 15, 20, 25, 30]}
-                      />
-                      <YAxis 
-                        stroke="#64748b" 
-                        fontSize={12} 
-                        fontWeight={500} 
-                        tickMargin={20} 
-                        axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} 
-                        tickLine={{
-                          stroke: '#cbd5e1'
-                        }} 
-                        tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} 
-                        label={{
-                          value: 'Remaining Balance',
-                          angle: -90,
-                          position: 'insideLeft',
-                          offset: -20,
-                          style: {
-                            textAnchor: 'middle',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            fill: '#64748b'
-                          }
-                        }} 
-                      />
+                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
+                        stroke: '#cbd5e1',
+                        strokeWidth: 1
+                      }} tickLine={{
+                        stroke: '#cbd5e1'
+                      }} label={{
+                        value: 'Years in Retirement',
+                        position: 'insideBottom',
+                        offset: -30,
+                        style: {
+                          textAnchor: 'middle',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          fill: '#64748b'
+                        }
+                      }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
+                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
+                        stroke: '#cbd5e1',
+                        strokeWidth: 1
+                      }} tickLine={{
+                        stroke: '#cbd5e1'
+                      }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                        value: 'Remaining Balance',
+                        angle: -90,
+                        position: 'insideLeft',
+                        offset: -20,
+                        style: {
+                          textAnchor: 'middle',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          fill: '#64748b'
+                        }
+                      }} />
                       <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '12px',
-                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                      fontSize: '14px',
-                      fontWeight: '500'
-                    }} cursor={{
-                      stroke: '#059669',
-                      strokeWidth: 1,
-                      strokeDasharray: '4 4'
-                    }} />
+                        backgroundColor: 'white',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                        fontSize: '14px',
+                        fontWeight: '500'
+                      }} cursor={{
+                        stroke: '#059669',
+                        strokeWidth: 1,
+                        strokeDasharray: '4 4'
+                      }} />
                       <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
-                      r: 6,
-                      fill: '#059669',
-                      stroke: '#ffffff',
-                      strokeWidth: 2
-                    }} style={{
-                      filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
-                    }} />
+                        r: 6,
+                        fill: '#059669',
+                        stroke: '#ffffff',
+                        strokeWidth: 2
+                      }} style={{
+                        filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                      }} />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -918,12 +833,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28"
-                      onClick={generateRetirementPlanningPDF}
-                    >
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={generateRetirementPlanningPDF}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1045,7 +955,7 @@ const Index = () => {
       <section id="contact-section" className="relative py-16 bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-800 mb-4">Contact Your Financial Advisor</h2>
+            <h2 className="text-3xl font-bold text-slate-800 mb-4">Contact Your Financial Professional</h2>
             <p className="text-lg text-slate-600">Ready to discuss your retirement planning? Get in touch today.</p>
           </div>
           
@@ -1116,23 +1026,7 @@ const Index = () => {
       </section>
 
       {/* Audio Player Component */}
-      <AudioPlayer
-        audioRef={audioPlayer.audioRef}
-        isPlaying={audioPlayer.isPlaying}
-        duration={audioPlayer.duration}
-        currentTime={audioPlayer.currentTime}
-        volume={audioPlayer.volume}
-        isVisible={audioPlayer.isVisible}
-        isMinimized={audioPlayer.isMinimized}
-        isLoading={audioPlayer.isLoading}
-        error={audioPlayer.error}
-        onTogglePlay={audioPlayer.togglePlay}
-        onSeek={audioPlayer.seek}
-        onVolumeChange={audioPlayer.changeVolume}
-        onClose={audioPlayer.closePlayer}
-        onToggleMinimize={audioPlayer.toggleMinimize}
-        onRetryLoad={audioPlayer.retryLoad}
-      />
+      <AudioPlayer audioRef={audioPlayer.audioRef} isPlaying={audioPlayer.isPlaying} duration={audioPlayer.duration} currentTime={audioPlayer.currentTime} volume={audioPlayer.volume} isVisible={audioPlayer.isVisible} isMinimized={audioPlayer.isMinimized} isLoading={audioPlayer.isLoading} error={audioPlayer.error} onTogglePlay={audioPlayer.togglePlay} onSeek={audioPlayer.seek} onVolumeChange={audioPlayer.changeVolume} onClose={audioPlayer.closePlayer} onToggleMinimize={audioPlayer.toggleMinimize} onRetryLoad={audioPlayer.retryLoad} />
     </div>
   </TooltipProvider>;
 };
