@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDflescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
 import jsPDF from 'jspdf';
@@ -103,12 +103,7 @@ const Index = () => {
     
     currentY = 50;
 
-    // Main heading
-    pdf.setTextColor(5, 150, 105);
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('The Need for Retirement Planning', margin, currentY);
-    currentY += 15;
+
 
     // Body text
     pdf.setTextColor(51, 65, 85);
@@ -132,13 +127,13 @@ const Index = () => {
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Longer Lives', margin, currentY);
-    currentY += 12;
+    currentY += 8;
 
     const longerLivesText = "The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years.";
     
     pdf.setTextColor(51, 65, 85);
     currentY += addWrappedText(longerLivesText, margin, currentY, contentWidth);
-    currentY += 15;
+    currentY += 10;
 
     // Check if we need a new page
     if (currentY > pageHeight - 50) {
@@ -151,7 +146,7 @@ const Index = () => {
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Common Retirement Planning Issues', margin, currentY);
-    currentY += 12;
+    currentY += 8;
 
     const issuesIntro = "Planning for a much longer life span involves addressing problems not faced by earlier generations. Some of the key issues include the following:";
     
@@ -219,7 +214,7 @@ const Index = () => {
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text('Seek Professional Guidance', margin, currentY);
-    currentY += 12;
+    currentY += 8;
 
     const guidanceText = "Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.";
     
