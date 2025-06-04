@@ -1,6 +1,4 @@
-
 import { useState, useRef, useEffect } from 'react';
-import { showLoadingToast } from '@/components/LoadingToast';
 
 export const useAudioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -30,8 +28,7 @@ export const useAudioPlayer = () => {
     console.log('=== Starting audio load process ===');
     console.log('Loading audio from:', src);
     
-    // Show immediate feedback
-    showLoadingToast();
+    // Show immediate feedback - removed loading toast
     setIsVisible(true);
     setIsLoading(true);
     setError(null);
@@ -109,23 +106,52 @@ export const useAudioPlayer = () => {
     console.log('Seeking to time:', time);
     console.log('Current audio time:', audioRef.current?.currentTime);
     console.log('Audio duration:', audioRef.current?.duration);
+    console.log('Audio readyState:', audioRef.current?.readyState);
     
-    if (audioRef.current && !isNaN(time) && time >= 0) {
+    if (audioRef.current && !isNaN(time) && time >= 0 && audioRef.current.duration) {
+      // Ensure we don't seek beyond the duration
+      const seekTime = Math.min(time, audioRef.current.duration);
+      
+      console.log('Setting isSeeking to true');
       setIsSeeking(true);
       
       try {
-        audioRef.current.currentTime = time;
-        setCurrentTime(time);
-        console.log('Successfully set currentTime to:', time);
+        // Pause audio during seek to prevent conflicts
+        const wasPlaying = !audioRef.current.paused;
+        if (wasPlaying) {
+          audioRef.current.pause();
+        }
+        
+        console.log('Setting currentTime to:', seekTime);
+        audioRef.current.currentTime = seekTime;
+        
         console.log('Audio currentTime after setting:', audioRef.current.currentTime);
+        
+        // Resume playing if it was playing before
+        if (wasPlaying) {
+          audioRef.current.play().catch(error => {
+            console.error('Error resuming playback after seek:', error);
+          });
+        }
+        
+        // Reset seeking flag after seeking is complete
+        setTimeout(() => {
+          console.log('Setting isSeeking to false');
+          setIsSeeking(false);
+          setCurrentTime(seekTime);
+        }, 200);
+        
       } catch (error) {
         console.error('Error seeking audio:', error);
+        setIsSeeking(false);
       }
-      
-      // Reset seeking flag after a short delay
-      setTimeout(() => setIsSeeking(false), 100);
     } else {
-      console.warn('Invalid seek time or no audio element:', { time, hasAudio: !!audioRef.current });
+      console.warn('Invalid seek conditions:', { 
+        time, 
+        hasAudio: !!audioRef.current, 
+        duration: audioRef.current?.duration,
+        readyState: audioRef.current?.readyState 
+      });
     }
   };
 
