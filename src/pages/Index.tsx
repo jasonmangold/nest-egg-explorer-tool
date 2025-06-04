@@ -125,7 +125,7 @@ const Index = () => {
     const bodyText3 = "This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.";
     
     currentY += addWrappedText(bodyText3, margin, currentY, contentWidth);
-    currentY += 15;
+    currentY += 10;
 
     // Subheading: Longer Lives
     pdf.setTextColor(5, 150, 105);
