@@ -104,12 +104,7 @@ const Index = () => {
     
     currentY = 50;
 
-    // Main heading
-    pdf.setTextColor(5, 150, 105);
-    pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('The Need for Retirement Planning', margin, currentY);
-    currentY += 15;
+
 
     // Body text
     pdf.setTextColor(51, 65, 85);
