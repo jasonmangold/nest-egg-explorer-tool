@@ -526,8 +526,38 @@ const Index = () => {
     });
   };
 
-  const handleListenNow = () => {
-    console.log('Listen Now clicked - loading audio');
+  const handleListenNow = async () => {
+    console.log('=== Listen Now button clicked ===');
+    console.log('About to load audio file...');
+    
+    // Test multiple potential paths
+    const possiblePaths = [
+      '/retirement-podcast.mp3',
+      './retirement-podcast.mp3',
+      'retirement-podcast.mp3',
+      '/public/retirement-podcast.mp3'
+    ];
+    
+    console.log('Testing possible file paths:', possiblePaths);
+    
+    for (const path of possiblePaths) {
+      try {
+        console.log(`Testing path: ${path}`);
+        const response = await fetch(path, { method: 'HEAD' });
+        console.log(`Path ${path} response:`, response.status);
+        
+        if (response.ok) {
+          console.log(`Found audio file at: ${path}`);
+          audioPlayer.loadAudio(path);
+          return;
+        }
+      } catch (error) {
+        console.log(`Path ${path} failed:`, error);
+      }
+    }
+    
+    console.error('No valid audio file found at any tested path');
+    // If no file found, still try the default path and let the audio player handle the error
     audioPlayer.loadAudio('/retirement-podcast.mp3');
   };
 

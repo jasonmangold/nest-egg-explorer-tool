@@ -12,36 +12,89 @@ export const useAudioPlayer = () => {
   const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const loadAudio = (src: string) => {
+  const checkFileExists = async (url: string): Promise<boolean> => {
+    try {
+      console.log('Checking if file exists:', url);
+      const response = await fetch(url, { method: 'HEAD' });
+      console.log('File check response:', response.status, response.statusText);
+      return response.ok;
+    } catch (error) {
+      console.error('Error checking file existence:', error);
+      return false;
+    }
+  };
+
+  const loadAudio = async (src: string) => {
+    console.log('=== Starting audio load process ===');
     console.log('Loading audio from:', src);
     setError(null);
     setIsLoading(true);
     
+    // First check if file exists
+    const fileExists = await checkFileExists(src);
+    if (!fileExists) {
+      console.error('Audio file does not exist or is not accessible:', src);
+      setError('Audio file not found. Please check if the file exists.');
+      setIsLoading(false);
+      return;
+    }
+    
+    console.log('File exists, proceeding with audio load...');
+    
     if (audioRef.current) {
+      console.log('Audio element found, setting src...');
       audioRef.current.src = src;
       setIsVisible(true);
       setIsMinimized(false);
       
       // Try to load the audio
+      console.log('Calling audio.load()...');
       audioRef.current.load();
+    } else {
+      console.error('Audio element not found!');
+      setError('Audio player not initialized properly');
+      setIsLoading(false);
     }
   };
 
   const togglePlay = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      console.error('No audio element available for playback');
+      return;
+    }
+    
+    console.log('=== Toggle play called ===');
+    console.log('Current playing state:', isPlaying);
+    console.log('Audio element src:', audioRef.current.src);
+    console.log('Audio element readyState:', audioRef.current.readyState);
+    console.log('Audio element duration:', audioRef.current.duration);
     
     try {
       if (isPlaying) {
+        console.log('Pausing audio...');
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
         console.log('Attempting to play audio...');
-        await audioRef.current.play();
+        console.log('Audio element networkState:', audioRef.current.networkState);
+        
+        if (audioRef.current.readyState === 0) {
+          console.log('Audio not ready, trying to load first...');
+          audioRef.current.load();
+          // Wait a bit for loading to start
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+        const playPromise = audioRef.current.play();
+        console.log('Play promise created:', playPromise);
+        
+        await playPromise;
+        console.log('Audio play successful!');
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error('Error playing audio:', error);
-      setError('Failed to play audio. Please try again.');
+      console.error('Error during audio playback:', error);
+      setError(`Failed to play audio: ${error.message}`);
       setIsPlaying(false);
     }
   };
@@ -61,6 +114,7 @@ export const useAudioPlayer = () => {
   };
 
   const closePlayer = () => {
+    console.log('Closing audio player...');
     if (audioRef.current) {
       audioRef.current.pause();
       setIsPlaying(false);
@@ -88,10 +142,15 @@ export const useAudioPlayer = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateTime = () => {
+      console.log('Time update:', audio.currentTime);
+      setCurrentTime(audio.currentTime);
+    };
     
     const updateDuration = () => {
-      console.log('Audio metadata loaded, duration:', audio.duration);
+      console.log('=== Audio metadata loaded ===');
+      console.log('Duration:', audio.duration);
+      console.log('Ready state:', audio.readyState);
       setDuration(audio.duration);
       setIsLoading(false);
     };
@@ -102,11 +161,16 @@ export const useAudioPlayer = () => {
     };
     
     const handleError = (e: Event) => {
-      console.error('Audio error:', e);
+      console.error('=== Audio error event ===', e);
       const target = e.target as HTMLAudioElement;
       let errorMessage = 'Unknown audio error';
       
       if (target.error) {
+        console.error('Audio error details:', {
+          code: target.error.code,
+          message: target.error.message
+        });
+        
         switch (target.error.code) {
           case target.error.MEDIA_ERR_ABORTED:
             errorMessage = 'Audio playback was aborted';
@@ -129,17 +193,38 @@ export const useAudioPlayer = () => {
     };
     
     const handleLoadStart = () => {
-      console.log('Audio load started');
+      console.log('=== Audio load started ===');
       setIsLoading(true);
     };
     
     const handleCanPlay = () => {
-      console.log('Audio can start playing');
+      console.log('=== Audio can start playing ===');
+      console.log('Ready state:', audio.readyState);
+      console.log('Duration:', audio.duration);
       setIsLoading(false);
     };
     
     const handleLoadedData = () => {
-      console.log('Audio data loaded');
+      console.log('=== Audio data loaded ===');
+      console.log('Ready state:', audio.readyState);
+    };
+
+    const handleProgress = () => {
+      if (audio.buffered.length > 0) {
+        console.log('Audio buffering progress:', {
+          bufferedStart: audio.buffered.start(0),
+          bufferedEnd: audio.buffered.end(0),
+          duration: audio.duration
+        });
+      }
+    };
+
+    const handleSuspend = () => {
+      console.log('Audio loading suspended');
+    };
+
+    const handleStalled = () => {
+      console.log('Audio loading stalled');
     };
 
     audio.addEventListener('timeupdate', updateTime);
@@ -149,6 +234,9 @@ export const useAudioPlayer = () => {
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('loadeddata', handleLoadedData);
+    audio.addEventListener('progress', handleProgress);
+    audio.addEventListener('suspend', handleSuspend);
+    audio.addEventListener('stalled', handleStalled);
 
     return () => {
       audio.removeEventListener('timeupdate', updateTime);
@@ -158,6 +246,9 @@ export const useAudioPlayer = () => {
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('loadeddata', handleLoadedData);
+      audio.removeEventListener('progress', handleProgress);
+      audio.removeEventListener('suspend', handleSuspend);
+      audio.removeEventListener('stalled', handleStalled);
     };
   }, []);
 
