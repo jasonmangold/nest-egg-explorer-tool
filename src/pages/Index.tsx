@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
 import jsPDF from 'jspdf';
+import AudioPlayer from '@/components/AudioPlayer';
+import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
@@ -16,6 +17,9 @@ const Index = () => {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  // Audio player hook
+  const audioPlayer = useAudioPlayer();
 
   // Format number with commas
   const formatNumber = (num: number) => {
@@ -521,6 +525,11 @@ const Index = () => {
       behavior: 'smooth'
     });
   };
+
+  const handleListenNow = () => {
+    audioPlayer.loadAudio('/retirement-podcast.mp4');
+  };
+
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -982,7 +991,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Podcast Section */}
+      {/* Podcast Section - Updated with new handleListenNow function */}
       <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-4xl">
           <Card className="bg-gradient-to-r from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl ring-1 ring-white/20">
@@ -991,7 +1000,7 @@ const Index = () => {
               <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
               <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
               <div className="flex justify-center">
-                <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={() => window.open('/retirement-podcast.mp4', '_blank')}>
+                <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={handleListenNow}>
                   <Headphones className="w-5 h-5 mr-2" />
                   Listen Now
                 </Button>
@@ -1074,6 +1083,22 @@ const Index = () => {
           </div>
         </div>
       </section>
+
+      {/* Audio Player Component */}
+      <AudioPlayer
+        audioRef={audioPlayer.audioRef}
+        isPlaying={audioPlayer.isPlaying}
+        duration={audioPlayer.duration}
+        currentTime={audioPlayer.currentTime}
+        volume={audioPlayer.volume}
+        isVisible={audioPlayer.isVisible}
+        isMinimized={audioPlayer.isMinimized}
+        onTogglePlay={audioPlayer.togglePlay}
+        onSeek={audioPlayer.seek}
+        onVolumeChange={audioPlayer.changeVolume}
+        onClose={audioPlayer.closePlayer}
+        onToggleMinimize={audioPlayer.toggleMinimize}
+      />
     </div>
   </TooltipProvider>;
 };
