@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 
 export const useAudioPlayer = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -11,6 +11,7 @@ export const useAudioPlayer = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSeeking, setIsSeeking] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const seekTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const checkFileExists = async (url: string): Promise<boolean> => {
     try {
@@ -101,59 +102,76 @@ export const useAudioPlayer = () => {
     }
   };
 
-  const seek = (time: number) => {
+  const seek = useCallback((time: number) => {
     console.log('=== Seek function called ===');
     console.log('Seeking to time:', time);
-    console.log('Current audio time:', audioRef.current?.currentTime);
-    console.log('Audio duration:', audioRef.current?.duration);
-    console.log('Audio readyState:', audioRef.current?.readyState);
     
-    if (audioRef.current && !isNaN(time) && time >= 0 && audioRef.current.duration) {
-      // Ensure we don't seek beyond the duration
-      const seekTime = Math.min(time, audioRef.current.duration);
-      
-      console.log('Setting isSeeking to true');
-      setIsSeeking(true);
-      
-      try {
-        // Pause audio during seek to prevent conflicts
-        const wasPlaying = !audioRef.current.paused;
-        if (wasPlaying) {
-          audioRef.current.pause();
-        }
-        
-        console.log('Setting currentTime to:', seekTime);
-        audioRef.current.currentTime = seekTime;
-        
-        console.log('Audio currentTime after setting:', audioRef.current.currentTime);
-        
-        // Resume playing if it was playing before
-        if (wasPlaying) {
-          audioRef.current.play().catch(error => {
-            console.error('Error resuming playback after seek:', error);
-          });
-        }
-        
-        // Reset seeking flag after seeking is complete
-        setTimeout(() => {
-          console.log('Setting isSeeking to false');
-          setIsSeeking(false);
-          setCurrentTime(seekTime);
-        }, 200);
-        
-      } catch (error) {
-        console.error('Error seeking audio:', error);
-        setIsSeeking(false);
-      }
-    } else {
+    if (!audioRef.current || isNaN(time) || time < 0 || !audioRef.current.duration) {
       console.warn('Invalid seek conditions:', { 
         time, 
         hasAudio: !!audioRef.current, 
         duration: audioRef.current?.duration,
         readyState: audioRef.current?.readyState 
       });
+      return;
     }
-  };
+
+    // Clear any existing seek timeout
+    if (seekTimeoutRef.current) {
+      clearTimeout(seekTimeoutRef.current);
+    }
+
+    // Check if the position is within buffered ranges
+    const audio = audioRef.current;
+    const seekTime = Math.min(time, audio.duration);
+    
+    console.log('Current audio time:', audio.currentTime);
+    console.log('Audio duration:', audio.duration);
+    console.log('Audio readyState:', audio.readyState);
+    console.log('Buffered ranges:', audio.buffered.length);
+    
+    // Check if the seek position is buffered
+    let isBuffered = false;
+    for (let i = 0; i < audio.buffered.length; i++) {
+      const start = audio.buffered.start(i);
+      const end = audio.buffered.end(i);
+      console.log(`Buffered range ${i}: ${start} - ${end}`);
+      if (seekTime >= start && seekTime <= end) {
+        isBuffered = true;
+        break;
+      }
+    }
+    
+    console.log('Seek position buffered:', isBuffered);
+    
+    // Set seeking state immediately for UI feedback
+    setIsSeeking(true);
+    
+    // Debounce the actual seek operation
+    seekTimeoutRef.current = setTimeout(() => {
+      try {
+        console.log('Executing debounced seek to:', seekTime);
+        
+        // Only seek if audio is ready and position is valid
+        if (audio.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+          audio.currentTime = seekTime;
+          console.log('Audio currentTime after setting:', audio.currentTime);
+          
+          // Update state immediately
+          setCurrentTime(seekTime);
+        } else {
+          console.warn('Audio not ready for seeking, readyState:', audio.readyState);
+        }
+        
+      } catch (error) {
+        console.error('Error during seek operation:', error);
+      } finally {
+        // Reset seeking state
+        setIsSeeking(false);
+      }
+    }, 150); // 150ms debounce
+    
+  }, []);
 
   const changeVolume = (newVolume: number) => {
     if (audioRef.current) {
@@ -301,6 +319,11 @@ export const useAudioPlayer = () => {
       audio.removeEventListener('progress', handleProgress);
       audio.removeEventListener('suspend', handleSuspend);
       audio.removeEventListener('stalled', handleStalled);
+      
+      // Clean up timeout on unmount
+      if (seekTimeoutRef.current) {
+        clearTimeout(seekTimeoutRef.current);
+      }
     };
   }, [isSeeking]);
 
