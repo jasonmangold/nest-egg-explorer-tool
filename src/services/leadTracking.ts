@@ -128,12 +128,12 @@ class LeadTracker {
 
   private handleVisibilityChange() {
     if (document.hidden) {
-      this.sendToDashboard();
+      this.sendToDatabase();
     }
   }
 
   private handleBeforeUnload() {
-    this.sendToDashboard();
+    this.sendToDatabase();
   }
 
   // Public methods for tracking specific interactions
@@ -276,40 +276,33 @@ class LeadTracker {
   }
 
   private async sendToDatabase() {
-    try {
-      const payload = this.createDashboardPayload();
-      console.log('Sending to dashboard:', payload);
-      
-      const response = await fetch('https://preview--nest-egg-insight-hub.lovable.app/api/leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        mode: 'cors'
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      console.log('Lead data sent successfully to dashboard');
-    } catch (error) {
-      console.error('Failed to send lead data to dashboard:', error);
-      // Store in localStorage as backup
-      localStorage.setItem(`leadData_${this.leadData.sessionId}`, JSON.stringify(this.createDashboardPayload()));
-    }
-  }
-
-  sendToDatabase() {
-    this.sendToDatabase();
-  }
-
-  private sendToDatabase() {
     if (this.leadData.calculatedScore >= this.scoreThresholds.warm || 
         this.leadData.interactions.pdfRequested || 
         this.leadData.interactions.contactFormSubmitted) {
-      this.sendToDatabase();
+      
+      try {
+        const payload = this.createDashboardPayload();
+        console.log('Sending to dashboard:', payload);
+        
+        const response = await fetch('https://preview--nest-egg-insight-hub.lovable.app/api/leads', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+          mode: 'cors'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        console.log('Lead data sent successfully to dashboard');
+      } catch (error) {
+        console.error('Failed to send lead data to dashboard:', error);
+        // Store in localStorage as backup
+        localStorage.setItem(`leadData_${this.leadData.sessionId}`, JSON.stringify(this.createDashboardPayload()));
+      }
     }
   }
 
