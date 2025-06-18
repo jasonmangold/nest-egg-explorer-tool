@@ -1,3 +1,4 @@
+
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -63,7 +64,7 @@ class LeadTracker {
   private scoreDebounceDelay: number = 5000; // 5 seconds
   private scoreThresholds = {
     premium: 80,
-    hot: 60,
+    hot: 70,
     warm: 40
   };
 
@@ -201,26 +202,21 @@ class LeadTracker {
     console.log('Educational content click tracked');
   }
 
+  // Enhanced scoring algorithm based on your provided code
   private calculateScore() {
     let score = 0;
     const interactions = this.leadData.interactions;
 
-    // Time on page scoring (0-20 points)
-    if (interactions.timeOnPage > 600) score += 20; // 10+ minutes
-    else if (interactions.timeOnPage > 300) score += 15; // 5-10 minutes  
-    else if (interactions.timeOnPage > 120) score += 10; // 2-5 minutes
-    else if (interactions.timeOnPage > 30) score += 5; // 30sec-2min
+    // Time on page scoring (0-25 points) - enhanced algorithm
+    if (interactions.timeOnPage > 300) score += 25; // 5+ minutes
+    else if (interactions.timeOnPage > 180) score += 15; // 3-5 minutes  
+    else if (interactions.timeOnPage > 60) score += 10; // 1-3 minutes
 
-    // Scroll depth scoring (0-15 points)
-    if (interactions.scrollPercentage >= 100) score += 15;
-    else if (interactions.scrollPercentage >= 75) score += 12;
-    else if (interactions.scrollPercentage >= 50) score += 8;
-    else if (interactions.scrollPercentage >= 25) score += 5;
+    // Scroll depth scoring (0-15 points) - enhanced algorithm
+    score += Math.min(15, interactions.scrollPercentage * 0.15);
 
-    // Calculator usage (5-25 points)
-    if (interactions.calculatorUsage >= 5) score += 25;
-    else if (interactions.calculatorUsage >= 3) score += 20;
-    else if (interactions.calculatorUsage >= 1) score += 15;
+    // Calculator interactions (0-20 points) - enhanced algorithm
+    score += Math.min(20, interactions.calculatorUsage * 4);
 
     // Podcast engagement (0-25 points)
     if (interactions.podcastListenTime > 300) score += 25; // 5+ minutes
@@ -229,8 +225,8 @@ class LeadTracker {
     else if (interactions.podcastListenTime > 0) score += 5; // Any play
 
     // High-value actions
-    if (interactions.pdfRequested) score += 30;
-    if (interactions.contactFormSubmitted) score += 25;
+    if (interactions.pdfRequested) score += 15; // PDF download
+    if (interactions.contactFormSubmitted) score += 25; // Contact form
 
     // Engagement indicators
     score += Math.min(interactions.tooltipInteractions * 2, 10); // Up to 10 points
@@ -239,6 +235,9 @@ class LeadTracker {
     // Input quality bonus
     if (this.leadData.userInputs.currentSavings && this.leadData.userInputs.currentSavings > 0) score += 10;
     if (this.leadData.userInputs.monthlySpending && this.leadData.userInputs.monthlySpending > 0) score += 10;
+
+    // Cap at 100
+    score = Math.min(100, Math.round(score));
 
     const oldScore = this.leadData.calculatedScore;
     this.leadData.calculatedScore = score;
@@ -250,9 +249,12 @@ class LeadTracker {
     }
   }
 
+  // Enhanced lead quality determination based on your provided code
   private determineLeadQuality(score: number): 'Cold' | 'Warm' | 'Hot' | 'Premium' {
-    if (score >= this.scoreThresholds.premium) return 'Premium';
-    if (score >= this.scoreThresholds.hot) return 'Hot';
+    const hasContact = !!(this.leadData.userInputs.firstName && this.leadData.userInputs.email);
+    
+    if (hasContact && score >= this.scoreThresholds.premium) return 'Premium';
+    if (score >= this.scoreThresholds.hot || hasContact) return 'Hot';
     if (score >= this.scoreThresholds.warm) return 'Warm';
     return 'Cold';
   }
