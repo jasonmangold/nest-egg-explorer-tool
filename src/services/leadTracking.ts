@@ -55,13 +55,69 @@ export interface DashboardPayload {
   };
 }
 
+// Function to calculate lead score based on user behavior (your exact implementation)
+function calculateLeadScore(metrics: any) {
+  let score = 0;
+  
+  // Time on page scoring (0-25 points)
+  if (metrics.timeOnPage > 300) score += 25;
+  else if (metrics.timeOnPage > 180) score += 15;
+  else if (metrics.timeOnPage > 60) score += 10;
+  
+  // Scroll depth scoring (0-15 points)
+  score += Math.min(15, metrics.scrollDepth * 0.15);
+  
+  // Calculator interactions (0-20 points)
+  score += Math.min(20, metrics.calculatorInteractions * 4);
+  
+  // PDF download (15 points)
+  if (metrics.pdfDownloaded) score += 15;
+  
+  // Contact attempt (25 points)
+  if (metrics.contactAttempted) score += 25;
+  
+  return Math.min(100, Math.round(score));
+}
+
+// Function to determine lead quality (your exact implementation)
+function determineLeadQuality(score: number, hasContact: boolean, financialProfile?: any) {
+  if (hasContact && score >= 80) return 'Premium';
+  if (score >= 70 || hasContact) return 'Hot';
+  if (score >= 40) return 'Warm';
+  return 'Cold';
+}
+
+// Function to submit lead data (updated to use the correct endpoint)
+async function submitLeadData(leadData: any) {
+  try {
+    const response = await fetch('https://preview--nest-egg-insight-hub.lovable.app/api/leads', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(leadData),
+      mode: 'cors'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    console.log('Lead data submitted successfully');
+  } catch (error) {
+    console.error('Error submitting lead data:', error);
+    // Store in localStorage as backup
+    localStorage.setItem(`leadData_${Date.now()}`, JSON.stringify(leadData));
+  }
+}
+
 class LeadTracker {
   private leadData: LeadData;
   private startTime: number;
   private lastScrollPosition: number = 0;
   private maxScrollPercentage: number = 0;
   private lastScoreCalculation: number = 0;
-  private scoreDebounceDelay: number = 5000; // 5 seconds
+  private scoreDebounceDelay: number = 2000; // Reduced to 2 seconds for more frequent updates
   private scoreThresholds = {
     premium: 80,
     hot: 70,
@@ -100,11 +156,11 @@ class LeadTracker {
   }
 
   private initializeTracking() {
-    // Track time on page - reduced frequency
+    // Track time on page - more frequent updates
     setInterval(() => {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
       this.debouncedCalculateScore();
-    }, 10000); // Every 10 seconds instead of 1 second
+    }, 5000); // Every 5 seconds
 
     // Track scroll depth
     window.addEventListener('scroll', this.handleScroll.bind(this));
@@ -114,6 +170,9 @@ class LeadTracker {
 
     // Track before unload
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
+
+    // Submit after 30 seconds (as per your code)
+    setTimeout(() => this.onUserInteraction(), 30000);
   }
 
   private handleScroll() {
@@ -130,12 +189,12 @@ class LeadTracker {
 
   private handleVisibilityChange() {
     if (document.hidden) {
-      this.sendToDatabase();
+      this.onUserInteraction();
     }
   }
 
   private handleBeforeUnload() {
-    this.sendToDatabase();
+    this.onUserInteraction();
   }
 
   // Debounced score calculation to prevent excessive updates
@@ -179,14 +238,14 @@ class LeadTracker {
     this.leadData.userInputs.email = email;
     this.leadData.interactions.pdfRequested = true;
     this.calculateScore();
-    this.sendToDatabase();
+    this.onUserInteraction();
     console.log('PDF request tracked:', firstName, email);
   }
 
   trackContactFormSubmission() {
     this.leadData.interactions.contactFormSubmitted = true;
     this.calculateScore();
-    this.sendToDatabase();
+    this.onUserInteraction();
     console.log('Contact form submission tracked');
   }
 
@@ -202,61 +261,37 @@ class LeadTracker {
     console.log('Educational content click tracked');
   }
 
-  // Enhanced scoring algorithm based on your provided code
+  // Use your exact scoring algorithm
   private calculateScore() {
-    let score = 0;
-    const interactions = this.leadData.interactions;
-
-    // Time on page scoring (0-25 points) - enhanced algorithm
-    if (interactions.timeOnPage > 300) score += 25; // 5+ minutes
-    else if (interactions.timeOnPage > 180) score += 15; // 3-5 minutes  
-    else if (interactions.timeOnPage > 60) score += 10; // 1-3 minutes
-
-    // Scroll depth scoring (0-15 points) - enhanced algorithm
-    score += Math.min(15, interactions.scrollPercentage * 0.15);
-
-    // Calculator interactions (0-20 points) - enhanced algorithm
-    score += Math.min(20, interactions.calculatorUsage * 4);
-
-    // Podcast engagement (0-25 points)
-    if (interactions.podcastListenTime > 300) score += 25; // 5+ minutes
-    else if (interactions.podcastListenTime > 120) score += 15; // 2-5 minutes
-    else if (interactions.podcastListenTime > 30) score += 10; // 30sec-2min
-    else if (interactions.podcastListenTime > 0) score += 5; // Any play
-
-    // High-value actions
-    if (interactions.pdfRequested) score += 15; // PDF download
-    if (interactions.contactFormSubmitted) score += 25; // Contact form
-
-    // Engagement indicators
-    score += Math.min(interactions.tooltipInteractions * 2, 10); // Up to 10 points
-    score += Math.min(interactions.educationalContentClicks * 3, 15); // Up to 15 points
-
-    // Input quality bonus
-    if (this.leadData.userInputs.currentSavings && this.leadData.userInputs.currentSavings > 0) score += 10;
-    if (this.leadData.userInputs.monthlySpending && this.leadData.userInputs.monthlySpending > 0) score += 10;
-
-    // Cap at 100
-    score = Math.min(100, Math.round(score));
+    const metrics = {
+      timeOnPage: this.leadData.interactions.timeOnPage,
+      scrollDepth: this.leadData.interactions.scrollPercentage,
+      calculatorInteractions: this.leadData.interactions.calculatorUsage,
+      pdfDownloaded: this.leadData.interactions.pdfRequested,
+      contactAttempted: this.leadData.interactions.contactFormSubmitted
+    };
 
     const oldScore = this.leadData.calculatedScore;
-    this.leadData.calculatedScore = score;
-    this.leadData.leadQuality = this.determineLeadQuality(score);
+    this.leadData.calculatedScore = calculateLeadScore(metrics);
+    
+    const hasContact = !!(this.leadData.userInputs.firstName && this.leadData.userInputs.email);
+    this.leadData.leadQuality = determineLeadQuality(this.leadData.calculatedScore, hasContact) as 'Cold' | 'Warm' | 'Hot' | 'Premium';
 
     // Only log if score actually changed significantly
-    if (Math.abs(score - oldScore) >= 5) {
-      console.log('Lead score updated:', score, this.leadData.leadQuality);
+    if (Math.abs(this.leadData.calculatedScore - oldScore) >= 5) {
+      console.log('Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
     }
   }
 
-  // Enhanced lead quality determination based on your provided code
-  private determineLeadQuality(score: number): 'Cold' | 'Warm' | 'Hot' | 'Premium' {
-    const hasContact = !!(this.leadData.userInputs.firstName && this.leadData.userInputs.email);
-    
-    if (hasContact && score >= this.scoreThresholds.premium) return 'Premium';
-    if (score >= this.scoreThresholds.hot || hasContact) return 'Hot';
-    if (score >= this.scoreThresholds.warm) return 'Warm';
-    return 'Cold';
+  // Implementation of your onUserInteraction function
+  private onUserInteraction() {
+    if (this.leadData.calculatedScore >= this.scoreThresholds.warm || 
+        this.leadData.interactions.pdfRequested || 
+        this.leadData.interactions.contactFormSubmitted) {
+      
+      const payload = this.createDashboardPayload();
+      submitLeadData(payload);
+    }
   }
 
   private createDashboardPayload(): DashboardPayload {
@@ -268,8 +303,8 @@ class LeadTracker {
       quality: this.leadData.leadQuality,
       timestamp: new Date().toISOString(),
       pageMetrics: {
-        timeOnPage: this.leadData.interactions.timeOnPage,
-        scrollDepth: this.leadData.interactions.scrollPercentage,
+        timeOnPage: Math.round(this.leadData.interactions.timeOnPage),
+        scrollDepth: Math.round(this.leadData.interactions.scrollPercentage),
         bounced
       },
       financialProfile: {
@@ -289,37 +324,6 @@ class LeadTracker {
         email: this.leadData.userInputs.email
       } : undefined
     };
-  }
-
-  private async sendToDatabase() {
-    if (this.leadData.calculatedScore >= this.scoreThresholds.warm || 
-        this.leadData.interactions.pdfRequested || 
-        this.leadData.interactions.contactFormSubmitted) {
-      
-      try {
-        const payload = this.createDashboardPayload();
-        console.log('Sending to dashboard:', payload);
-        
-        const response = await fetch('https://preview--nest-egg-insight-hub.lovable.app/api/leads', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-          mode: 'cors'
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        console.log('Lead data sent successfully to dashboard');
-      } catch (error) {
-        console.error('Failed to send lead data to dashboard:', error);
-        // Store in localStorage as backup
-        localStorage.setItem(`leadData_${this.leadData.sessionId}`, JSON.stringify(this.createDashboardPayload()));
-      }
-    }
   }
 
   getLeadData(): LeadData {
