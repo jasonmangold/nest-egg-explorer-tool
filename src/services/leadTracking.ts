@@ -1,4 +1,3 @@
-
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -55,59 +54,77 @@ export interface DashboardPayload {
   };
 }
 
-// Function to calculate lead score based on user behavior (your exact implementation)
+// Function to calculate lead score based on user behavior (updated to match your algorithm)
 function calculateLeadScore(metrics: any) {
   let score = 0;
   
-  // Time on page scoring (0-25 points)
-  if (metrics.timeOnPage > 300) score += 25;
-  else if (metrics.timeOnPage > 180) score += 15;
-  else if (metrics.timeOnPage > 60) score += 10;
+  // Time on page scoring (0-15 points)
+  if (metrics.timeOnPage > 300) score += 15; // 5+ minutes
+  else if (metrics.timeOnPage > 120) score += 10; // 2+ minutes
+  else if (metrics.timeOnPage > 60) score += 5; // 1+ minute
   
-  // Scroll depth scoring (0-15 points)
-  score += Math.min(15, metrics.scrollDepth * 0.15);
+  // Scroll depth scoring (0-10 points)
+  if (metrics.scrollDepth > 80) score += 10;
+  else if (metrics.scrollDepth > 50) score += 5;
   
-  // Calculator interactions (0-20 points)
-  score += Math.min(20, metrics.calculatorInteractions * 4);
+  // Calculator interactions (0-15 points)
+  score += Math.min(15, metrics.calculatorInteractions * 3);
   
-  // PDF download (15 points)
-  if (metrics.pdfDownloaded) score += 15;
+  // PDF download (10 points)
+  if (metrics.pdfDownloaded) score += 10;
   
-  // Contact attempt (25 points)
-  if (metrics.contactAttempted) score += 25;
+  // Contact attempt (10 points)
+  if (metrics.contactAttempted) score += 10;
+  
+  // Financial profile scoring (40 points)
+  if (metrics.currentSavings > 200000) score += 15;
+  else if (metrics.currentSavings > 100000) score += 10;
+  else if (metrics.currentSavings > 50000) score += 5;
+  
+  if (metrics.monthlySpending < 4000) score += 10;
+  else if (metrics.monthlySpending < 6000) score += 5;
+  
+  if (metrics.retirementViability === 'Sustainable') score += 15;
+  else score += 5;
   
   return Math.min(100, Math.round(score));
 }
 
-// Function to determine lead quality (your exact implementation)
+// Function to determine lead quality (updated to match your algorithm)
 function determineLeadQuality(score: number, hasContact: boolean, financialProfile?: any) {
-  if (hasContact && score >= 80) return 'Premium';
-  if (score >= 70 || hasContact) return 'Hot';
+  if (score >= 80) return 'Premium';
+  if (score >= 60) return 'Hot';
   if (score >= 40) return 'Warm';
   return 'Cold';
 }
 
-// Function to submit lead data (updated to use the correct endpoint)
+// Function to submit lead data (updated to use your Supabase endpoint)
 async function submitLeadData(leadData: any) {
   try {
-    const response = await fetch('https://preview--nest-egg-insight-hub.lovable.app/api/leads', {
+    const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
       },
       body: JSON.stringify(leadData),
       mode: 'cors'
     });
     
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
     }
     
-    console.log('Lead data submitted successfully');
+    const result = await response.json();
+    console.log('✅ Lead data submitted successfully to Supabase:', result);
+    return result;
   } catch (error) {
-    console.error('Error submitting lead data:', error);
+    console.error('❌ Error submitting lead data to Supabase:', error);
     // Store in localStorage as backup
     localStorage.setItem(`leadData_${Date.now()}`, JSON.stringify(leadData));
+    throw error;
   }
 }
 
@@ -120,7 +137,7 @@ class LeadTracker {
   private scoreDebounceDelay: number = 2000; // Reduced to 2 seconds for more frequent updates
   private scoreThresholds = {
     premium: 80,
-    hot: 70,
+    hot: 60,
     warm: 40
   };
 
@@ -261,14 +278,17 @@ class LeadTracker {
     console.log('Educational content click tracked');
   }
 
-  // Use your exact scoring algorithm
+  // Updated score calculation to include financial profile data
   private calculateScore() {
     const metrics = {
       timeOnPage: this.leadData.interactions.timeOnPage,
       scrollDepth: this.leadData.interactions.scrollPercentage,
       calculatorInteractions: this.leadData.interactions.calculatorUsage,
       pdfDownloaded: this.leadData.interactions.pdfRequested,
-      contactAttempted: this.leadData.interactions.contactFormSubmitted
+      contactAttempted: this.leadData.interactions.contactFormSubmitted,
+      currentSavings: this.leadData.userInputs.currentSavings || 0,
+      monthlySpending: this.leadData.userInputs.monthlySpending || 0,
+      retirementViability: this.leadData.projectedResults.isMoneyLasting ? 'Sustainable' : 'Needs Adjustment'
     };
 
     const oldScore = this.leadData.calculatedScore;
@@ -279,7 +299,7 @@ class LeadTracker {
 
     // Only log if score actually changed significantly
     if (Math.abs(this.leadData.calculatedScore - oldScore) >= 5) {
-      console.log('Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
+      console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
     }
   }
 
