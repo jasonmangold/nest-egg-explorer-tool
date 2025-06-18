@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,8 @@ import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Do
 import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
+import { useLeadTracking } from '@/hooks/useLeadTracking';
+
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -19,6 +21,9 @@ const Index = () => {
 
   // Audio player hook
   const audioPlayer = useAudioPlayer();
+  
+  // Lead tracking hook
+  const leadTracking = useLeadTracking();
 
   // Format number with commas
   const formatNumber = (num: number) => {
@@ -30,14 +35,16 @@ const Index = () => {
     return parseInt(str.replace(/,/g, ''));
   };
 
-  // Handle input changes with formatting
+  // Handle input changes with formatting and tracking
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
+    leadTracking.trackCalculatorInput('savings', value);
   };
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setMonthlySpending(value);
+    leadTracking.trackCalculatorInput('spending', value);
   };
 
   // Calculate retirement projections
@@ -72,149 +79,154 @@ const Index = () => {
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings]);
+  
   const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
   const isMoneyLasting = yearsUntilEmpty >= 30;
-  const generateRetirementPlanningPDF = () => {
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const margin = 20;
-    const contentWidth = pageWidth - margin * 2;
-    let currentY = margin;
 
-    // Helper function to add text with word wrapping
-    const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 11, fontStyle: string = 'normal') => {
-      pdf.setFontSize(fontSize);
-      pdf.setFont('helvetica', fontStyle);
-      const lines = pdf.splitTextToSize(text, maxWidth);
-      pdf.text(lines, x, y);
-      return lines.length * (fontSize * 0.4) + 5; // Return height used
-    };
-
-    // Header with gradient effect
-    pdf.setFillColor(5, 150, 105);
-    pdf.rect(0, 0, pageWidth, 30, 'F');
-
-    // Title
-    pdf.setFontSize(22);
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('The Need for Retirement Planning', pageWidth / 2, 20, {
-      align: 'center'
-    });
-    currentY = 50;
-
-    // Body text
-    pdf.setTextColor(51, 65, 85);
-    const bodyText1 = "Traditionally, retirement in America has been defined in terms of its relationship to participation in the active work force. An individual would work full-time until a certain age, and then leave employment to spend a few years quietly rocking on the front porch. Declining health often made retirement short and unpleasant. Retirement planning, as such, typically focused on saving enough to guarantee minimal survival for a relatively brief period of time.";
-    currentY += addWrappedText(bodyText1, margin, currentY, contentWidth);
-    currentY += 5;
-    const bodyText2 = "More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favorite hobbies or sports.";
-    currentY += addWrappedText(bodyText2, margin, currentY, contentWidth);
-    currentY += 5;
-    const bodyText3 = "This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.";
-    currentY += addWrappedText(bodyText3, margin, currentY, contentWidth);
-    currentY += 10;
-
-    // Subheading: Longer Lives
-    pdf.setTextColor(5, 150, 105);
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Longer Lives', margin, currentY);
-    currentY += 8;
-    const longerLivesText = "The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years.";
-    pdf.setTextColor(51, 65, 85);
-    currentY += addWrappedText(longerLivesText, margin, currentY, contentWidth);
-    currentY += 10;
-
-    // Check if we need a new page
-    if (currentY > pageHeight - 50) {
-      pdf.addPage();
-      currentY = margin;
+  // Track projected results when they change
+  useEffect(() => {
+    if (currentSavings > 0 && monthlySpending > 0) {
+      leadTracking.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
     }
+  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, currentSavings, monthlySpending, leadTracking]);
 
-    // Subheading: Common Retirement Planning Issues
-    pdf.setTextColor(5, 150, 105);
-    pdf.setFontSize(14);
-    pdf.setFont('helvetica', 'bold');
-    pdf.text('Common Retirement Planning Issues', margin, currentY);
-    currentY += 8;
-    const issuesIntro = "Planning for a much longer life span involves addressing problems not faced by earlier generations. Some of the key issues include the following:";
-    pdf.setTextColor(51, 65, 85);
-    currentY += addWrappedText(issuesIntro, margin, currentY, contentWidth);
-    currentY += 10;
+  // Helper function to add text with word wrapping
+  const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 11, fontStyle: string = 'normal') => {
+    pdf.setFontSize(fontSize);
+    pdf.setFont('helvetica', fontStyle);
+    const lines = pdf.splitTextToSize(text, maxWidth);
+    pdf.text(lines, x, y);
+    return lines.length * (fontSize * 0.4) + 5; // Return height used
+  };
 
-    // Bullet points
-    const bulletPoints = [{
-      title: "Paying for retirement:",
-      text: "Providing a steady income is often the key problem involved in retirement planning. Longer life spans raise the issue of the impact of inflation on fixed dollar payments, as well as the possibility of outliving accumulated personal savings. Social Security retirement benefits and income from employer-sponsored retirement plans typically provide only a portion of the total income required. If income is insufficient, a retiree may be forced to either continue working, or face a reduced standard of living."
-    }, {
-      title: "Health care:",
-      text: "The health benefits provided through the federal government's Medicare program are generally considered to be only a foundation. Often a supplemental Medigap policy is needed, as is a long-term care policy, to provide needed benefits not available through Medicare. Health care planning should also consider a health care proxy, allowing someone else to make medical decisions when an individual is temporarily incapacitated, as well as a living will that expresses an individual's wishes when no hope of recovery is possible."
-    }, {
-      title: "Estate planning:",
-      text: "Retirement planning inevitably must consider what happens to an individual's assets after retirement is over. Estate planning should ensure not only that assets are transferred to the individuals or organizations chosen by the owner, but also that the transfer is done with the least amount of tax and administrative expense."
-    }, {
-      title: "Housing:",
-      text: "This question involves not only the size and type of home (condo, house, shared housing, assisted living), but also its location. Such factors as climate and proximity to close family members and medical care are often important. Completely paying off a home loan can reduce monthly income needs. A reverse mortgage may provide additional monthly income."
-    }, {
-      title: "Lifestyle:",
-      text: "Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier."
-    }];
-    bulletPoints.forEach(point => {
-      // Check if we need a new page
-      if (currentY > pageHeight - 80) {
-        pdf.addPage();
-        currentY = margin;
-      }
+  // Header with gradient effect
+  const pdf = new jsPDF();
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const margin = 20;
+  const contentWidth = pageWidth - margin * 2;
+  let currentY = margin;
 
-      // Bullet point
-      pdf.setFontSize(11);
-      pdf.setFont('helvetica', 'normal');
-      pdf.text('•', margin, currentY);
+  // Title
+  pdf.setFontSize(22);
+  pdf.setTextColor(255, 255, 255);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('The Need for Retirement Planning', pageWidth / 2, 20, {
+    align: 'center'
+  });
+  currentY = 50;
 
-      // Title in bold
-      pdf.setFont('helvetica', 'bold');
-      const titleLines = pdf.splitTextToSize(point.title, contentWidth - 10);
-      pdf.text(titleLines, margin + 10, currentY);
+  // Body text
+  pdf.setTextColor(51, 65, 85);
+  const bodyText1 = "Traditionally, retirement in America has been defined in terms of its relationship to participation in the active work force. An individual would work full-time until a certain age, and then leave employment to spend a few years quietly rocking on the front porch. Declining health often made retirement short and unpleasant. Retirement planning, as such, typically focused on saving enough to guarantee minimal survival for a relatively brief period of time.";
+  currentY += addWrappedText(bodyText1, margin, currentY, contentWidth);
+  currentY += 5;
+  const bodyText2 = "More recently, however, many individuals are beginning to recognize that for a number of reasons, this traditional view of retirement is no longer accurate. Some individuals, for example, are voluntarily choosing to retire early, in their 40s or 50s. Others, because they enjoy working, choose to remain employed well past the traditional retirement age of 65. And, many retirees do more than just rock on the front porch. Retirement is now often defined by activities such as travel, returning to school, volunteer work, or the pursuit of favorite hobbies or sports.";
+  currentY += addWrappedText(bodyText2, margin, currentY, contentWidth);
+  currentY += 5;
+  const bodyText3 = "This changed the face of retirement, however, with all of its possibilities, does not happen automatically. Many of the issues associated with retirement, such as ill health, and the need to provide income, still exist. With proper planning, however, these needs can be met.";
+  currentY += addWrappedText(bodyText3, margin, currentY, contentWidth);
+  currentY += 10;
 
-      // Text
-      pdf.setFont('helvetica', 'normal');
-      const textLines = pdf.splitTextToSize(point.text, contentWidth - 10);
-      currentY += titleLines.length * 4;
-      pdf.text(textLines, margin + 10, currentY);
-      currentY += textLines.length * 4 + 8;
-    });
+  // Subheading: Longer Lives
+  pdf.setTextColor(5, 150, 105);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Longer Lives', margin, currentY);
+  currentY += 8;
+  const longerLivesText = "The single most important factor in this changed retirement picture is the fact that we now live much longer than before. A child born in 1900, for example, had an average life expectancy of 47.3 years. For a child born in 2020, however, average life expectancy had increased to 77.0 years.";
+  pdf.setTextColor(51, 65, 85);
+  currentY += addWrappedText(longerLivesText, margin, currentY, contentWidth);
+  currentY += 10;
 
-    // Check if we need a new page for the final section
+  // Check if we need a new page
+  if (currentY > pageHeight - 50) {
+    pdf.addPage();
+    currentY = margin;
+  }
+
+  // Subheading: Common Retirement Planning Issues
+  pdf.setTextColor(5, 150, 105);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Common Retirement Planning Issues', margin, currentY);
+  currentY += 8;
+  const issuesIntro = "Planning for a much longer life span involves addressing problems not faced by earlier generations. Some of the key issues include the following:";
+  pdf.setTextColor(51, 65, 85);
+  currentY += addWrappedText(issuesIntro, margin, currentY, contentWidth);
+  currentY += 10;
+
+  // Bullet points
+  const bulletPoints = [{
+    title: "Paying for retirement:",
+    text: "Providing a steady income is often the key problem involved in retirement planning. Longer life spans raise the issue of the impact of inflation on fixed dollar payments, as well as the possibility of outliving accumulated personal savings. Social Security retirement benefits and income from employer-sponsored retirement plans typically provide only a portion of the total income required. If income is insufficient, a retiree may be forced to either continue working, or face a reduced standard of living."
+  }, {
+    title: "Health care:",
+    text: "The health benefits provided through the federal government's Medicare program are generally considered to be only a foundation. Often a supplemental Medigap policy is needed, as is a long-term care policy, to provide needed benefits not available through Medicare. Health care planning should also consider a health care proxy, allowing someone else to make medical decisions when an individual is temporarily incapacitated, as well as a living will that expresses an individual's wishes when no hope of recovery is possible."
+  }, {
+    title: "Estate planning:",
+    text: "Retirement planning inevitably must consider what happens to an individual's assets after retirement is over. Estate planning should ensure not only that assets are transferred to the individuals or organizations chosen by the owner, but also that the transfer is done with the least amount of tax and administrative expense."
+  }, {
+    title: "Housing:",
+    text: "This question involves not only the size and type of home (condo, house, shared housing, assisted living), but also its location. Such factors as climate and proximity to close family members and medical care are often important. Completely paying off a home loan can reduce monthly income needs. A reverse mortgage may provide additional monthly income."
+  }, {
+    title: "Lifestyle:",
+    text: "Some individuals, accustomed to a busy work life, find it difficult to enjoy the freedom offered by retirement. Planning ahead can make this transition easier."
+  }];
+  bulletPoints.forEach(point => {
+    // Check if we need a new page
     if (currentY > pageHeight - 80) {
       pdf.addPage();
       currentY = margin;
     }
 
-    // Final subheading: Seek Professional Guidance
-    pdf.setTextColor(5, 150, 105);
-    pdf.setFontSize(14);
+    // Bullet point
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'normal');
+    pdf.text('•', margin, currentY);
+
+    // Title in bold
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Seek Professional Guidance', margin, currentY);
-    currentY += 8;
-    const guidanceText = "Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.";
-    pdf.setTextColor(51, 65, 85);
-    currentY += addWrappedText(guidanceText, margin, currentY, contentWidth);
+    const titleLines = pdf.splitTextToSize(point.title, contentWidth - 10);
+    pdf.text(titleLines, margin + 10, currentY);
 
-    // Footer
-    const footerY = pageHeight - 15;
-    pdf.setFillColor(248, 250, 252);
-    pdf.rect(0, footerY - 5, pageWidth, 20, 'F');
-    pdf.setFontSize(8);
-    pdf.setTextColor(100, 116, 139);
-    pdf.text('This report is provided for educational purposes. Please consult with a qualified financial advisor for personalized advice.', pageWidth / 2, footerY, {
-      align: 'center'
-    });
+    // Text
+    pdf.setFont('helvetica', 'normal');
+    const textLines = pdf.splitTextToSize(point.text, contentWidth - 10);
+    currentY += titleLines.length * 4;
+    pdf.text(textLines, margin + 10, currentY);
+    currentY += textLines.length * 4 + 8;
+  });
 
-    // Download the PDF
-    pdf.save('The_Need_for_Retirement_Planning.pdf');
-  };
+  // Check if we need a new page for the final section
+  if (currentY > pageHeight - 80) {
+    pdf.addPage();
+    currentY = margin;
+  }
+
+  // Final subheading: Seek Professional Guidance
+  pdf.setTextColor(5, 150, 105);
+  pdf.setFontSize(14);
+  pdf.setFont('helvetica', 'bold');
+  pdf.text('Seek Professional Guidance', margin, currentY);
+  currentY += 8;
+  const guidanceText = "Developing a successful retirement plan involves carefully considering a wide range of issues and potential problems. Finding solutions to these questions often requires both personal education and the guidance of knowledgeable individuals, from many professional disciplines. The key is to begin planning as early as possible.";
+  pdf.setTextColor(51, 65, 85);
+  currentY += addWrappedText(guidanceText, margin, currentY, contentWidth);
+
+  // Footer
+  const footerY = pageHeight - 15;
+  pdf.setFillColor(248, 250, 252);
+  pdf.rect(0, footerY - 5, pageWidth, 20, 'F');
+  pdf.setFontSize(8);
+  pdf.setTextColor(100, 116, 139);
+  pdf.text('This report is provided for educational purposes. Please consult with a qualified financial advisor for personalized advice.', pageWidth / 2, footerY, {
+    align: 'center'
+  });
+
+  // Download the PDF
+  pdf.save('The_Need_for_Retirement_Planning.pdf');
+
   const generateGraphImage = (): Promise<string> => {
     return new Promise(resolve => {
       // Create a larger canvas for better PDF quality
@@ -350,8 +362,10 @@ const Index = () => {
       resolve(canvas.toDataURL('image/png', 1.0));
     });
   };
+
   const handleExportPDF = async () => {
     if (firstName && email) {
+      leadTracking.trackPDFRequest(firstName, email);
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
 
@@ -478,16 +492,19 @@ const Index = () => {
       setEmail("");
     }
   };
+
   const scrollToContact = () => {
+    leadTracking.trackContactFormSubmission();
     const contactSection = document.getElementById('contact-section');
     contactSection?.scrollIntoView({
       behavior: 'smooth'
     });
   };
+
   const handleListenNow = async () => {
     console.log('=== Listen Now button clicked ===');
-    console.log('About to load audio file...');
-
+    leadTracking.trackPodcastPlay();
+    
     // Test multiple potential paths
     const possiblePaths = ['/retirement-podcast.mp3', './retirement-podcast.mp3', 'retirement-podcast.mp3', '/public/retirement-podcast.mp3'];
     console.log('Testing possible file paths:', possiblePaths);
@@ -511,6 +528,17 @@ const Index = () => {
     // If no file found, still try the default path and let the audio player handle the error
     audioPlayer.loadAudio('/retirement-podcast.mp3');
   };
+
+  // Track tooltip interactions
+  const handleTooltipInteraction = () => {
+    leadTracking.trackTooltipInteraction();
+  };
+
+  // Track educational content clicks
+  const handleEducationalClick = () => {
+    leadTracking.trackEducationalContentClick();
+  };
+
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -592,7 +620,7 @@ const Index = () => {
                   <div className="flex items-center gap-2">
                     <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
                     <UITooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger onClick={handleTooltipInteraction}>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -610,7 +638,7 @@ const Index = () => {
                   <div className="flex items-center gap-2">
                     <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
                     <UITooltip>
-                      <TooltipTrigger>
+                      <TooltipTrigger onClick={handleTooltipInteraction}>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -799,7 +827,7 @@ const Index = () => {
                 <p className="text-emerald-100 mb-6">
                   Schedule a meeting with a financial professional to create a personalized retirement strategy.
                 </p>
-                <Button size="lg" variant="secondary" className="bg-white text-emerald-600 hover:bg-emerald-50">
+                <Button size="lg" variant="secondary" className="bg-white text-emerald-600 hover:bg-emerald-50" onClick={scrollToContact}>
                   Find a Time
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
@@ -833,7 +861,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={generateRetirementPlanningPDF}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -848,7 +876,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28">
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -863,7 +891,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28">
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -891,7 +919,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28">
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -906,7 +934,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28">
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -921,7 +949,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28">
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -932,7 +960,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Podcast Section - Updated with new handleListenNow function */}
+      {/* Podcast Section */}
       <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 max-w-4xl">
           <Card className="bg-gradient-to-r from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl ring-1 ring-white/20">
@@ -1025,8 +1053,34 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Audio Player Component */}
-      <AudioPlayer audioRef={audioPlayer.audioRef} isPlaying={audioPlayer.isPlaying} duration={audioPlayer.duration} currentTime={audioPlayer.currentTime} volume={audioPlayer.volume} isVisible={audioPlayer.isVisible} isMinimized={audioPlayer.isMinimized} isLoading={audioPlayer.isLoading} error={audioPlayer.error} onTogglePlay={audioPlayer.togglePlay} onSeek={audioPlayer.seek} onVolumeChange={audioPlayer.changeVolume} onClose={audioPlayer.closePlayer} onToggleMinimize={audioPlayer.toggleMinimize} onRetryLoad={audioPlayer.retryLoad} />
+      {/* Audio Player Component with tracking */}
+      <AudioPlayer 
+        audioRef={audioPlayer.audioRef} 
+        isPlaying={audioPlayer.isPlaying} 
+        duration={audioPlayer.duration} 
+        currentTime={audioPlayer.currentTime} 
+        volume={audioPlayer.volume} 
+        isVisible={audioPlayer.isVisible} 
+        isMinimized={audioPlayer.isMinimized} 
+        isLoading={audioPlayer.isLoading} 
+        error={audioPlayer.error} 
+        onTogglePlay={() => {
+          if (audioPlayer.isPlaying) {
+            leadTracking.trackPodcastPause();
+          } else {
+            leadTracking.trackPodcastPlay();
+          }
+          audioPlayer.togglePlay();
+        }}
+        onSeek={audioPlayer.seek} 
+        onVolumeChange={audioPlayer.changeVolume} 
+        onClose={() => {
+          leadTracking.trackPodcastPause();
+          audioPlayer.closePlayer();
+        }}
+        onToggleMinimize={audioPlayer.toggleMinimize} 
+        onRetryLoad={audioPlayer.retryLoad} 
+      />
     </div>
   </TooltipProvider>;
 };
