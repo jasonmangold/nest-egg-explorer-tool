@@ -1,4 +1,3 @@
-
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -60,6 +59,8 @@ class LeadTracker {
   private startTime: number;
   private lastScrollPosition: number = 0;
   private maxScrollPercentage: number = 0;
+  private lastScoreCalculation: number = 0;
+  private scoreDebounceDelay: number = 5000; // 5 seconds
   private scoreThresholds = {
     premium: 80,
     hot: 60,
@@ -98,11 +99,11 @@ class LeadTracker {
   }
 
   private initializeTracking() {
-    // Track time on page
+    // Track time on page - reduced frequency
     setInterval(() => {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
-      this.calculateScore();
-    }, 1000);
+      this.debouncedCalculateScore();
+    }, 10000); // Every 10 seconds instead of 1 second
 
     // Track scroll depth
     window.addEventListener('scroll', this.handleScroll.bind(this));
@@ -122,7 +123,7 @@ class LeadTracker {
     if (scrollPercentage > this.maxScrollPercentage) {
       this.maxScrollPercentage = scrollPercentage;
       this.leadData.interactions.scrollPercentage = this.maxScrollPercentage;
-      this.calculateScore();
+      this.debouncedCalculateScore();
     }
   }
 
@@ -136,6 +137,15 @@ class LeadTracker {
     this.sendToDatabase();
   }
 
+  // Debounced score calculation to prevent excessive updates
+  private debouncedCalculateScore() {
+    const now = Date.now();
+    if (now - this.lastScoreCalculation > this.scoreDebounceDelay) {
+      this.calculateScore();
+      this.lastScoreCalculation = now;
+    }
+  }
+
   // Public methods for tracking specific interactions
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
     if (field === 'savings') {
@@ -144,7 +154,7 @@ class LeadTracker {
       this.leadData.userInputs.monthlySpending = value;
     }
     this.leadData.interactions.calculatorUsage++;
-    this.calculateScore();
+    this.debouncedCalculateScore();
     console.log('Calculator input tracked:', field, value);
   }
 
@@ -154,12 +164,12 @@ class LeadTracker {
       yearsUntilEmpty,
       isMoneyLasting
     };
-    this.calculateScore();
+    this.debouncedCalculateScore();
   }
 
   trackPodcastEngagement(timeInSeconds: number) {
     this.leadData.interactions.podcastListenTime = timeInSeconds;
-    this.calculateScore();
+    this.debouncedCalculateScore();
     console.log('Podcast engagement tracked:', timeInSeconds);
   }
 
@@ -181,13 +191,13 @@ class LeadTracker {
 
   trackTooltipInteraction() {
     this.leadData.interactions.tooltipInteractions++;
-    this.calculateScore();
+    this.debouncedCalculateScore();
     console.log('Tooltip interaction tracked');
   }
 
   trackEducationalContentClick() {
     this.leadData.interactions.educationalContentClicks++;
-    this.calculateScore();
+    this.debouncedCalculateScore();
     console.log('Educational content click tracked');
   }
 
@@ -230,10 +240,14 @@ class LeadTracker {
     if (this.leadData.userInputs.currentSavings && this.leadData.userInputs.currentSavings > 0) score += 10;
     if (this.leadData.userInputs.monthlySpending && this.leadData.userInputs.monthlySpending > 0) score += 10;
 
+    const oldScore = this.leadData.calculatedScore;
     this.leadData.calculatedScore = score;
     this.leadData.leadQuality = this.determineLeadQuality(score);
 
-    console.log('Lead score updated:', score, this.leadData.leadQuality);
+    // Only log if score actually changed significantly
+    if (Math.abs(score - oldScore) >= 5) {
+      console.log('Lead score updated:', score, this.leadData.leadQuality);
+    }
   }
 
   private determineLeadQuality(score: number): 'Cold' | 'Warm' | 'Hot' | 'Premium' {
