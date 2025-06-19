@@ -134,31 +134,54 @@ function determineLeadQuality(score: number, hasContact: boolean, financialProfi
   return 'Cold';
 }
 
-// Function to submit lead data (updated to use UPSERT functionality)
+// Function to submit lead data (updated to handle UPSERT properly)
 async function submitLeadData(leadData: any) {
   try {
-    const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
-      method: 'POST',
+    // First, try to update the existing lead
+    const updateResponse = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
+      method: 'PUT', // Use PUT for updates
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
       },
-      body: JSON.stringify({
-        ...leadData,
-        upsert: true // Signal to use UPSERT instead of INSERT
-      }),
+      body: JSON.stringify(leadData),
       mode: 'cors'
     });
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+    if (updateResponse.ok) {
+      const result = await updateResponse.json();
+      console.log('✅ Lead data updated successfully:', result);
+      return result;
     }
     
-    const result = await response.json();
-    console.log('✅ Lead data submitted/updated successfully to Supabase:', result);
-    return result;
+    // If update fails (404 - lead doesn't exist), try to create it
+    if (updateResponse.status === 404) {
+      const createResponse = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
+        },
+        body: JSON.stringify(leadData),
+        mode: 'cors'
+      });
+      
+      if (!createResponse.ok) {
+        const errorText = await createResponse.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP error! status: ${createResponse.status}, response: ${errorText}`);
+      }
+      
+      const result = await createResponse.json();
+      console.log('✅ Lead data created successfully:', result);
+      return result;
+    }
+    
+    // If update failed for other reasons, throw error
+    const errorText = await updateResponse.text();
+    console.error('❌ API Error Response:', errorText);
+    throw new Error(`HTTP error! status: ${updateResponse.status}, response: ${errorText}`);
+    
   } catch (error) {
     console.error('❌ Error submitting lead data to Supabase:', error);
     // Store in localStorage as backup
