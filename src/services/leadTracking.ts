@@ -186,7 +186,7 @@ class LeadTracker {
 
   constructor() {
     this.leadData = {
-      sessionId: this.generateSessionId(),
+      sessionId: '', // Will be set after IP detection
       timestamp: new Date(),
       userInputs: {},
       interactions: {
@@ -211,17 +211,27 @@ class LeadTracker {
     this.initializeTracking();
   }
 
-  private generateSessionId(): string {
-    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  private generateIPBasedId(ipAddress: string): string {
+    // Use IP address + date as unique identifier
+    const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    return `lead_${ipAddress.replace(/\./g, '_')}_${dateStr}`;
   }
 
   private async initializeTracking() {
     // Get IP address on initialization
     try {
       this.leadData.ipAddress = await getUserIP();
-      console.log('IP Address detected:', this.leadData.ipAddress);
+      if (this.leadData.ipAddress) {
+        this.leadData.sessionId = this.generateIPBasedId(this.leadData.ipAddress);
+        console.log('Lead ID generated from IP:', this.leadData.sessionId);
+      } else {
+        // Fallback to session-based ID if IP detection fails
+        this.leadData.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        console.log('Using fallback session ID:', this.leadData.sessionId);
+      }
     } catch (error) {
-      console.log('Could not get IP address:', error);
+      console.log('Could not get IP address, using fallback ID:', error);
+      this.leadData.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     }
 
     // Track time on page - more frequent updates
@@ -443,7 +453,7 @@ class LeadTracker {
     const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
     
     return {
-      leadId: this.leadData.sessionId,
+      leadId: this.leadData.sessionId, // Now uses IP-based ID
       score: this.leadData.calculatedScore,
       quality: this.leadData.leadQuality,
       timestamp: new Date().toISOString(),
