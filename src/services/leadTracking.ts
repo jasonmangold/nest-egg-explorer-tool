@@ -24,7 +24,6 @@ export interface LeadData {
     yearsUntilEmpty: number;
     isMoneyLasting: boolean;
   };
-  ipAddress?: string;
 }
 
 export interface DashboardPayload {
@@ -48,46 +47,11 @@ export interface DashboardPayload {
     pdfDownloaded: boolean;
     podcastEngagement: number;
     contactAttempted: boolean;
-    calculateButtonClicks: number;
-    tooltipInteractions: number;
   };
   contactInfo?: {
     firstName: string;
     email: string;
   };
-  ipAddress?: string;
-}
-
-// Function to get user's IP address
-async function getUserIP(): Promise<string | null> {
-  try {
-    // Try multiple IP detection services
-    const services = [
-      'https://api.ipify.org?format=json',
-      'https://ipapi.co/json/',
-      'https://httpbin.org/ip'
-    ];
-    
-    for (const service of services) {
-      try {
-        const response = await fetch(service);
-        const data = await response.json();
-        
-        // Handle different response formats
-        if (data.ip) return data.ip;
-        if (data.origin) return data.origin;
-        
-      } catch (error) {
-        console.log(`IP service ${service} failed, trying next...`);
-        continue;
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.log('Could not detect IP address:', error);
-    return null;
-  }
 }
 
 // Function to calculate lead score based on user behavior (updated to match your algorithm)
@@ -134,12 +98,11 @@ function determineLeadQuality(score: number, hasContact: boolean, financialProfi
   return 'Cold';
 }
 
-// Function to submit lead data (updated to handle UPSERT properly)
+// Function to submit lead data (updated to use your Supabase endpoint)
 async function submitLeadData(leadData: any) {
   try {
-    // First, try to update the existing lead
-    const updateResponse = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
-      method: 'PUT', // Use PUT for updates
+    const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
@@ -148,40 +111,15 @@ async function submitLeadData(leadData: any) {
       mode: 'cors'
     });
     
-    if (updateResponse.ok) {
-      const result = await updateResponse.json();
-      console.log('✅ Lead data updated successfully:', result);
-      return result;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ API Error Response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
     }
     
-    // If update fails (404 - lead doesn't exist), try to create it
-    if (updateResponse.status === 404) {
-      const createResponse = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
-        },
-        body: JSON.stringify(leadData),
-        mode: 'cors'
-      });
-      
-      if (!createResponse.ok) {
-        const errorText = await createResponse.text();
-        console.error('❌ API Error Response:', errorText);
-        throw new Error(`HTTP error! status: ${createResponse.status}, response: ${errorText}`);
-      }
-      
-      const result = await createResponse.json();
-      console.log('✅ Lead data created successfully:', result);
-      return result;
-    }
-    
-    // If update failed for other reasons, throw error
-    const errorText = await updateResponse.text();
-    console.error('❌ API Error Response:', errorText);
-    throw new Error(`HTTP error! status: ${updateResponse.status}, response: ${errorText}`);
-    
+    const result = await response.json();
+    console.log('✅ Lead data submitted successfully to Supabase:', result);
+    return result;
   } catch (error) {
     console.error('❌ Error submitting lead data to Supabase:', error);
     // Store in localStorage as backup
@@ -202,14 +140,13 @@ class LeadTracker {
     hot: 60,
     warm: 40
   };
-  private calculateButtonClickCount: number = 0;
+  private hasBeenSubmitted: boolean = false;
+  private calculateButtonClickCount: number = 0; // Track total clicks
   private calculatorInputsBeforeCalculate: number = 0;
-  private lastSubmissionTime: number = 0;
-  private submissionCooldown: number = 10000; // 10 seconds between submissions
 
   constructor() {
     this.leadData = {
-      sessionId: '', // Will be set after IP detection
+      sessionId: this.generateSessionId(),
       timestamp: new Date(),
       userInputs: {},
       interactions: {
@@ -234,29 +171,11 @@ class LeadTracker {
     this.initializeTracking();
   }
 
-  private generateIPBasedId(ipAddress: string): string {
-    // Use IP address + date as unique identifier
-    const dateStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    return `lead_${ipAddress.replace(/\./g, '_')}_${dateStr}`;
+  private generateSessionId(): string {
+    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
-  private async initializeTracking() {
-    // Get IP address on initialization
-    try {
-      this.leadData.ipAddress = await getUserIP();
-      if (this.leadData.ipAddress) {
-        this.leadData.sessionId = this.generateIPBasedId(this.leadData.ipAddress);
-        console.log('Lead ID generated from IP:', this.leadData.sessionId);
-      } else {
-        // Fallback to session-based ID if IP detection fails
-        this.leadData.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        console.log('Using fallback session ID:', this.leadData.sessionId);
-      }
-    } catch (error) {
-      console.log('Could not get IP address, using fallback ID:', error);
-      this.leadData.sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
-
+  private initializeTracking() {
     // Track time on page - more frequent updates
     setInterval(() => {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
@@ -329,7 +248,6 @@ class LeadTracker {
     this.calculatorInputsBeforeCalculate = 0;
     
     this.debouncedCalculateScore();
-    this.throttledSubmission(); // Submit updates after calculate clicks
   }
 
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
@@ -362,7 +280,6 @@ class LeadTracker {
   trackPodcastPlay() {
     this.leadData.interactions.podcastListenTime += 20; // +20 points for first play
     this.debouncedCalculateScore();
-    this.throttledSubmission(); // Submit updates after podcast interactions
     console.log('Podcast play tracked');
   }
 
@@ -372,7 +289,6 @@ class LeadTracker {
     const points = Math.min(30, minutes * 2);
     this.leadData.interactions.podcastListenTime = points;
     this.debouncedCalculateScore();
-    this.throttledSubmission(); // Submit updates after podcast engagement
     console.log('Podcast engagement tracked:', timeInSeconds, 'seconds');
   }
 
@@ -393,28 +309,26 @@ class LeadTracker {
     this.leadData.interactions.calculatorUsage += pdfPoints;
     
     this.calculateScore();
-    this.onUserInteraction(); // Immediate submission for PDF requests
+    this.onUserInteraction();
     console.log('PDF request tracked:', firstName, email, 'Points awarded:', pdfPoints);
   }
 
   trackContactFormSubmission() {
     this.leadData.interactions.contactFormSubmitted = true;
     this.calculateScore();
-    this.onUserInteraction(); // Immediate submission for contact form
+    this.onUserInteraction();
     console.log('Contact form submission tracked');
   }
 
   trackTooltipInteraction() {
     this.leadData.interactions.tooltipInteractions++;
     this.debouncedCalculateScore();
-    this.throttledSubmission(); // Submit updates after tooltip interactions
     console.log('Tooltip interaction tracked');
   }
 
   trackEducationalContentClick() {
     this.leadData.interactions.educationalContentClicks++;
     this.debouncedCalculateScore();
-    this.throttledSubmission(); // Submit updates after content clicks
     console.log('Educational content click tracked');
   }
 
@@ -443,31 +357,26 @@ class LeadTracker {
     }
   }
 
-  // New throttled submission method to prevent too frequent updates
-  private throttledSubmission() {
-    const now = Date.now();
-    if (now - this.lastSubmissionTime > this.submissionCooldown) {
-      this.onUserInteraction();
-      this.lastSubmissionTime = now;
-    }
-  }
-
-  // Updated onUserInteraction to allow continuous updates
+  // Updated onUserInteraction to prevent duplicate submissions
   private async onUserInteraction() {
-    // Always allow submissions for significant interactions or quality leads
+    // Prevent duplicate submissions for the same session
+    if (this.hasBeenSubmitted) {
+      console.log('Lead already submitted for this session, skipping...');
+      return;
+    }
+
     if (this.leadData.calculatedScore >= this.scoreThresholds.warm || 
         this.leadData.interactions.pdfRequested || 
-        this.leadData.interactions.contactFormSubmitted ||
-        this.calculateButtonClickCount > 0 ||
-        this.leadData.interactions.podcastListenTime > 0 ||
-        this.leadData.interactions.tooltipInteractions > 0) {
+        this.leadData.interactions.contactFormSubmitted) {
       
       try {
         const payload = this.createDashboardPayload();
         await submitLeadData(payload);
-        console.log('✅ Lead data updated successfully');
+        this.hasBeenSubmitted = true; // Mark as submitted to prevent duplicates
+        console.log('✅ Lead submitted successfully, session marked as submitted');
       } catch (error) {
-        console.error('❌ Failed to update lead data:', error);
+        console.error('❌ Failed to submit lead data:', error);
+        // Don't mark as submitted if there was an error, allow retry
       }
     }
   }
@@ -476,7 +385,7 @@ class LeadTracker {
     const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
     
     return {
-      leadId: this.leadData.sessionId, // Now uses IP-based ID
+      leadId: this.leadData.sessionId,
       score: this.leadData.calculatedScore,
       quality: this.leadData.leadQuality,
       timestamp: new Date().toISOString(),
@@ -495,15 +404,12 @@ class LeadTracker {
         calculatorInteractions: this.leadData.interactions.calculatorUsage,
         pdfDownloaded: this.leadData.interactions.pdfRequested,
         podcastEngagement: this.leadData.interactions.podcastListenTime,
-        contactAttempted: this.leadData.interactions.contactFormSubmitted,
-        calculateButtonClicks: this.calculateButtonClickCount,
-        tooltipInteractions: this.leadData.interactions.tooltipInteractions
+        contactAttempted: this.leadData.interactions.contactFormSubmitted
       },
       contactInfo: this.leadData.userInputs.firstName && this.leadData.userInputs.email ? {
         firstName: this.leadData.userInputs.firstName,
         email: this.leadData.userInputs.email
-      } : undefined,
-      ipAddress: this.leadData.ipAddress
+      } : undefined
     };
   }
 
