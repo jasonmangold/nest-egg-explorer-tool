@@ -11,16 +11,24 @@ export const useLeadTracking = () => {
     console.log('Lead tracking initialized');
   }, []);
 
+  const trackCalculateButtonClick = () => {
+    tracker.trackCalculateButtonClick();
+  };
+
   const trackCalculatorInput = (field: 'savings' | 'spending', value: number) => {
     tracker.trackCalculatorInput(field, value);
+  };
+
+  const trackCalculatorInputChange = (field: 'savings' | 'spending', value: number) => {
+    tracker.trackCalculatorInputChange(field, value);
   };
 
   const trackProjectedResults = (safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) => {
     tracker.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
   };
 
-  const trackPDFRequest = (firstName: string, email: string) => {
-    tracker.trackPDFRequest(firstName, email);
+  const trackPDFRequest = (firstName: string, email: string, wasCalculated: boolean = false) => {
+    tracker.trackPDFRequest(firstName, email, wasCalculated);
   };
 
   const trackContactFormSubmission = () => {
@@ -37,6 +45,7 @@ export const useLeadTracking = () => {
 
   const trackPodcastPlay = () => {
     podcastStartTime.current = Date.now();
+    tracker.trackPodcastPlay();
     console.log('Podcast play started');
   };
 
@@ -57,7 +66,9 @@ export const useLeadTracking = () => {
   };
 
   return {
+    trackCalculateButtonClick,
     trackCalculatorInput,
+    trackCalculatorInputChange,
     trackProjectedResults,
     trackPDFRequest,
     trackContactFormSubmission,

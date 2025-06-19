@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Lightbulb, Phone, Mail, MapPin } from "lucide-react";
+import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Download, FileText, Shield, PiggyBank, Info, Phone, Mail, MapPin } from "lucide-react";
 import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
@@ -18,6 +18,7 @@ const Index = () => {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [hasCalculated, setHasCalculated] = useState(false);
 
   // Audio player hook
   const audioPlayer = useAudioPlayer();
@@ -35,20 +36,35 @@ const Index = () => {
     return parseInt(str.replace(/,/g, ''));
   };
 
-  // Handle input changes with formatting and tracking
+  // Handle input changes with formatting and tracking (but no calculation yet)
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
-    leadTracking.trackCalculatorInput('savings', value);
+    if (hasCalculated) {
+      leadTracking.trackCalculatorInputChange('savings', value);
+    }
   };
+  
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setMonthlySpending(value);
-    leadTracking.trackCalculatorInput('spending', value);
+    if (hasCalculated) {
+      leadTracking.trackCalculatorInputChange('spending', value);
+    }
   };
 
-  // Calculate retirement projections
+  // Handle Calculate button click
+  const handleCalculate = () => {
+    setHasCalculated(true);
+    leadTracking.trackCalculateButtonClick();
+    leadTracking.trackCalculatorInput('savings', currentSavings);
+    leadTracking.trackCalculatorInput('spending', monthlySpending);
+  };
+
+  // Calculate retirement projections (only if hasCalculated is true)
   const projectionData = useMemo(() => {
+    if (!hasCalculated) return [];
+    
     const data = [];
     let balance = currentSavings;
     const annualSpending = monthlySpending * 12;
@@ -67,10 +83,12 @@ const Index = () => {
       if (balance <= 0) break;
     }
     return data;
-  }, [currentSavings, monthlySpending]);
+  }, [currentSavings, monthlySpending, hasCalculated]);
 
-  // Calculate safe withdrawal amount using proper present value formula
+  // Calculate safe withdrawal amount using proper present value formula (only if hasCalculated is true)
   const safeMonthlyAmount = useMemo(() => {
+    if (!hasCalculated) return 0;
+    
     const returnRate = 0.06;
     const inflationRate = 0.03;
     const years = 30;
@@ -78,17 +96,17 @@ const Index = () => {
     const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
-  }, [currentSavings]);
+  }, [currentSavings, hasCalculated]);
   
-  const yearsUntilEmpty = projectionData[projectionData.length - 1]?.year || 30;
-  const isMoneyLasting = yearsUntilEmpty >= 30;
+  const yearsUntilEmpty = hasCalculated ? (projectionData[projectionData.length - 1]?.year || 30) : 0;
+  const isMoneyLasting = hasCalculated ? yearsUntilEmpty >= 30 : false;
 
   // Track projected results when they change
   useEffect(() => {
-    if (currentSavings > 0 && monthlySpending > 0) {
+    if (hasCalculated && currentSavings > 0 && monthlySpending > 0) {
       leadTracking.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
     }
-  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, currentSavings, monthlySpending, leadTracking]);
+  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, hasCalculated, currentSavings, monthlySpending, leadTracking]);
 
   // Generate graph image for PDF
   const generateGraphImage = (): Promise<string> => {
@@ -229,7 +247,8 @@ const Index = () => {
 
   const handleExportPDF = async () => {
     if (firstName && email) {
-      leadTracking.trackPDFRequest(firstName, email);
+      const wasCalculated = hasCalculated;
+      leadTracking.trackPDFRequest(firstName, email, wasCalculated);
       
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -300,19 +319,21 @@ const Index = () => {
       currentY += 30;
 
       // Add the improved larger graph
-      try {
-        const graphImage = await generateGraphImage();
-        if (graphImage) {
-          // Larger dimensions for better visibility in PDF
-          const graphWidth = 120; // Much wider
-          const graphHeight = 80; // Much taller
-          const graphX = (pageWidth - graphWidth) / 2; // Center horizontally
-          pdf.addImage(graphImage, 'PNG', graphX, currentY, graphWidth, graphHeight);
-          currentY += graphHeight + 10;
+      if (hasCalculated) {
+        try {
+          const graphImage = await generateGraphImage();
+          if (graphImage) {
+            // Larger dimensions for better visibility in PDF
+            const graphWidth = 120; // Much wider
+            const graphHeight = 80; // Much taller
+            const graphX = (pageWidth - graphWidth) / 2; // Center horizontally
+            pdf.addImage(graphImage, 'PNG', graphX, currentY, graphWidth, graphHeight);
+            currentY += graphHeight + 10;
+          }
+        } catch (error) {
+          console.log('Could not add graph to PDF:', error);
+          currentY += 10;
         }
-      } catch (error) {
-        console.log('Could not add graph to PDF:', error);
-        currentY += 10;
       }
 
       // Assumptions section
@@ -517,6 +538,17 @@ const Index = () => {
                   </div>
                 </div>
 
+                {/* Calculate Button */}
+                <div className="pt-4">
+                  <Button 
+                    onClick={handleCalculate} 
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg font-semibold"
+                  >
+                    <Calculator className="w-5 h-5 mr-2" />
+                    Calculate My Retirement Plan
+                  </Button>
+                </div>
+
                 {/* Assumptions Section */}
                 <div className="pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
@@ -552,9 +584,6 @@ const Index = () => {
                     <p>• The "safe" amount ensures your money lasts the full 30 years</p>
                   </div>
                 </div>
-
-                {/* Planning Tips Section */}
-                
               </CardContent>
             </Card>
 
@@ -565,120 +594,132 @@ const Index = () => {
                 <CardDescription className="text-slate-600">How your savings will change over 30 years</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="h-80 -mx-2">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={projectionData} margin={{
-                      top: 30,
-                      right: 30,
-                      left: 30,
-                      bottom: 50
-                    }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
-                      <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                        stroke: '#cbd5e1',
-                        strokeWidth: 1
-                      }} tickLine={{
-                        stroke: '#cbd5e1'
-                      }} label={{
-                        value: 'Years in Retirement',
-                        position: 'insideBottom',
-                        offset: -30,
-                        style: {
-                          textAnchor: 'middle',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          fill: '#64748b'
-                        }
-                      }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
-                      <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                        stroke: '#cbd5e1',
-                        strokeWidth: 1
-                      }} tickLine={{
-                        stroke: '#cbd5e1'
-                      }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
-                        value: 'Remaining Balance',
-                        angle: -90,
-                        position: 'insideLeft',
-                        offset: -20,
-                        style: {
-                          textAnchor: 'middle',
-                          fontWeight: '500',
-                          fontSize: '12px',
-                          fill: '#64748b'
-                        }
-                      }} />
-                      <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e2e8f0',
-                        borderRadius: '12px',
-                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                        fontSize: '14px',
-                        fontWeight: '500'
-                      }} cursor={{
-                        stroke: '#059669',
-                        strokeWidth: 1,
-                        strokeDasharray: '4 4'
-                      }} />
-                      <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
-                        r: 6,
-                        fill: '#059669',
-                        stroke: '#ffffff',
-                        strokeWidth: 2
-                      }} style={{
-                        filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
-                      }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-                
-                {/* Results Section */}
-                <div className="mt-6 space-y-4">
-                  <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
-                    <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
-                      {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
-                    </h3>
-                    <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
-                      {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
-                    </p>
-                  </div>
-                  
-                  <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
-                    <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
-                    <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
-                    <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
-                  </div>
-                  
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                        <Download className="w-4 h-4 mr-2" />
-                        Export Results as PDF
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                      <DialogHeader>
-                        <DialogTitle className="text-slate-800">Export Your Results</DialogTitle>
-                        <DialogDescription className="text-slate-600">
-                          Enter your details to receive a PDF summary of your retirement projection.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="firstName" className="text-slate-700">First Name</Label>
-                          <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter your first name" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="email" className="text-slate-700">Email Address</Label>
-                          <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
-                        </div>
-                        <Button onClick={handleExportPDF} disabled={!firstName || !email} className="w-full bg-emerald-600 hover:bg-emerald-700">
-                          <Download className="w-4 h-4 mr-2" />
-                          Generate PDF
-                        </Button>
+                {hasCalculated ? (
+                  <>
+                    <div className="h-80 -mx-2">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={projectionData} margin={{
+                          top: 30,
+                          right: 30,
+                          left: 30,
+                          bottom: 50
+                        }}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
+                          <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
+                            stroke: '#cbd5e1',
+                            strokeWidth: 1
+                          }} tickLine={{
+                            stroke: '#cbd5e1'
+                          }} label={{
+                            value: 'Years in Retirement',
+                            position: 'insideBottom',
+                            offset: -30,
+                            style: {
+                              textAnchor: 'middle',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              fill: '#64748b'
+                            }
+                          }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
+                          <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
+                            stroke: '#cbd5e1',
+                            strokeWidth: 1
+                          }} tickLine={{
+                            stroke: '#cbd5e1'
+                          }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                            value: 'Remaining Balance',
+                            angle: -90,
+                            position: 'insideLeft',
+                            offset: -20,
+                            style: {
+                              textAnchor: 'middle',
+                              fontWeight: '500',
+                              fontSize: '12px',
+                              fill: '#64748b'
+                            }
+                          }} />
+                          <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }} cursor={{
+                            stroke: '#059669',
+                            strokeWidth: 1,
+                            strokeDasharray: '4 4'
+                          }} />
+                          <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
+                            r: 6,
+                            fill: '#059669',
+                            stroke: '#ffffff',
+                            strokeWidth: 2
+                          }} style={{
+                            filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                          }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                    
+                    {/* Results Section */}
+                    <div className="mt-6 space-y-4">
+                      <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
+                        <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
+                          {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
+                        </h3>
+                        <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
+                          {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
+                        </p>
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </div>
+                      
+                      <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                        <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
+                        <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
+                        <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
+                      </div>
+                      
+                      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                            <Download className="w-4 h-4 mr-2" />
+                            Export Results as PDF
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="text-slate-800">Export Your Results</DialogTitle>
+                            <DialogDescription className="text-slate-600">
+                              Enter your details to receive a PDF summary of your retirement projection.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="firstName" className="text-slate-700">First Name</Label>
+                              <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter your first name" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="email" className="text-slate-700">Email Address</Label>
+                              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
+                            </div>
+                            <Button onClick={handleExportPDF} disabled={!firstName || !email} className="w-full bg-emerald-600 hover:bg-emerald-700">
+                              <Download className="w-4 h-4 mr-2" />
+                              Generate PDF
+                            </Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </>
+                ) : (
+                  <div className="h-80 flex items-center justify-center">
+                    <div className="text-center text-slate-500">
+                      <Calculator className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                      <h3 className="text-xl font-semibold mb-2">Ready to Calculate?</h3>
+                      <p>Click "Calculate My Retirement Plan" to see your personalized projection</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
