@@ -134,12 +134,13 @@ class LeadTracker {
   private lastScrollPosition: number = 0;
   private maxScrollPercentage: number = 0;
   private lastScoreCalculation: number = 0;
-  private scoreDebounceDelay: number = 2000; // Reduced to 2 seconds for more frequent updates
+  private scoreDebounceDelay: number = 2000;
   private scoreThresholds = {
     premium: 80,
     hot: 60,
     warm: 40
   };
+  private hasBeenSubmitted: boolean = false; // Track if this lead has been submitted
 
   constructor() {
     this.leadData = {
@@ -303,14 +304,27 @@ class LeadTracker {
     }
   }
 
-  // Implementation of your onUserInteraction function
-  private onUserInteraction() {
+  // Updated onUserInteraction to prevent duplicate submissions
+  private async onUserInteraction() {
+    // Prevent duplicate submissions for the same session
+    if (this.hasBeenSubmitted) {
+      console.log('Lead already submitted for this session, skipping...');
+      return;
+    }
+
     if (this.leadData.calculatedScore >= this.scoreThresholds.warm || 
         this.leadData.interactions.pdfRequested || 
         this.leadData.interactions.contactFormSubmitted) {
       
-      const payload = this.createDashboardPayload();
-      submitLeadData(payload);
+      try {
+        const payload = this.createDashboardPayload();
+        await submitLeadData(payload);
+        this.hasBeenSubmitted = true; // Mark as submitted to prevent duplicates
+        console.log('✅ Lead submitted successfully, session marked as submitted');
+      } catch (error) {
+        console.error('❌ Failed to submit lead data:', error);
+        // Don't mark as submitted if there was an error, allow retry
+      }
     }
   }
 
