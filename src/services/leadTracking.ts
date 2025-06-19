@@ -140,7 +140,9 @@ class LeadTracker {
     hot: 60,
     warm: 40
   };
-  private hasBeenSubmitted: boolean = false; // Track if this lead has been submitted
+  private hasBeenSubmitted: boolean = false;
+  private calculateButtonClicked: boolean = false;
+  private calculatorInputsBeforeCalculate: number = 0;
 
   constructor() {
     this.leadData = {
@@ -225,15 +227,39 @@ class LeadTracker {
   }
 
   // Public methods for tracking specific interactions
+  trackCalculateButtonClick() {
+    if (!this.calculateButtonClicked) {
+      this.calculateButtonClicked = true;
+      this.leadData.interactions.calculatorUsage += 25; // +25 points for first calculate click
+      
+      // Award bonus points for input changes before calculate
+      if (this.calculatorInputsBeforeCalculate > 0) {
+        this.leadData.interactions.calculatorUsage += Math.min(8, this.calculatorInputsBeforeCalculate * 2);
+      }
+      
+      this.debouncedCalculateScore();
+      console.log('Calculate button clicked - awarded points');
+    }
+  }
+
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
     if (field === 'savings') {
       this.leadData.userInputs.currentSavings = value;
     } else {
       this.leadData.userInputs.monthlySpending = value;
     }
-    this.leadData.interactions.calculatorUsage++;
     this.debouncedCalculateScore();
     console.log('Calculator input tracked:', field, value);
+  }
+
+  trackCalculatorInputChange(field: 'savings' | 'spending', value: number) {
+    // Track input changes before calculate button is clicked
+    if (!this.calculateButtonClicked) {
+      this.calculatorInputsBeforeCalculate++;
+    }
+    
+    // Update the actual values
+    this.trackCalculatorInput(field, value);
   }
 
   trackProjectedResults(safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) {
@@ -245,19 +271,40 @@ class LeadTracker {
     this.debouncedCalculateScore();
   }
 
-  trackPodcastEngagement(timeInSeconds: number) {
-    this.leadData.interactions.podcastListenTime = timeInSeconds;
+  trackPodcastPlay() {
+    this.leadData.interactions.podcastListenTime += 20; // +20 points for first play
     this.debouncedCalculateScore();
-    console.log('Podcast engagement tracked:', timeInSeconds);
+    console.log('Podcast play tracked');
   }
 
-  trackPDFRequest(firstName: string, email: string) {
+  trackPodcastEngagement(timeInSeconds: number) {
+    // +2 points per minute, max 30 points
+    const minutes = Math.floor(timeInSeconds / 60);
+    const points = Math.min(30, minutes * 2);
+    this.leadData.interactions.podcastListenTime = points;
+    this.debouncedCalculateScore();
+    console.log('Podcast engagement tracked:', timeInSeconds, 'seconds');
+  }
+
+  trackPDFRequest(firstName: string, email: string, wasCalculated: boolean = false) {
     this.leadData.userInputs.firstName = firstName;
     this.leadData.userInputs.email = email;
     this.leadData.interactions.pdfRequested = true;
+    
+    // Base points for PDF request
+    let pdfPoints = 30;
+    
+    // Bonus points if done after calculation
+    if (wasCalculated && this.calculateButtonClicked) {
+      pdfPoints += 10; // Max 40 points total
+    }
+    
+    // Add to calculator usage for scoring (we track PDF points here)
+    this.leadData.interactions.calculatorUsage += pdfPoints;
+    
     this.calculateScore();
     this.onUserInteraction();
-    console.log('PDF request tracked:', firstName, email);
+    console.log('PDF request tracked:', firstName, email, 'Points awarded:', pdfPoints);
   }
 
   trackContactFormSubmission() {
