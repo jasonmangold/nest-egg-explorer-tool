@@ -19,6 +19,7 @@ const Index = () => {
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [hasCalculated, setHasCalculated] = useState(false);
+  const [needsCalculation, setNeedsCalculation] = useState(false);
 
   // Audio player hook
   const audioPlayer = useAudioPlayer();
@@ -36,11 +37,14 @@ const Index = () => {
     return parseInt(str.replace(/,/g, ''));
   };
 
-  // Handle input changes with formatting and tracking (but no calculation yet)
+  // Handle input changes with formatting and tracking
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
+    
+    // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
+      setNeedsCalculation(true);
       leadTracking.trackCalculatorInputChange('savings', value);
     }
   };
@@ -48,22 +52,28 @@ const Index = () => {
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setMonthlySpending(value);
+    
+    // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
+      setNeedsCalculation(true);
       leadTracking.trackCalculatorInputChange('spending', value);
     }
   };
 
-  // Handle Calculate button click
+  // Handle Calculate button click - track every click
   const handleCalculate = () => {
     setHasCalculated(true);
+    setNeedsCalculation(false);
+    
+    // Track this calculation (will award points for each click)
     leadTracking.trackCalculateButtonClick();
     leadTracking.trackCalculatorInput('savings', currentSavings);
     leadTracking.trackCalculatorInput('spending', monthlySpending);
   };
 
-  // Calculate retirement projections (only if hasCalculated is true)
+  // Calculate retirement projections (only if hasCalculated is true and no pending changes)
   const projectionData = useMemo(() => {
-    if (!hasCalculated) return [];
+    if (!hasCalculated || needsCalculation) return [];
     
     const data = [];
     let balance = currentSavings;
@@ -83,11 +93,11 @@ const Index = () => {
       if (balance <= 0) break;
     }
     return data;
-  }, [currentSavings, monthlySpending, hasCalculated]);
+  }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
 
-  // Calculate safe withdrawal amount using proper present value formula (only if hasCalculated is true)
+  // Calculate safe withdrawal amount using proper present value formula
   const safeMonthlyAmount = useMemo(() => {
-    if (!hasCalculated) return 0;
+    if (!hasCalculated || needsCalculation) return 0;
     
     const returnRate = 0.06;
     const inflationRate = 0.03;
@@ -96,17 +106,17 @@ const Index = () => {
     const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
-  }, [currentSavings, hasCalculated]);
+  }, [currentSavings, hasCalculated, needsCalculation]);
   
-  const yearsUntilEmpty = hasCalculated ? (projectionData[projectionData.length - 1]?.year || 30) : 0;
-  const isMoneyLasting = hasCalculated ? yearsUntilEmpty >= 30 : false;
+  const yearsUntilEmpty = hasCalculated && !needsCalculation ? (projectionData[projectionData.length - 1]?.year || 30) : 0;
+  const isMoneyLasting = hasCalculated && !needsCalculation ? yearsUntilEmpty >= 30 : false;
 
   // Track projected results when they change
   useEffect(() => {
-    if (hasCalculated && currentSavings > 0 && monthlySpending > 0) {
+    if (hasCalculated && !needsCalculation && currentSavings > 0 && monthlySpending > 0) {
       leadTracking.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
     }
-  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, hasCalculated, currentSavings, monthlySpending, leadTracking]);
+  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, hasCalculated, needsCalculation, currentSavings, monthlySpending, leadTracking]);
 
   // Generate graph image for PDF
   const generateGraphImage = (): Promise<string> => {
@@ -247,7 +257,7 @@ const Index = () => {
 
   const handleExportPDF = async () => {
     if (firstName && email) {
-      const wasCalculated = hasCalculated;
+      const wasCalculated = hasCalculated && !needsCalculation;
       leadTracking.trackPDFRequest(firstName, email, wasCalculated);
       
       const pdf = new jsPDF();
@@ -319,7 +329,7 @@ const Index = () => {
       currentY += 30;
 
       // Add the improved larger graph
-      if (hasCalculated) {
+      if (hasCalculated && !needsCalculation) {
         try {
           const graphImage = await generateGraphImage();
           if (graphImage) {
@@ -545,8 +555,13 @@ const Index = () => {
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg font-semibold"
                   >
                     <Calculator className="w-5 h-5 mr-2" />
-                    Calculate My Retirement Plan
+                    {hasCalculated && needsCalculation ? 'Recalculate My Plan' : 'Calculate My Retirement Plan'}
                   </Button>
+                  {needsCalculation && (
+                    <p className="text-sm text-amber-600 mt-2 text-center">
+                      Values changed - click to recalculate results
+                    </p>
+                  )}
                 </div>
 
                 {/* Assumptions Section */}
@@ -594,7 +609,7 @@ const Index = () => {
                 <CardDescription className="text-slate-600">How your savings will change over 30 years</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                {hasCalculated ? (
+                {hasCalculated && !needsCalculation ? (
                   <>
                     <div className="h-80 -mx-2">
                       <ResponsiveContainer width="100%" height="100%">
@@ -715,8 +730,15 @@ const Index = () => {
                   <div className="h-80 flex items-center justify-center">
                     <div className="text-center text-slate-500">
                       <Calculator className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-xl font-semibold mb-2">Ready to Calculate?</h3>
-                      <p>Click "Calculate My Retirement Plan" to see your personalized projection</p>
+                      <h3 className="text-xl font-semibold mb-2">
+                        {needsCalculation ? 'Values Changed' : 'Ready to Calculate?'}
+                      </h3>
+                      <p>
+                        {needsCalculation 
+                          ? 'Click "Recalculate" to see updated results' 
+                          : 'Click "Calculate My Retirement Plan" to see your personalized projection'
+                        }
+                      </p>
                     </div>
                   </div>
                 )}

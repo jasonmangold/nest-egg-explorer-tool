@@ -141,7 +141,7 @@ class LeadTracker {
     warm: 40
   };
   private hasBeenSubmitted: boolean = false;
-  private calculateButtonClicked: boolean = false;
+  private calculateButtonClickCount: number = 0; // Track total clicks
   private calculatorInputsBeforeCalculate: number = 0;
 
   constructor() {
@@ -228,18 +228,26 @@ class LeadTracker {
 
   // Public methods for tracking specific interactions
   trackCalculateButtonClick() {
-    if (!this.calculateButtonClicked) {
-      this.calculateButtonClicked = true;
-      this.leadData.interactions.calculatorUsage += 25; // +25 points for first calculate click
+    this.calculateButtonClickCount++;
+    
+    if (this.calculateButtonClickCount === 1) {
+      // First click gets 25 points + bonus for input changes
+      this.leadData.interactions.calculatorUsage += 25;
       
-      // Award bonus points for input changes before calculate
       if (this.calculatorInputsBeforeCalculate > 0) {
         this.leadData.interactions.calculatorUsage += Math.min(8, this.calculatorInputsBeforeCalculate * 2);
       }
-      
-      this.debouncedCalculateScore();
-      console.log('Calculate button clicked - awarded points');
+      console.log('First calculate button click - awarded 25+ points');
+    } else {
+      // Additional clicks get 10 points each (showing engagement)
+      this.leadData.interactions.calculatorUsage += 10;
+      console.log(`Calculate button click #${this.calculateButtonClickCount} - awarded 10 points`);
     }
+    
+    // Reset input counter after each calculate
+    this.calculatorInputsBeforeCalculate = 0;
+    
+    this.debouncedCalculateScore();
   }
 
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
@@ -253,10 +261,8 @@ class LeadTracker {
   }
 
   trackCalculatorInputChange(field: 'savings' | 'spending', value: number) {
-    // Track input changes before calculate button is clicked
-    if (!this.calculateButtonClicked) {
-      this.calculatorInputsBeforeCalculate++;
-    }
+    // Track input changes before next calculate button click
+    this.calculatorInputsBeforeCalculate++;
     
     // Update the actual values
     this.trackCalculatorInput(field, value);
@@ -295,7 +301,7 @@ class LeadTracker {
     let pdfPoints = 30;
     
     // Bonus points if done after calculation
-    if (wasCalculated && this.calculateButtonClicked) {
+    if (wasCalculated && this.calculateButtonClickCount > 0) {
       pdfPoints += 10; // Max 40 points total
     }
     
