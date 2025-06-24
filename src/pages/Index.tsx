@@ -11,7 +11,6 @@ import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
-
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -23,7 +22,7 @@ const Index = () => {
 
   // Audio player hook
   const audioPlayer = useAudioPlayer();
-  
+
   // Lead tracking hook
   const leadTracking = useLeadTracking();
 
@@ -41,18 +40,17 @@ const Index = () => {
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
-    
+
     // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
       setNeedsCalculation(true);
       leadTracking.trackCalculatorInputChange('savings', value);
     }
   };
-  
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setMonthlySpending(value);
-    
+
     // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
       setNeedsCalculation(true);
@@ -64,7 +62,7 @@ const Index = () => {
   const handleCalculate = () => {
     setHasCalculated(true);
     setNeedsCalculation(false);
-    
+
     // Track this calculation (will award points for each click)
     leadTracking.trackCalculateButtonClick();
     leadTracking.trackCalculatorInput('savings', currentSavings);
@@ -74,7 +72,6 @@ const Index = () => {
   // Calculate retirement projections (only if hasCalculated is true and no pending changes)
   const projectionData = useMemo(() => {
     if (!hasCalculated || needsCalculation) return [];
-    
     const data = [];
     let balance = currentSavings;
     const annualSpending = monthlySpending * 12;
@@ -98,7 +95,6 @@ const Index = () => {
   // Calculate safe withdrawal amount using proper present value formula
   const safeMonthlyAmount = useMemo(() => {
     if (!hasCalculated || needsCalculation) return 0;
-    
     const returnRate = 0.06;
     const inflationRate = 0.03;
     const years = 30;
@@ -107,8 +103,7 @@ const Index = () => {
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings, hasCalculated, needsCalculation]);
-  
-  const yearsUntilEmpty = hasCalculated && !needsCalculation ? (projectionData[projectionData.length - 1]?.year || 30) : 0;
+  const yearsUntilEmpty = hasCalculated && !needsCalculation ? projectionData[projectionData.length - 1]?.year || 30 : 0;
   const isMoneyLasting = hasCalculated && !needsCalculation ? yearsUntilEmpty >= 30 : false;
 
   // Track projected results when they change
@@ -254,12 +249,10 @@ const Index = () => {
       resolve(canvas.toDataURL('image/png', 1.0));
     });
   };
-
   const handleExportPDF = async () => {
     if (firstName && email) {
       const wasCalculated = hasCalculated && !needsCalculation;
       leadTracking.trackPDFRequest(firstName, email, wasCalculated);
-      
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
 
@@ -388,7 +381,6 @@ const Index = () => {
       setEmail("");
     }
   };
-
   const scrollToContact = () => {
     leadTracking.trackContactFormSubmission();
     const contactSection = document.getElementById('contact-section');
@@ -396,11 +388,10 @@ const Index = () => {
       behavior: 'smooth'
     });
   };
-
   const handleListenNow = async () => {
     console.log('=== Listen Now button clicked ===');
     leadTracking.trackPodcastPlay();
-    
+
     // Test multiple potential paths
     const possiblePaths = ['/retirement-podcast.mp3', './retirement-podcast.mp3', 'retirement-podcast.mp3', '/public/retirement-podcast.mp3'];
     console.log('Testing possible file paths:', possiblePaths);
@@ -434,7 +425,6 @@ const Index = () => {
   const handleEducationalClick = () => {
     leadTracking.trackEducationalContentClick();
   };
-
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -550,18 +540,13 @@ const Index = () => {
 
                 {/* Calculate Button */}
                 <div className="pt-4">
-                  <Button 
-                    onClick={handleCalculate} 
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg font-semibold"
-                  >
+                  <Button onClick={handleCalculate} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg font-semibold">
                     <Calculator className="w-5 h-5 mr-2" />
                     {hasCalculated && needsCalculation ? 'Recalculate My Plan' : 'Calculate My Retirement Plan'}
                   </Button>
-                  {needsCalculation && (
-                    <p className="text-sm text-amber-600 mt-2 text-center">
+                  {needsCalculation && <p className="text-sm text-amber-600 mt-2 text-center">
                       Values changed - click to recalculate results
-                    </p>
-                  )}
+                    </p>}
                 </div>
 
                 {/* Assumptions Section */}
@@ -609,70 +594,69 @@ const Index = () => {
                 <CardDescription className="text-slate-600">How your savings will change over 30 years</CardDescription>
               </CardHeader>
               <CardContent className="p-6">
-                {hasCalculated && !needsCalculation ? (
-                  <>
+                {hasCalculated && !needsCalculation ? <>
                     <div className="h-80 -mx-2">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={projectionData} margin={{
-                          top: 30,
-                          right: 30,
-                          left: 30,
-                          bottom: 50
-                        }}>
+                        top: 30,
+                        right: 30,
+                        left: 30,
+                        bottom: 50
+                      }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
                           <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                            stroke: '#cbd5e1',
-                            strokeWidth: 1
-                          }} tickLine={{
-                            stroke: '#cbd5e1'
-                          }} label={{
-                            value: 'Years in Retirement',
-                            position: 'insideBottom',
-                            offset: -30,
-                            style: {
-                              textAnchor: 'middle',
-                              fontSize: '12px',
-                              fontWeight: '500',
-                              fill: '#64748b'
-                            }
-                          }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
+                          stroke: '#cbd5e1',
+                          strokeWidth: 1
+                        }} tickLine={{
+                          stroke: '#cbd5e1'
+                        }} label={{
+                          value: 'Years in Retirement',
+                          position: 'insideBottom',
+                          offset: -30,
+                          style: {
+                            textAnchor: 'middle',
+                            fontSize: '12px',
+                            fontWeight: '500',
+                            fill: '#64748b'
+                          }
+                        }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
                           <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                            stroke: '#cbd5e1',
-                            strokeWidth: 1
-                          }} tickLine={{
-                            stroke: '#cbd5e1'
-                          }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
-                            value: 'Remaining Balance',
-                            angle: -90,
-                            position: 'insideLeft',
-                            offset: -20,
-                            style: {
-                              textAnchor: 'middle',
-                              fontWeight: '500',
-                              fontSize: '12px',
-                              fill: '#64748b'
-                            }
-                          }} />
+                          stroke: '#cbd5e1',
+                          strokeWidth: 1
+                        }} tickLine={{
+                          stroke: '#cbd5e1'
+                        }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                          value: 'Remaining Balance',
+                          angle: -90,
+                          position: 'insideLeft',
+                          offset: -20,
+                          style: {
+                            textAnchor: 'middle',
+                            fontWeight: '500',
+                            fontSize: '12px',
+                            fill: '#64748b'
+                          }
+                        }} />
                           <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e2e8f0',
-                            borderRadius: '12px',
-                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                            fontSize: '14px',
-                            fontWeight: '500'
-                          }} cursor={{
-                            stroke: '#059669',
-                            strokeWidth: 1,
-                            strokeDasharray: '4 4'
-                          }} />
+                          backgroundColor: 'white',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '12px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                          fontSize: '14px',
+                          fontWeight: '500'
+                        }} cursor={{
+                          stroke: '#059669',
+                          strokeWidth: 1,
+                          strokeDasharray: '4 4'
+                        }} />
                           <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
-                            r: 6,
-                            fill: '#059669',
-                            stroke: '#ffffff',
-                            strokeWidth: 2
-                          }} style={{
-                            filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
-                          }} />
+                          r: 6,
+                          fill: '#059669',
+                          stroke: '#ffffff',
+                          strokeWidth: 2
+                        }} style={{
+                          filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                        }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -725,23 +709,17 @@ const Index = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
-                  </>
-                ) : (
-                  <div className="h-80 flex items-center justify-center">
+                  </> : <div className="h-80 flex items-center justify-center">
                     <div className="text-center text-slate-500">
                       <Calculator className="w-16 h-16 mx-auto mb-4 opacity-50" />
                       <h3 className="text-xl font-semibold mb-2">
                         {needsCalculation ? 'Values Changed' : 'Ready to Calculate?'}
                       </h3>
                       <p>
-                        {needsCalculation 
-                          ? 'Click "Recalculate" to see updated results' 
-                          : 'Click "Calculate My Retirement Plan" to see your personalized projection'
-                        }
+                        {needsCalculation ? 'Click "Recalculate" to see updated results' : 'Click "Calculate My Retirement Plan" to see your personalized projection'}
                       </p>
                     </div>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
             </Card>
           </div>
@@ -815,7 +793,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies for Married Couples</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
@@ -982,33 +960,17 @@ const Index = () => {
       </section>
 
       {/* Audio Player Component with tracking */}
-      <AudioPlayer 
-        audioRef={audioPlayer.audioRef} 
-        isPlaying={audioPlayer.isPlaying} 
-        duration={audioPlayer.duration} 
-        currentTime={audioPlayer.currentTime} 
-        volume={audioPlayer.volume} 
-        isVisible={audioPlayer.isVisible} 
-        isMinimized={audioPlayer.isMinimized} 
-        isLoading={audioPlayer.isLoading} 
-        error={audioPlayer.error} 
-        onTogglePlay={() => {
-          if (audioPlayer.isPlaying) {
-            leadTracking.trackPodcastPause();
-          } else {
-            leadTracking.trackPodcastPlay();
-          }
-          audioPlayer.togglePlay();
-        }}
-        onSeek={audioPlayer.seek} 
-        onVolumeChange={audioPlayer.changeVolume} 
-        onClose={() => {
+      <AudioPlayer audioRef={audioPlayer.audioRef} isPlaying={audioPlayer.isPlaying} duration={audioPlayer.duration} currentTime={audioPlayer.currentTime} volume={audioPlayer.volume} isVisible={audioPlayer.isVisible} isMinimized={audioPlayer.isMinimized} isLoading={audioPlayer.isLoading} error={audioPlayer.error} onTogglePlay={() => {
+        if (audioPlayer.isPlaying) {
           leadTracking.trackPodcastPause();
-          audioPlayer.closePlayer();
-        }}
-        onToggleMinimize={audioPlayer.toggleMinimize} 
-        onRetryLoad={audioPlayer.retryLoad} 
-      />
+        } else {
+          leadTracking.trackPodcastPlay();
+        }
+        audioPlayer.togglePlay();
+      }} onSeek={audioPlayer.seek} onVolumeChange={audioPlayer.changeVolume} onClose={() => {
+        leadTracking.trackPodcastPause();
+        audioPlayer.closePlayer();
+      }} onToggleMinimize={audioPlayer.toggleMinimize} onRetryLoad={audioPlayer.retryLoad} />
     </div>
   </TooltipProvider>;
 };
