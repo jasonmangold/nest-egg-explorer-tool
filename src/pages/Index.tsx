@@ -12,7 +12,6 @@ import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
-
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -796,7 +795,7 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies for Married Couples</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Retirement Claiming Strategies for Married Couples</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
