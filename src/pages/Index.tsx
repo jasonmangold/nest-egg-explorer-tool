@@ -11,6 +11,8 @@ import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
+import { openPDFByTitle } from '@/hooks/useEducationPDFs';
+
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(500000);
   const [monthlySpending, setMonthlySpending] = useState(3000);
@@ -421,9 +423,10 @@ const Index = () => {
     leadTracking.trackTooltipInteraction();
   };
 
-  // Track educational content clicks
-  const handleEducationalClick = () => {
+  // Track educational content clicks - now opens PDFs from Supabase
+  const handleEducationalClick = (documentTitle: string) => {
     leadTracking.trackEducationalContentClick();
+    openPDFByTitle(documentTitle);
   };
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
@@ -767,7 +770,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -782,7 +785,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -793,11 +796,11 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies for Married Couples</h3>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Claiming Strategies for Married Couples</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Claiming Strategies for Married Couples')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -825,7 +828,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -840,7 +843,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -855,7 +858,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={handleEducationalClick}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance')}>
                       Read Report
                     </Button>
                   </CardContent>
