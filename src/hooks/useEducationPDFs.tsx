@@ -10,7 +10,7 @@ export const useEducationPDFs = () => {
       const { data, error } = await supabase
         .from('Education')
         .select('DocumentTitle, file_path')
-        .eq('Active', 'Yes')
+        .eq('Active', 'Active')
         .not('file_path', 'is', null);
 
       if (error) {
@@ -32,7 +32,7 @@ export const openPDFByTitle = async (documentTitle: string) => {
       .from('Education')
       .select('file_path, DocumentTitle')
       .eq('DocumentTitle', documentTitle)
-      .eq('Active', 'Yes')
+      .eq('Active', 'Active')
       .not('file_path', 'is', null);
 
     if (error) {
