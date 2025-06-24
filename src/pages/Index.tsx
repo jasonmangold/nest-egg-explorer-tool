@@ -799,7 +799,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Claiming Strategies for Married Couples')}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples')}>
                       Read Report
                     </Button>
                   </CardContent>
