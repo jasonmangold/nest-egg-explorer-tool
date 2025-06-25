@@ -1,3 +1,4 @@
+
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -22,7 +23,7 @@ export interface LeadData {
     exportResultsClicks: number;
     listenNowClicks: number;
     readReportClicks: number;
-    readReportClicksUnique: Set<string>; // Track unique button clicks by ID
+    readReportClicksUnique: Set<string>;
     inputChangesBeforeCalculate: number;
   };
   calculatedScore: number;
@@ -62,10 +63,15 @@ export interface DashboardPayload {
   engagement_score: number;
   first_name?: string;
   email?: string;
-  upsert?: boolean; // Add flag to indicate this is an update
+  find_a_time_clicks: number;
+  contact_me_clicks: number;
+  export_results_clicks: number;
+  listen_now_clicks: number;
+  read_report_clicks: number;
+  read_report_unique_clicks: number;
 }
 
-// Updated scoring algorithm based on new requirements
+// Updated scoring algorithm
 function calculateLeadScore(data: LeadData) {
   let score = 0;
   
@@ -86,60 +92,55 @@ function calculateLeadScore(data: LeadData) {
     playerClosedEarly: data.negativeFlags.playerClosedEarly
   });
   
-  // 🔥 High-Intent Interactions (Conversion-Driven)
+  // High-Intent Interactions
   if (data.userInputs.firstName && data.userInputs.email) {
-    score += 35; // Form Completion
+    score += 35;
     console.log('Added 35 points for form completion');
   }
   
   if (data.interactions.findATimeClicks > 0) {
-    score += 35; // Find a Time (first click only)
+    score += 35;
     console.log('Added 35 points for Find a Time click');
   }
   
   if (data.interactions.contactMeClicks > 0) {
-    score += 30; // Contact Me (first click only)
+    score += 30;
     console.log('Added 30 points for Contact Me click');
   }
   
   if (data.interactions.calculateButtonClicks > 0) {
-    score += 25; // Calculate Button (once per session)
+    score += 25;
     console.log('Added 25 points for Calculate button click');
   }
   
-  // Export Results with bonus logic
   if (data.interactions.exportResultsClicks > 0) {
     score += 20;
     console.log('Added 20 points for Export Results');
-    // +10 bonus if done after Calculate (max +40 total)
     if (data.interactions.calculateButtonClicks > 0) {
       score += 10;
       console.log('Added 10 bonus points for Export Results after Calculate');
     }
   }
   
-  // 🎧 Content Engagement Interactions
+  // Content Engagement
   if (data.interactions.listenNowClicks > 0) {
-    score += 10; // Listen Now (first click only)
+    score += 10;
     console.log('Added 10 points for Listen Now click');
   }
   
-  // Read Report clicks - 5 points per unique button (max 6 buttons = 30 points)
   const uniqueReadReportPoints = data.interactions.readReportClicksUnique.size * 5;
   score += uniqueReadReportPoints;
   if (uniqueReadReportPoints > 0) {
     console.log(`Added ${uniqueReadReportPoints} points for ${data.interactions.readReportClicksUnique.size} unique Read Report buttons`);
   }
   
-  // Podcast listening time (+2 per minute, max 10)
   const podcastPoints = Math.min(10, Math.floor(data.interactions.podcastListenTime / 60) * 2);
   score += podcastPoints;
   if (podcastPoints > 0) {
     console.log(`Added ${podcastPoints} points for podcast listening time`);
   }
   
-  // 📊 Tool Engagement (Exploratory)
-  // Calculator input changes (only if Calculate was eventually clicked)
+  // Tool Engagement
   if (data.interactions.calculateButtonClicks > 0) {
     const inputChangePoints = Math.min(8, data.interactions.inputChangesBeforeCalculate * 2);
     score += inputChangePoints;
@@ -148,33 +149,31 @@ function calculateLeadScore(data: LeadData) {
     }
   }
   
-  // Scroll past 75%
   if (data.interactions.scrollPercentage > 75) {
     score += 10;
     console.log('Added 10 points for scrolling past 75%');
   }
   
-  // 💬 Behavioral & Loyalty
   // Time on page scoring
-  if (data.interactions.timeOnPage >= 600) { // 10+ minutes
+  if (data.interactions.timeOnPage >= 600) {
     score += 15;
     console.log('Added 15 points for 10+ minutes on page');
-  } else if (data.interactions.timeOnPage >= 300) { // 5-10 minutes
+  } else if (data.interactions.timeOnPage >= 300) {
     score += 10;
     console.log('Added 10 points for 5-10 minutes on page');
-  } else if (data.interactions.timeOnPage >= 120) { // 2-5 minutes
+  } else if (data.interactions.timeOnPage >= 120) {
     score += 5;
     console.log('Added 5 points for 2-5 minutes on page');
   }
   
-  // 🚫 Negative/Disqualifying
+  // Negative flags
   if (data.negativeFlags.quickBounce) {
-    score -= 15; // Quick bounce (<10s)
+    score -= 15;
     console.log('Deducted 15 points for quick bounce');
   }
   
   if (data.negativeFlags.playerClosedEarly) {
-    score -= 8; // Close player within 5 seconds
+    score -= 8;
     console.log('Deducted 8 points for player closed early');
   }
   
@@ -183,7 +182,6 @@ function calculateLeadScore(data: LeadData) {
   return finalScore;
 }
 
-// Updated lead quality determination - using proper case to match database constraint
 function determineLeadQuality(score: number): 'Premium' | 'Hot' | 'Warm' | 'Cold' {
   if (score >= 120) return 'Premium';
   if (score >= 80) return 'Hot';
@@ -191,16 +189,10 @@ function determineLeadQuality(score: number): 'Premium' | 'Hot' | 'Warm' | 'Cold
   return 'Cold';
 }
 
-// Function to submit lead data with UPSERT capability
+// Enhanced API submission with proper UPSERT
 async function submitLeadData(leadData: DashboardPayload) {
   try {
     console.log('📤 Submitting lead data with UPSERT:', leadData);
-    
-    // Add upsert flag to indicate this should update existing records
-    const payloadWithUpsert = {
-      ...leadData,
-      upsert: true
-    };
     
     const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
       method: 'POST',
@@ -208,7 +200,10 @@ async function submitLeadData(leadData: DashboardPayload) {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
       },
-      body: JSON.stringify(payloadWithUpsert),
+      body: JSON.stringify({
+        ...leadData,
+        operation: 'UPSERT' // Explicit UPSERT operation
+      }),
       mode: 'cors'
     });
     
@@ -232,10 +227,7 @@ async function submitLeadData(leadData: DashboardPayload) {
 class LeadTracker {
   private leadData: LeadData;
   private startTime: number;
-  private lastScrollPosition: number = 0;
   private maxScrollPercentage: number = 0;
-  private lastScoreCalculation: number = 0;
-  private scoreDebounceDelay: number = 2000;
   private submissionInterval: NodeJS.Timeout | null = null;
   private hasSubmittedInitially: boolean = false;
 
@@ -259,7 +251,7 @@ class LeadTracker {
         exportResultsClicks: 0,
         listenNowClicks: 0,
         readReportClicks: 0,
-        readReportClicksUnique: new Set<string>(), // Initialize unique tracking
+        readReportClicksUnique: new Set<string>(),
         inputChangesBeforeCalculate: 0
       },
       calculatedScore: 0,
@@ -287,34 +279,27 @@ class LeadTracker {
     setInterval(() => {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
       
-      // Check for quick bounce - only set once when under 10 seconds
       if (this.leadData.interactions.timeOnPage < 10) {
         this.leadData.negativeFlags.quickBounce = true;
       } else if (this.leadData.interactions.timeOnPage >= 10) {
-        // Clear quick bounce flag if user stays longer than 10 seconds
         this.leadData.negativeFlags.quickBounce = false;
       }
       
-      this.debouncedCalculateScore();
+      this.calculateScore();
     }, 5000);
 
     // Track scroll depth
     window.addEventListener('scroll', this.handleScroll.bind(this));
-
-    // Track page visibility
     document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-
-    // Track before unload
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
 
     // Submit data every minute after initial 30 seconds
     setTimeout(() => {
-      this.submitLead(); // Initial submission after 30 seconds
+      this.submitLead();
       
-      // Then submit every minute
       this.submissionInterval = setInterval(() => {
         this.submitLead();
-      }, 60000); // 60 seconds = 1 minute
+      }, 60000);
     }, 30000);
   }
 
@@ -326,7 +311,7 @@ class LeadTracker {
     if (scrollPercentage > this.maxScrollPercentage) {
       this.maxScrollPercentage = scrollPercentage;
       this.leadData.interactions.scrollPercentage = this.maxScrollPercentage;
-      this.debouncedCalculateScore();
+      this.calculateScore();
     }
   }
 
@@ -343,20 +328,13 @@ class LeadTracker {
     }
   }
 
-  private debouncedCalculateScore() {
-    const now = Date.now();
-    if (now - this.lastScoreCalculation > this.scoreDebounceDelay) {
-      this.calculateScore();
-      this.lastScoreCalculation = now;
-    }
-  }
-
-  // Public tracking methods with improved logging
+  // Public tracking methods with enhanced logging
   trackCalculateButtonClick() {
+    console.log('🎯 TRACK: Calculate button clicked!');
     if (this.leadData.interactions.calculateButtonClicks === 0) {
       this.leadData.interactions.calculateButtonClicks = 1;
-      console.log('🎯 TRACK: Calculate button clicked - will award 25 points');
-      this.calculateScore(); // Calculate immediately to see the effect
+      console.log('✅ Calculate button clicked - will award 25 points');
+      this.calculateScore();
       this.submitLead();
     } else {
       console.log('⚠️ Calculate button already clicked - no additional points');
@@ -413,16 +391,13 @@ class LeadTracker {
   trackReadReportClick(buttonId?: string) {
     console.log('🎯 TRACK: Read Report button clicked!', buttonId ? `ID: ${buttonId}` : 'No ID provided');
     
-    // Track total clicks for legacy compatibility
     this.leadData.interactions.readReportClicks++;
     
-    // Track unique button clicks with ID (if provided)
     if (buttonId && !this.leadData.interactions.readReportClicksUnique.has(buttonId)) {
       this.leadData.interactions.readReportClicksUnique.add(buttonId);
       console.log(`✅ Read Report button ${buttonId} clicked - awarded 5 points (unique)`);
       this.calculateScore();
     } else if (!buttonId) {
-      // Fallback for buttons without ID - treat as unique up to 6 times
       const uniqueClicksCount = this.leadData.interactions.readReportClicksUnique.size;
       if (uniqueClicksCount < 6) {
         const fallbackId = `fallback-${uniqueClicksCount + 1}`;
@@ -443,7 +418,7 @@ class LeadTracker {
     } else {
       this.leadData.userInputs.monthlySpending = value;
     }
-    this.debouncedCalculateScore();
+    this.calculateScore();
   }
 
   trackCalculatorInputChange(field: 'savings' | 'spending', value: number) {
@@ -457,7 +432,7 @@ class LeadTracker {
       yearsUntilEmpty,
       isMoneyLasting
     };
-    this.debouncedCalculateScore();
+    this.calculateScore();
   }
 
   trackPodcastPlay() {
@@ -474,7 +449,7 @@ class LeadTracker {
 
   trackPodcastEngagement(timeInSeconds: number) {
     this.leadData.interactions.podcastListenTime = timeInSeconds;
-    this.debouncedCalculateScore();
+    this.calculateScore();
     console.log('Podcast engagement tracked:', timeInSeconds, 'seconds');
   }
 
@@ -503,13 +478,13 @@ class LeadTracker {
 
   trackTooltipInteraction() {
     this.leadData.interactions.tooltipInteractions++;
-    this.debouncedCalculateScore();
+    this.calculateScore();
     console.log('Tooltip interaction tracked');
   }
 
   trackEducationalContentClick() {
     this.leadData.interactions.educationalContentClicks++;
-    this.debouncedCalculateScore();
+    this.calculateScore();
     console.log('Educational content click tracked');
   }
 
@@ -518,19 +493,19 @@ class LeadTracker {
     this.leadData.calculatedScore = calculateLeadScore(this.leadData);
     this.leadData.leadQuality = determineLeadQuality(this.leadData.calculatedScore);
 
-    console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
+    if (oldScore !== this.leadData.calculatedScore) {
+      console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
+    }
   }
 
-  // Submit lead data to API with UPSERT
   private async submitLead() {
-    // Submit if lead has any meaningful engagement or basic activity
     if (this.leadData.calculatedScore >= 5 || 
         this.leadData.interactions.pdfRequested || 
         this.leadData.interactions.contactFormSubmitted ||
         this.leadData.interactions.calculateButtonClicks > 0 ||
         this.leadData.interactions.findATimeClicks > 0 ||
         this.leadData.interactions.contactMeClicks > 0 ||
-        this.leadData.interactions.timeOnPage > 60) { // Include leads with 1+ minute on page
+        this.leadData.interactions.timeOnPage > 60) {
       
       try {
         const payload = this.createDashboardPayload();
@@ -576,7 +551,13 @@ class LeadTracker {
       educational_content_clicks: this.leadData.interactions.educationalContentClicks,
       engagement_score: this.leadData.calculatedScore,
       first_name: this.leadData.userInputs.firstName,
-      email: this.leadData.userInputs.email
+      email: this.leadData.userInputs.email,
+      find_a_time_clicks: this.leadData.interactions.findATimeClicks,
+      contact_me_clicks: this.leadData.interactions.contactMeClicks,
+      export_results_clicks: this.leadData.interactions.exportResultsClicks,
+      listen_now_clicks: this.leadData.interactions.listenNowClicks,
+      read_report_clicks: this.leadData.interactions.readReportClicks,
+      read_report_unique_clicks: this.leadData.interactions.readReportClicksUnique.size
     };
   }
 
