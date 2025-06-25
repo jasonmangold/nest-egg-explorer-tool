@@ -1,4 +1,3 @@
-
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -238,7 +237,7 @@ class LeadTracker {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
       
       // Check for quick bounce
-      if (this.leadData.interactions.timeOnPage < 10 && !this.negativeFlags.quickBounce) {
+      if (this.leadData.interactions.timeOnPage < 10 && !this.leadData.negativeFlags.quickBounce) {
         this.leadData.negativeFlags.quickBounce = true;
       }
       
