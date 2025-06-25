@@ -1,4 +1,3 @@
-
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -40,7 +39,7 @@ export interface LeadData {
 }
 
 export interface DashboardPayload {
-  leadId: string; // Changed from lead_id
+  leadId: string;
   timestamp: string;
   score: number;
   quality: string;
@@ -63,6 +62,7 @@ export interface DashboardPayload {
   engagement_score: number;
   first_name?: string;
   email?: string;
+  upsert?: boolean; // Add flag to indicate this is an update
 }
 
 // Updated scoring algorithm based on new requirements
@@ -191,17 +191,24 @@ function determineLeadQuality(score: number): 'Premium' | 'Hot' | 'Warm' | 'Cold
   return 'Cold';
 }
 
-// Function to submit lead data
+// Function to submit lead data with UPSERT capability
 async function submitLeadData(leadData: DashboardPayload) {
   try {
-    console.log('📤 Submitting lead data:', leadData);
+    console.log('📤 Submitting lead data with UPSERT:', leadData);
+    
+    // Add upsert flag to indicate this should update existing records
+    const payloadWithUpsert = {
+      ...leadData,
+      upsert: true
+    };
+    
     const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
       },
-      body: JSON.stringify(leadData),
+      body: JSON.stringify(payloadWithUpsert),
       mode: 'cors'
     });
     
@@ -212,7 +219,7 @@ async function submitLeadData(leadData: DashboardPayload) {
     }
     
     const result = await response.json();
-    console.log('✅ Lead data submitted successfully to Supabase:', result);
+    console.log('✅ Lead data submitted/updated successfully:', result);
     return result;
   } catch (error) {
     console.error('❌ Error submitting lead data to Supabase:', error);
@@ -230,6 +237,7 @@ class LeadTracker {
   private lastScoreCalculation: number = 0;
   private scoreDebounceDelay: number = 2000;
   private submissionInterval: NodeJS.Timeout | null = null;
+  private hasSubmittedInitially: boolean = false;
 
   constructor() {
     this.leadData = {
@@ -497,7 +505,7 @@ class LeadTracker {
     console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
   }
 
-  // Submit lead data to API
+  // Submit lead data to API with UPSERT
   private async submitLead() {
     // Submit if lead has any meaningful engagement or basic activity
     if (this.leadData.calculatedScore >= 5 || 
@@ -511,9 +519,15 @@ class LeadTracker {
       try {
         const payload = this.createDashboardPayload();
         await submitLeadData(payload);
-        console.log('✅ Lead submitted successfully');
+        
+        if (!this.hasSubmittedInitially) {
+          console.log('✅ Initial lead submission successful');
+          this.hasSubmittedInitially = true;
+        } else {
+          console.log('✅ Lead update successful');
+        }
       } catch (error) {
-        console.error('❌ Failed to submit lead data:', error);
+        console.error('❌ Failed to submit/update lead data:', error);
       }
     } else {
       console.log('⏳ Lead not yet eligible for submission (score:', this.leadData.calculatedScore, ', time:', this.leadData.interactions.timeOnPage, 's)');
@@ -524,7 +538,7 @@ class LeadTracker {
     const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
     
     return {
-      leadId: this.leadData.sessionId, // Changed from lead_id to leadId
+      leadId: this.leadData.sessionId,
       timestamp: new Date().toISOString(),
       score: this.leadData.calculatedScore,
       quality: this.leadData.leadQuality,
