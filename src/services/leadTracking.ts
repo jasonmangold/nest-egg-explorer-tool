@@ -229,8 +229,7 @@ class LeadTracker {
   private maxScrollPercentage: number = 0;
   private lastScoreCalculation: number = 0;
   private scoreDebounceDelay: number = 2000;
-  private lastSubmissionTime: number = 0;
-  private submissionCooldown: number = 30000; // 30 second cooldown
+  private submissionInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     this.leadData = {
@@ -300,8 +299,15 @@ class LeadTracker {
     // Track before unload
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
 
-    // Submit after 30 seconds
-    setTimeout(() => this.trySubmitLead(), 30000);
+    // Submit data every minute after initial 30 seconds
+    setTimeout(() => {
+      this.submitLead(); // Initial submission after 30 seconds
+      
+      // Then submit every minute
+      this.submissionInterval = setInterval(() => {
+        this.submitLead();
+      }, 60000); // 60 seconds = 1 minute
+    }, 30000);
   }
 
   private handleScroll() {
@@ -318,12 +324,15 @@ class LeadTracker {
 
   private handleVisibilityChange() {
     if (document.hidden) {
-      this.trySubmitLead();
+      this.submitLead();
     }
   }
 
   private handleBeforeUnload() {
-    this.trySubmitLead();
+    this.submitLead();
+    if (this.submissionInterval) {
+      clearInterval(this.submissionInterval);
+    }
   }
 
   private debouncedCalculateScore() {
@@ -338,43 +347,43 @@ class LeadTracker {
   trackCalculateButtonClick() {
     if (this.leadData.interactions.calculateButtonClicks === 0) {
       this.leadData.interactions.calculateButtonClicks = 1;
-      console.log('Calculate button clicked - awarded 25 points');
+      console.log('✅ Calculate button clicked - awarded 25 points');
       this.calculateScore(); // Calculate immediately to see the effect
-      this.trySubmitLead();
+      this.submitLead();
     }
   }
 
   trackFindATimeClick() {
     if (this.leadData.interactions.findATimeClicks === 0) {
       this.leadData.interactions.findATimeClicks = 1;
-      console.log('Find a Time clicked - awarded 35 points');
+      console.log('✅ Find a Time clicked - awarded 35 points');
       this.calculateScore();
-      this.trySubmitLead();
+      this.submitLead();
     }
   }
 
   trackContactMeClick() {
     if (this.leadData.interactions.contactMeClicks === 0) {
       this.leadData.interactions.contactMeClicks = 1;
-      console.log('Contact Me clicked - awarded 30 points');
+      console.log('✅ Contact Me clicked - awarded 30 points');
       this.calculateScore();
-      this.trySubmitLead();
+      this.submitLead();
     }
   }
 
   trackExportResultsClick() {
     if (this.leadData.interactions.exportResultsClicks === 0) {
       this.leadData.interactions.exportResultsClicks = 1;
-      console.log('Export Results clicked - awarded points');
+      console.log('✅ Export Results clicked - awarded points');
       this.calculateScore();
-      this.trySubmitLead();
+      this.submitLead();
     }
   }
 
   trackListenNowClick() {
     if (this.leadData.interactions.listenNowClicks === 0) {
       this.leadData.interactions.listenNowClicks = 1;
-      console.log('Listen Now clicked - awarded 10 points');
+      console.log('✅ Listen Now clicked - awarded 10 points');
       this.calculateScore();
     }
   }
@@ -386,7 +395,7 @@ class LeadTracker {
     // Track unique button clicks with ID (if provided)
     if (buttonId && !this.leadData.interactions.readReportClicksUnique.has(buttonId)) {
       this.leadData.interactions.readReportClicksUnique.add(buttonId);
-      console.log(`Read Report button ${buttonId} clicked - awarded 5 points (unique)`);
+      console.log(`✅ Read Report button ${buttonId} clicked - awarded 5 points (unique)`);
       this.calculateScore();
     } else if (!buttonId) {
       // Fallback for buttons without ID - treat as unique up to 6 times
@@ -394,11 +403,13 @@ class LeadTracker {
       if (uniqueClicksCount < 6) {
         const fallbackId = `fallback-${uniqueClicksCount + 1}`;
         this.leadData.interactions.readReportClicksUnique.add(fallbackId);
-        console.log(`Read Report clicked - awarded 5 points (fallback unique: ${fallbackId})`);
+        console.log(`✅ Read Report clicked - awarded 5 points (fallback unique: ${fallbackId})`);
         this.calculateScore();
       } else {
-        console.log('Read Report clicked - no additional points (max 6 unique buttons reached)');
+        console.log('⚠️ Read Report clicked - no additional points (max 6 unique buttons reached)');
       }
+    } else {
+      console.log(`⚠️ Read Report button ${buttonId} already clicked - no additional points`);
     }
   }
 
@@ -455,14 +466,14 @@ class LeadTracker {
     this.leadData.interactions.pdfRequested = true;
     
     this.calculateScore();
-    this.trySubmitLead();
+    this.submitLead();
     console.log('PDF request tracked:', firstName, email);
   }
 
   trackContactFormSubmission() {
     this.leadData.interactions.contactFormSubmitted = true;
     this.calculateScore();
-    this.trySubmitLead();
+    this.submitLead();
     console.log('Contact form submission tracked');
   }
 
@@ -486,32 +497,26 @@ class LeadTracker {
     console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
   }
 
-  // Throttled submission method
-  private async trySubmitLead() {
-    const now = Date.now();
-    
-    // Check cooldown period
-    if (now - this.lastSubmissionTime < this.submissionCooldown) {
-      console.log('Submission throttled, waiting for cooldown...');
-      return;
-    }
-
-    // Submit if lead has any meaningful engagement
-    if (this.leadData.calculatedScore >= 20 || 
+  // Submit lead data to API
+  private async submitLead() {
+    // Submit if lead has any meaningful engagement or basic activity
+    if (this.leadData.calculatedScore >= 5 || 
         this.leadData.interactions.pdfRequested || 
         this.leadData.interactions.contactFormSubmitted ||
         this.leadData.interactions.calculateButtonClicks > 0 ||
         this.leadData.interactions.findATimeClicks > 0 ||
-        this.leadData.interactions.contactMeClicks > 0) {
+        this.leadData.interactions.contactMeClicks > 0 ||
+        this.leadData.interactions.timeOnPage > 60) { // Include leads with 1+ minute on page
       
       try {
         const payload = this.createDashboardPayload();
         await submitLeadData(payload);
-        this.lastSubmissionTime = now;
         console.log('✅ Lead submitted successfully');
       } catch (error) {
         console.error('❌ Failed to submit lead data:', error);
       }
+    } else {
+      console.log('⏳ Lead not yet eligible for submission (score:', this.leadData.calculatedScore, ', time:', this.leadData.interactions.timeOnPage, 's)');
     }
   }
 
