@@ -351,52 +351,68 @@ class LeadTracker {
     }
   }
 
-  // Public tracking methods
+  // Public tracking methods with improved logging
   trackCalculateButtonClick() {
     if (this.leadData.interactions.calculateButtonClicks === 0) {
       this.leadData.interactions.calculateButtonClicks = 1;
-      console.log('✅ Calculate button clicked - awarded 25 points');
+      console.log('🎯 TRACK: Calculate button clicked - will award 25 points');
       this.calculateScore(); // Calculate immediately to see the effect
       this.submitLead();
+    } else {
+      console.log('⚠️ Calculate button already clicked - no additional points');
     }
   }
 
   trackFindATimeClick() {
+    console.log('🎯 TRACK: Find a Time button clicked!');
     if (this.leadData.interactions.findATimeClicks === 0) {
       this.leadData.interactions.findATimeClicks = 1;
       console.log('✅ Find a Time clicked - awarded 35 points');
       this.calculateScore();
       this.submitLead();
+    } else {
+      console.log('⚠️ Find a Time already clicked - no additional points');
     }
   }
 
   trackContactMeClick() {
+    console.log('🎯 TRACK: Contact Me button clicked!');
     if (this.leadData.interactions.contactMeClicks === 0) {
       this.leadData.interactions.contactMeClicks = 1;
       console.log('✅ Contact Me clicked - awarded 30 points');
       this.calculateScore();
       this.submitLead();
+    } else {
+      console.log('⚠️ Contact Me already clicked - no additional points');
     }
   }
 
   trackExportResultsClick() {
+    console.log('🎯 TRACK: Export Results button clicked!');
     if (this.leadData.interactions.exportResultsClicks === 0) {
       this.leadData.interactions.exportResultsClicks = 1;
       console.log('✅ Export Results clicked - awarded points');
       this.calculateScore();
       this.submitLead();
+    } else {
+      console.log('⚠️ Export Results already clicked - no additional points');
     }
   }
 
   trackListenNowClick() {
+    console.log('🎯 TRACK: Listen Now button clicked!');
     if (this.leadData.interactions.listenNowClicks === 0) {
       this.leadData.interactions.listenNowClicks = 1;
       console.log('✅ Listen Now clicked - awarded 10 points');
       this.calculateScore();
+    } else {
+      console.log('⚠️ Listen Now already clicked - no additional points');
     }
   }
 
   trackReadReportClick(buttonId?: string) {
+    console.log('🎯 TRACK: Read Report button clicked!', buttonId ? `ID: ${buttonId}` : 'No ID provided');
+    
     // Track total clicks for legacy compatibility
     this.leadData.interactions.readReportClicks++;
     
