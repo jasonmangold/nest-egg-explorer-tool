@@ -26,7 +26,7 @@ export interface LeadData {
     inputChangesBeforeCalculate: number;
   };
   calculatedScore: number;
-  leadQuality: 'unqualified' | 'cold' | 'warm' | 'hot';
+  leadQuality: 'Premium' | 'Hot' | 'Warm' | 'Cold';
   projectedResults: {
     safeMonthlyAmount: number;
     yearsUntilEmpty: number;
@@ -39,33 +39,29 @@ export interface LeadData {
 }
 
 export interface DashboardPayload {
-  leadId: string;
+  lead_id: string;
+  timestamp: string;
   score: number;
   quality: string;
-  timestamp: string;
-  pageMetrics: {
-    timeOnPage: number;
-    scrollDepth: number;
-    bounced: boolean;
-  };
-  financialProfile: {
-    currentSavings: number;
-    monthlySpending: number;
-    safeWithdrawalAmount: number;
-    retirementViability: string;
-  };
-  engagementData: {
-    calculatorInteractions: number;
-    pdfDownloaded: boolean;
-    podcastEngagement: number;
-    contactAttempted: boolean;
-    calculateButtonClicks: number;
-    tooltipInteractions: number;
-  };
-  contactInfo?: {
-    firstName: string;
-    email: string;
-  };
+  time_on_page: number;
+  scroll_depth: number;
+  bounced: boolean;
+  current_savings: number;
+  monthly_spending: number;
+  safe_withdrawal_amount: number;
+  retirement_viability: string;
+  calculator_interactions: number;
+  pdf_downloaded: boolean;
+  podcast_engagement: number;
+  contact_attempted: boolean;
+  calculate_button_clicks: number;
+  input_changes_before_calculate: number;
+  podcast_listen_time: number;
+  tooltip_interactions: number;
+  educational_content_clicks: number;
+  engagement_score: number;
+  first_name?: string;
+  email?: string;
 }
 
 // Updated scoring algorithm based on new requirements
@@ -185,16 +181,16 @@ function calculateLeadScore(data: LeadData) {
   return finalScore;
 }
 
-// Updated lead quality determination - using lowercase to match database constraint
-function determineLeadQuality(score: number): 'unqualified' | 'cold' | 'warm' | 'hot' {
-  if (score >= 120) return 'hot';
-  if (score >= 80) return 'warm';
-  if (score >= 20) return 'cold';
-  return 'unqualified';
+// Updated lead quality determination - using proper case to match database constraint
+function determineLeadQuality(score: number): 'Premium' | 'Hot' | 'Warm' | 'Cold' {
+  if (score >= 120) return 'Premium';
+  if (score >= 80) return 'Hot';
+  if (score >= 40) return 'Warm';
+  return 'Cold';
 }
 
 // Function to submit lead data
-async function submitLeadData(leadData: any) {
+async function submitLeadData(leadData: DashboardPayload) {
   try {
     console.log('📤 Submitting lead data:', leadData);
     const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
@@ -257,7 +253,7 @@ class LeadTracker {
         inputChangesBeforeCalculate: 0
       },
       calculatedScore: 0,
-      leadQuality: 'unqualified',
+      leadQuality: 'Cold',
       projectedResults: {
         safeMonthlyAmount: 0,
         yearsUntilEmpty: 0,
@@ -281,9 +277,12 @@ class LeadTracker {
     setInterval(() => {
       this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
       
-      // Check for quick bounce
-      if (this.leadData.interactions.timeOnPage < 10 && !this.leadData.negativeFlags.quickBounce) {
+      // Check for quick bounce - only set once when under 10 seconds
+      if (this.leadData.interactions.timeOnPage < 10) {
         this.leadData.negativeFlags.quickBounce = true;
+      } else if (this.leadData.interactions.timeOnPage >= 10) {
+        // Clear quick bounce flag if user stays longer than 10 seconds
+        this.leadData.negativeFlags.quickBounce = false;
       }
       
       this.debouncedCalculateScore();
@@ -500,33 +499,29 @@ class LeadTracker {
     const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
     
     return {
-      leadId: this.leadData.sessionId,
+      lead_id: this.leadData.sessionId,
+      timestamp: new Date().toISOString(),
       score: this.leadData.calculatedScore,
       quality: this.leadData.leadQuality,
-      timestamp: new Date().toISOString(),
-      pageMetrics: {
-        timeOnPage: Math.round(this.leadData.interactions.timeOnPage),
-        scrollDepth: Math.round(this.leadData.interactions.scrollPercentage),
-        bounced
-      },
-      financialProfile: {
-        currentSavings: this.leadData.userInputs.currentSavings || 0,
-        monthlySpending: this.leadData.userInputs.monthlySpending || 0,
-        safeWithdrawalAmount: this.leadData.projectedResults.safeMonthlyAmount,
-        retirementViability: this.leadData.projectedResults.isMoneyLasting ? 'Sustainable' : 'Needs Adjustment'
-      },
-      engagementData: {
-        calculatorInteractions: this.leadData.interactions.calculatorUsage,
-        pdfDownloaded: this.leadData.interactions.pdfRequested,
-        podcastEngagement: this.leadData.interactions.podcastListenTime,
-        contactAttempted: this.leadData.interactions.contactFormSubmitted,
-        calculateButtonClicks: this.leadData.interactions.calculateButtonClicks,
-        tooltipInteractions: this.leadData.interactions.tooltipInteractions
-      },
-      contactInfo: this.leadData.userInputs.firstName && this.leadData.userInputs.email ? {
-        firstName: this.leadData.userInputs.firstName,
-        email: this.leadData.userInputs.email
-      } : undefined
+      time_on_page: Math.round(this.leadData.interactions.timeOnPage),
+      scroll_depth: Math.round(this.leadData.interactions.scrollPercentage),
+      bounced,
+      current_savings: this.leadData.userInputs.currentSavings || 0,
+      monthly_spending: this.leadData.userInputs.monthlySpending || 0,
+      safe_withdrawal_amount: this.leadData.projectedResults.safeMonthlyAmount,
+      retirement_viability: this.leadData.projectedResults.isMoneyLasting ? 'Sustainable' : 'Needs Adjustment',
+      calculator_interactions: this.leadData.interactions.calculatorUsage,
+      pdf_downloaded: this.leadData.interactions.pdfRequested,
+      podcast_engagement: this.leadData.interactions.podcastListenTime,
+      contact_attempted: this.leadData.interactions.contactFormSubmitted,
+      calculate_button_clicks: this.leadData.interactions.calculateButtonClicks,
+      input_changes_before_calculate: this.leadData.interactions.inputChangesBeforeCalculate,
+      podcast_listen_time: this.leadData.interactions.podcastListenTime,
+      tooltip_interactions: this.leadData.interactions.tooltipInteractions,
+      educational_content_clicks: this.leadData.interactions.educationalContentClicks,
+      engagement_score: this.leadData.calculatedScore,
+      first_name: this.leadData.userInputs.firstName,
+      email: this.leadData.userInputs.email
     };
   }
 
