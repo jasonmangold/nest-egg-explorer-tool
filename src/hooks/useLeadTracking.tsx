@@ -15,6 +15,26 @@ export const useLeadTracking = () => {
     tracker.trackCalculateButtonClick();
   };
 
+  const trackFindATimeClick = () => {
+    tracker.trackFindATimeClick();
+  };
+
+  const trackContactMeClick = () => {
+    tracker.trackContactMeClick();
+  };
+
+  const trackExportResultsClick = () => {
+    tracker.trackExportResultsClick();
+  };
+
+  const trackListenNowClick = () => {
+    tracker.trackListenNowClick();
+  };
+
+  const trackReadReportClick = () => {
+    tracker.trackReadReportClick();
+  };
+
   const trackCalculatorInput = (field: 'savings' | 'spending', value: number) => {
     tracker.trackCalculatorInput(field, value);
   };
@@ -65,8 +85,17 @@ export const useLeadTracking = () => {
     }
   };
 
+  const trackPlayerClosedEarly = () => {
+    tracker.trackPlayerClosedEarly();
+  };
+
   return {
     trackCalculateButtonClick,
+    trackFindATimeClick,
+    trackContactMeClick,
+    trackExportResultsClick,
+    trackListenNowClick,
+    trackReadReportClick,
     trackCalculatorInput,
     trackCalculatorInputChange,
     trackProjectedResults,
@@ -77,6 +106,7 @@ export const useLeadTracking = () => {
     trackPodcastPlay,
     trackPodcastPause,
     trackPodcastEnded,
+    trackPlayerClosedEarly,
     getLeadData: () => tracker.getLeadData()
   };
 };
