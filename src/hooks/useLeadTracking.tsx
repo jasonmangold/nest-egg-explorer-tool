@@ -1,7 +1,6 @@
 
 import { useEffect, useRef } from 'react';
 import { getLeadTracker } from '@/services/leadTracking';
-import { trackButtonClick, trackInput, trackResults, trackPDFRequest, trackFormSubmission, trackEducationalContent, trackTooltip, trackPodcast } from '@/utils/trackingHelpers';
 
 export const useLeadTracking = () => {
   const tracker = getLeadTracker();
@@ -9,76 +8,78 @@ export const useLeadTracking = () => {
 
   useEffect(() => {
     console.log('📊 Lead tracking hook initialized');
-    // Test the tracking system
     console.log('🔍 Testing tracking system...');
   }, []);
 
   const trackCalculateButtonClick = () => {
     console.log('🎯 useLeadTracking: trackCalculateButtonClick called');
-    trackButtonClick.calculate();
+    tracker.trackCalculateButtonClick();
   };
 
   const trackFindATimeClick = () => {
     console.log('🎯 useLeadTracking: trackFindATimeClick called');
-    trackButtonClick.findATime();
+    tracker.trackFindATimeClick();
   };
 
   const trackContactMeClick = () => {
     console.log('🎯 useLeadTracking: trackContactMeClick called');
-    trackButtonClick.contactMe();
+    tracker.trackContactMeClick();
   };
 
   const trackExportResultsClick = () => {
     console.log('🎯 useLeadTracking: trackExportResultsClick called');
-    trackButtonClick.exportResults();
+    tracker.trackExportResultsClick();
   };
 
   const trackListenNowClick = () => {
     console.log('🎯 useLeadTracking: trackListenNowClick called');
-    trackButtonClick.listenNow();
+    tracker.trackListenNowClick();
   };
 
   const trackReadReportClick = (buttonId?: string) => {
     console.log('🎯 useLeadTracking: trackReadReportClick called with ID:', buttonId);
-    trackButtonClick.readReport(buttonId);
+    tracker.trackReadReportClick(buttonId);
   };
 
   const trackCalculatorInput = (field: 'savings' | 'spending', value: number) => {
-    if (field === 'savings') {
-      trackInput.savings(value);
-    } else {
-      trackInput.spending(value);
-    }
+    console.log('🎯 useLeadTracking: trackCalculatorInput called with:', field, value);
+    tracker.trackCalculatorInput(field, value);
   };
 
   const trackCalculatorInputChange = (field: 'savings' | 'spending', value: number) => {
-    trackCalculatorInput(field, value);
+    console.log('🎯 useLeadTracking: trackCalculatorInputChange called with:', field, value);
+    tracker.trackCalculatorInputChange(field, value);
   };
 
   const trackProjectedResults = (safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) => {
-    trackResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
+    console.log('🎯 useLeadTracking: trackProjectedResults called with:', { safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting });
+    tracker.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
   };
 
   const trackPDFRequest = (firstName: string, email: string, wasCalculated: boolean = false) => {
-    trackPDFRequest(firstName, email, wasCalculated);
+    console.log('🎯 useLeadTracking: trackPDFRequest called with:', { firstName, email, wasCalculated });
+    tracker.trackPDFRequest(firstName, email, wasCalculated);
   };
 
   const trackContactFormSubmission = () => {
-    trackFormSubmission();
+    console.log('🎯 useLeadTracking: trackContactFormSubmission called');
+    tracker.trackContactFormSubmission();
   };
 
   const trackTooltipInteraction = () => {
-    trackTooltip();
+    console.log('🎯 useLeadTracking: trackTooltipInteraction called');
+    tracker.trackTooltipInteraction();
   };
 
   const trackEducationalContentClick = () => {
-    trackEducationalContent();
+    console.log('🎯 useLeadTracking: trackEducationalContentClick called');
+    tracker.trackEducationalContentClick();
   };
 
   const trackPodcastPlay = () => {
     podcastStartTime.current = Date.now();
-    trackPodcast.play();
-    console.log('Podcast play started');
+    tracker.trackPodcastPlay();
+    console.log('🎯 useLeadTracking: Podcast play started');
   };
 
   const trackPodcastPause = () => {
@@ -87,7 +88,8 @@ export const useLeadTracking = () => {
       tracker.trackPodcastEngagement(listenTime);
       podcastStartTime.current = null;
     }
-    trackPodcast.pause();
+    tracker.trackPodcastPause();
+    console.log('🎯 useLeadTracking: Podcast paused');
   };
 
   const trackPodcastEnded = () => {
@@ -96,11 +98,13 @@ export const useLeadTracking = () => {
       tracker.trackPodcastEngagement(listenTime);
       podcastStartTime.current = null;
     }
-    trackPodcast.ended();
+    tracker.trackPodcastEnded();
+    console.log('🎯 useLeadTracking: Podcast ended');
   };
 
   const trackPlayerClosedEarly = () => {
-    trackPodcast.closedEarly();
+    tracker.trackPlayerClosedEarly();
+    console.log('🎯 useLeadTracking: Player closed early');
   };
 
   return {

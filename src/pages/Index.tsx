@@ -253,6 +253,7 @@ const Index = () => {
   const handleExportPDF = async () => {
     if (firstName && email) {
       const wasCalculated = hasCalculated && !needsCalculation;
+      leadTracking.trackExportResultsClick();
       leadTracking.trackPDFRequest(firstName, email, wasCalculated);
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -383,7 +384,7 @@ const Index = () => {
     }
   };
   const scrollToContact = () => {
-    leadTracking.trackContactFormSubmission();
+    leadTracking.trackContactMeClick();
     const contactSection = document.getElementById('contact-section');
     contactSection?.scrollIntoView({
       behavior: 'smooth'
@@ -391,7 +392,7 @@ const Index = () => {
   };
   const handleListenNow = async () => {
     console.log('=== Listen Now button clicked ===');
-    leadTracking.trackPodcastPlay();
+    leadTracking.trackListenNowClick();
 
     // Test multiple potential paths
     const possiblePaths = ['/retirement-podcast.mp3', './retirement-podcast.mp3', 'retirement-podcast.mp3', '/public/retirement-podcast.mp3'];
@@ -423,10 +424,21 @@ const Index = () => {
   };
 
   // Track educational content clicks - now opens PDFs from Supabase
-  const handleEducationalClick = (documentTitle: string) => {
+  const handleEducationalClick = (documentTitle: string, buttonId?: string) => {
     leadTracking.trackEducationalContentClick();
+    if (documentTitle.includes('Read Report') || buttonId) {
+      leadTracking.trackReadReportClick(buttonId || `report-${Date.now()}`);
+    }
     openPDFByTitle(documentTitle);
   };
+
+  // New handler for Find a Time button
+  const handleFindATimeClick = () => {
+    console.log('🎯 Find a Time button clicked!');
+    leadTracking.trackFindATimeClick();
+    scrollToContact();
+  };
+
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Enhanced Financial Background */}
@@ -735,7 +747,7 @@ const Index = () => {
                 <p className="text-emerald-100 mb-6">
                   Schedule a meeting with a financial professional to create a personalized retirement strategy.
                 </p>
-                <Button size="lg" variant="secondary" className="bg-white text-emerald-600 hover:bg-emerald-50" onClick={scrollToContact}>
+                <Button size="lg" variant="secondary" className="bg-white text-emerald-600 hover:bg-emerald-50" onClick={handleFindATimeClick}>
                   Find a Time
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
@@ -769,7 +781,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning')}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -784,7 +796,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works')}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -799,7 +811,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples')}>
+                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -827,7 +839,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt')}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -842,7 +854,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works')}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -857,7 +869,7 @@ const Index = () => {
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance')}>
+                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -962,17 +974,33 @@ const Index = () => {
       </section>
 
       {/* Audio Player Component with tracking */}
-      <AudioPlayer audioRef={audioPlayer.audioRef} isPlaying={audioPlayer.isPlaying} duration={audioPlayer.duration} currentTime={audioPlayer.currentTime} volume={audioPlayer.volume} isVisible={audioPlayer.isVisible} isMinimized={audioPlayer.isMinimized} isLoading={audioPlayer.isLoading} error={audioPlayer.error} onTogglePlay={() => {
-        if (audioPlayer.isPlaying) {
+      <AudioPlayer 
+        audioRef={audioPlayer.audioRef} 
+        isPlaying={audioPlayer.isPlaying} 
+        duration={audioPlayer.duration} 
+        currentTime={audioPlayer.currentTime} 
+        volume={audioPlayer.volume} 
+        isVisible={audioPlayer.isVisible} 
+        isMinimized={audioPlayer.isMinimized} 
+        isLoading={audioPlayer.isLoading} 
+        error={audioPlayer.error} 
+        onTogglePlay={() => {
+          if (audioPlayer.isPlaying) {
+            leadTracking.trackPodcastPause();
+          } else {
+            leadTracking.trackPodcastPlay();
+          }
+          audioPlayer.togglePlay();
+        }} 
+        onSeek={audioPlayer.seek} 
+        onVolumeChange={audioPlayer.changeVolume} 
+        onClose={() => {
           leadTracking.trackPodcastPause();
-        } else {
-          leadTracking.trackPodcastPlay();
-        }
-        audioPlayer.togglePlay();
-      }} onSeek={audioPlayer.seek} onVolumeChange={audioPlayer.changeVolume} onClose={() => {
-        leadTracking.trackPodcastPause();
-        audioPlayer.closePlayer();
-      }} onToggleMinimize={audioPlayer.toggleMinimize} onRetryLoad={audioPlayer.retryLoad} />
+          audioPlayer.closePlayer();
+        }} 
+        onToggleMinimize={audioPlayer.toggleMinimize} 
+        onRetryLoad={audioPlayer.retryLoad} 
+      />
     </div>
   </TooltipProvider>;
 };

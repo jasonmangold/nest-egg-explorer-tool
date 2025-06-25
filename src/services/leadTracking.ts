@@ -194,16 +194,13 @@ async function submitLeadData(leadData: DashboardPayload) {
   try {
     console.log('📤 Submitting lead data with UPSERT:', leadData);
     
-    const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
+    const response = await fetch('https://gmksmcjmrsedozzkfewq.supabase.co/functions/v1/api-leads', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImttZm93dWhzaWxrcGd0dXJidW11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAyODI2NDEsImV4cCI6MjA2NTg1ODY0MX0.zmCFsruKxL6N6hToX2GOKzMyzcelLSfwgcFmqKrG7s4'
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdta3NtY2ptcnNlZG96emtmZXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgxMjMsImV4cCI6MjA2NTQxNDEyM30.R3OmuPbcw7aRonYJ8eqq8FaZ_U5DLRZaGc7ILD53KEw'
       },
-      body: JSON.stringify({
-        ...leadData,
-        operation: 'UPSERT' // Explicit UPSERT operation
-      }),
+      body: JSON.stringify(leadData),
       mode: 'cors'
     });
     
