@@ -542,7 +542,7 @@ export const getLeadTracker = (): LeadTracker => {
   if (!globalLeadTracker) {
     globalLeadTracker = new LeadTracker();
   }
-  return globalLeadTraacker;
+  return globalLeadTracker;
 };
 
 export default LeadTracker;
