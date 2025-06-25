@@ -23,6 +23,7 @@ export interface LeadData {
     exportResultsClicks: number;
     listenNowClicks: number;
     readReportClicks: number;
+    readReportClicksUnique: Set<string>; // Track unique button clicks by ID
     inputChangesBeforeCalculate: number;
   };
   calculatedScore: number;
@@ -39,7 +40,7 @@ export interface LeadData {
 }
 
 export interface DashboardPayload {
-  lead_id: string;
+  leadId: string; // Changed from lead_id
   timestamp: string;
   score: number;
   quality: string;
@@ -76,6 +77,7 @@ function calculateLeadScore(data: LeadData) {
     exportResultsClicks: data.interactions.exportResultsClicks,
     listenNowClicks: data.interactions.listenNowClicks,
     readReportClicks: data.interactions.readReportClicks,
+    readReportUniqueCount: data.interactions.readReportClicksUnique.size,
     podcastListenTime: data.interactions.podcastListenTime,
     inputChangesBeforeCalculate: data.interactions.inputChangesBeforeCalculate,
     scrollPercentage: data.interactions.scrollPercentage,
@@ -122,11 +124,11 @@ function calculateLeadScore(data: LeadData) {
     console.log('Added 10 points for Listen Now click');
   }
   
-  // Read Report clicks (up to 30 points, max 6 unique clicks)
-  const readReportPoints = Math.min(30, data.interactions.readReportClicks * 5);
-  score += readReportPoints;
-  if (readReportPoints > 0) {
-    console.log(`Added ${readReportPoints} points for Read Report clicks`);
+  // Read Report clicks - 5 points per unique button (max 6 buttons = 30 points)
+  const uniqueReadReportPoints = data.interactions.readReportClicksUnique.size * 5;
+  score += uniqueReadReportPoints;
+  if (uniqueReadReportPoints > 0) {
+    console.log(`Added ${uniqueReadReportPoints} points for ${data.interactions.readReportClicksUnique.size} unique Read Report buttons`);
   }
   
   // Podcast listening time (+2 per minute, max 10)
@@ -250,6 +252,7 @@ class LeadTracker {
         exportResultsClicks: 0,
         listenNowClicks: 0,
         readReportClicks: 0,
+        readReportClicksUnique: new Set<string>(), // Initialize unique tracking
         inputChangesBeforeCalculate: 0
       },
       calculatedScore: 0,
@@ -376,10 +379,27 @@ class LeadTracker {
     }
   }
 
-  trackReadReportClick() {
+  trackReadReportClick(buttonId?: string) {
+    // Track total clicks for legacy compatibility
     this.leadData.interactions.readReportClicks++;
-    console.log('Read Report clicked - awarded 5 points');
-    this.calculateScore();
+    
+    // Track unique button clicks with ID (if provided)
+    if (buttonId && !this.leadData.interactions.readReportClicksUnique.has(buttonId)) {
+      this.leadData.interactions.readReportClicksUnique.add(buttonId);
+      console.log(`Read Report button ${buttonId} clicked - awarded 5 points (unique)`);
+      this.calculateScore();
+    } else if (!buttonId) {
+      // Fallback for buttons without ID - treat as unique up to 6 times
+      const uniqueClicksCount = this.leadData.interactions.readReportClicksUnique.size;
+      if (uniqueClicksCount < 6) {
+        const fallbackId = `fallback-${uniqueClicksCount + 1}`;
+        this.leadData.interactions.readReportClicksUnique.add(fallbackId);
+        console.log(`Read Report clicked - awarded 5 points (fallback unique: ${fallbackId})`);
+        this.calculateScore();
+      } else {
+        console.log('Read Report clicked - no additional points (max 6 unique buttons reached)');
+      }
+    }
   }
 
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
@@ -499,7 +519,7 @@ class LeadTracker {
     const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
     
     return {
-      lead_id: this.leadData.sessionId,
+      leadId: this.leadData.sessionId, // Changed from lead_id to leadId
       timestamp: new Date().toISOString(),
       score: this.leadData.calculatedScore,
       quality: this.leadData.leadQuality,

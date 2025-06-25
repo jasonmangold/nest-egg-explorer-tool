@@ -31,8 +31,8 @@ export const useLeadTracking = () => {
     tracker.trackListenNowClick();
   };
 
-  const trackReadReportClick = () => {
-    tracker.trackReadReportClick();
+  const trackReadReportClick = (buttonId?: string) => {
+    tracker.trackReadReportClick(buttonId);
   };
 
   const trackCalculatorInput = (field: 'savings' | 'spending', value: number) => {
