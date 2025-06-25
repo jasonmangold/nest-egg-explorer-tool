@@ -1,3 +1,4 @@
+
 export interface LeadData {
   sessionId: string;
   timestamp: Date;
@@ -25,7 +26,7 @@ export interface LeadData {
     inputChangesBeforeCalculate: number;
   };
   calculatedScore: number;
-  leadQuality: 'Unqualified' | 'Cold' | 'Warm' | 'Hot';
+  leadQuality: 'unqualified' | 'cold' | 'warm' | 'hot';
   projectedResults: {
     safeMonthlyAmount: number;
     yearsUntilEmpty: number;
@@ -71,87 +72,131 @@ export interface DashboardPayload {
 function calculateLeadScore(data: LeadData) {
   let score = 0;
   
+  console.log('🔍 Calculating lead score with data:', {
+    formCompleted: !!(data.userInputs.firstName && data.userInputs.email),
+    findATimeClicks: data.interactions.findATimeClicks,
+    contactMeClicks: data.interactions.contactMeClicks,
+    calculateButtonClicks: data.interactions.calculateButtonClicks,
+    exportResultsClicks: data.interactions.exportResultsClicks,
+    listenNowClicks: data.interactions.listenNowClicks,
+    readReportClicks: data.interactions.readReportClicks,
+    podcastListenTime: data.interactions.podcastListenTime,
+    inputChangesBeforeCalculate: data.interactions.inputChangesBeforeCalculate,
+    scrollPercentage: data.interactions.scrollPercentage,
+    timeOnPage: data.interactions.timeOnPage,
+    quickBounce: data.negativeFlags.quickBounce,
+    playerClosedEarly: data.negativeFlags.playerClosedEarly
+  });
+  
   // 🔥 High-Intent Interactions (Conversion-Driven)
   if (data.userInputs.firstName && data.userInputs.email) {
     score += 35; // Form Completion
+    console.log('Added 35 points for form completion');
   }
   
   if (data.interactions.findATimeClicks > 0) {
     score += 35; // Find a Time (first click only)
+    console.log('Added 35 points for Find a Time click');
   }
   
   if (data.interactions.contactMeClicks > 0) {
     score += 30; // Contact Me (first click only)
+    console.log('Added 30 points for Contact Me click');
   }
   
   if (data.interactions.calculateButtonClicks > 0) {
     score += 25; // Calculate Button (once per session)
+    console.log('Added 25 points for Calculate button click');
   }
   
   // Export Results with bonus logic
   if (data.interactions.exportResultsClicks > 0) {
     score += 20;
+    console.log('Added 20 points for Export Results');
     // +10 bonus if done after Calculate (max +40 total)
     if (data.interactions.calculateButtonClicks > 0) {
       score += 10;
+      console.log('Added 10 bonus points for Export Results after Calculate');
     }
   }
   
   // 🎧 Content Engagement Interactions
   if (data.interactions.listenNowClicks > 0) {
     score += 10; // Listen Now (first click only)
+    console.log('Added 10 points for Listen Now click');
   }
   
   // Read Report clicks (up to 30 points, max 6 unique clicks)
-  score += Math.min(30, data.interactions.readReportClicks * 5);
+  const readReportPoints = Math.min(30, data.interactions.readReportClicks * 5);
+  score += readReportPoints;
+  if (readReportPoints > 0) {
+    console.log(`Added ${readReportPoints} points for Read Report clicks`);
+  }
   
   // Podcast listening time (+2 per minute, max 10)
-  score += Math.min(10, Math.floor(data.interactions.podcastListenTime / 60) * 2);
+  const podcastPoints = Math.min(10, Math.floor(data.interactions.podcastListenTime / 60) * 2);
+  score += podcastPoints;
+  if (podcastPoints > 0) {
+    console.log(`Added ${podcastPoints} points for podcast listening time`);
+  }
   
   // 📊 Tool Engagement (Exploratory)
   // Calculator input changes (only if Calculate was eventually clicked)
   if (data.interactions.calculateButtonClicks > 0) {
-    score += Math.min(8, data.interactions.inputChangesBeforeCalculate * 2);
+    const inputChangePoints = Math.min(8, data.interactions.inputChangesBeforeCalculate * 2);
+    score += inputChangePoints;
+    if (inputChangePoints > 0) {
+      console.log(`Added ${inputChangePoints} points for input changes before calculate`);
+    }
   }
   
   // Scroll past 75%
   if (data.interactions.scrollPercentage > 75) {
     score += 10;
+    console.log('Added 10 points for scrolling past 75%');
   }
   
   // 💬 Behavioral & Loyalty
   // Time on page scoring
   if (data.interactions.timeOnPage >= 600) { // 10+ minutes
     score += 15;
+    console.log('Added 15 points for 10+ minutes on page');
   } else if (data.interactions.timeOnPage >= 300) { // 5-10 minutes
     score += 10;
+    console.log('Added 10 points for 5-10 minutes on page');
   } else if (data.interactions.timeOnPage >= 120) { // 2-5 minutes
     score += 5;
+    console.log('Added 5 points for 2-5 minutes on page');
   }
   
   // 🚫 Negative/Disqualifying
   if (data.negativeFlags.quickBounce) {
     score -= 15; // Quick bounce (<10s)
+    console.log('Deducted 15 points for quick bounce');
   }
   
   if (data.negativeFlags.playerClosedEarly) {
     score -= 8; // Close player within 5 seconds
+    console.log('Deducted 8 points for player closed early');
   }
   
-  return Math.max(0, score); // Ensure score doesn't go negative
+  const finalScore = Math.max(0, score);
+  console.log(`🎯 Final calculated score: ${finalScore}`);
+  return finalScore;
 }
 
-// Updated lead quality determination
-function determineLeadQuality(score: number): 'Unqualified' | 'Cold' | 'Warm' | 'Hot' {
-  if (score >= 120) return 'Hot';
-  if (score >= 80) return 'Warm';
-  if (score >= 20) return 'Cold';
-  return 'Unqualified';
+// Updated lead quality determination - using lowercase to match database constraint
+function determineLeadQuality(score: number): 'unqualified' | 'cold' | 'warm' | 'hot' {
+  if (score >= 120) return 'hot';
+  if (score >= 80) return 'warm';
+  if (score >= 20) return 'cold';
+  return 'unqualified';
 }
 
 // Function to submit lead data
 async function submitLeadData(leadData: any) {
   try {
+    console.log('📤 Submitting lead data:', leadData);
     const response = await fetch('https://kmfowuhsilkpgturbumu.supabase.co/functions/v1/api-leads', {
       method: 'POST',
       headers: {
@@ -212,7 +257,7 @@ class LeadTracker {
         inputChangesBeforeCalculate: 0
       },
       calculatedScore: 0,
-      leadQuality: 'Unqualified',
+      leadQuality: 'unqualified',
       projectedResults: {
         safeMonthlyAmount: 0,
         yearsUntilEmpty: 0,
@@ -292,7 +337,7 @@ class LeadTracker {
     if (this.leadData.interactions.calculateButtonClicks === 0) {
       this.leadData.interactions.calculateButtonClicks = 1;
       console.log('Calculate button clicked - awarded 25 points');
-      this.debouncedCalculateScore();
+      this.calculateScore(); // Calculate immediately to see the effect
       this.trySubmitLead();
     }
   }
@@ -301,7 +346,7 @@ class LeadTracker {
     if (this.leadData.interactions.findATimeClicks === 0) {
       this.leadData.interactions.findATimeClicks = 1;
       console.log('Find a Time clicked - awarded 35 points');
-      this.debouncedCalculateScore();
+      this.calculateScore();
       this.trySubmitLead();
     }
   }
@@ -310,7 +355,7 @@ class LeadTracker {
     if (this.leadData.interactions.contactMeClicks === 0) {
       this.leadData.interactions.contactMeClicks = 1;
       console.log('Contact Me clicked - awarded 30 points');
-      this.debouncedCalculateScore();
+      this.calculateScore();
       this.trySubmitLead();
     }
   }
@@ -319,7 +364,7 @@ class LeadTracker {
     if (this.leadData.interactions.exportResultsClicks === 0) {
       this.leadData.interactions.exportResultsClicks = 1;
       console.log('Export Results clicked - awarded points');
-      this.debouncedCalculateScore();
+      this.calculateScore();
       this.trySubmitLead();
     }
   }
@@ -328,14 +373,14 @@ class LeadTracker {
     if (this.leadData.interactions.listenNowClicks === 0) {
       this.leadData.interactions.listenNowClicks = 1;
       console.log('Listen Now clicked - awarded 10 points');
-      this.debouncedCalculateScore();
+      this.calculateScore();
     }
   }
 
   trackReadReportClick() {
     this.leadData.interactions.readReportClicks++;
     console.log('Read Report clicked - awarded 5 points');
-    this.debouncedCalculateScore();
+    this.calculateScore();
   }
 
   trackCalculatorInput(field: 'savings' | 'spending', value: number) {
@@ -382,7 +427,7 @@ class LeadTracker {
   trackPlayerClosedEarly() {
     this.leadData.negativeFlags.playerClosedEarly = true;
     console.log('Player closed early - deducted 8 points');
-    this.debouncedCalculateScore();
+    this.calculateScore();
   }
 
   trackPDFRequest(firstName: string, email: string, wasCalculated: boolean = false) {
@@ -419,12 +464,10 @@ class LeadTracker {
     this.leadData.calculatedScore = calculateLeadScore(this.leadData);
     this.leadData.leadQuality = determineLeadQuality(this.leadData.calculatedScore);
 
-    if (Math.abs(this.leadData.calculatedScore - oldScore) >= 5) {
-      console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
-    }
+    console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
   }
 
-  // Throttled submission method (replaces onUserInteraction)
+  // Throttled submission method
   private async trySubmitLead() {
     const now = Date.now();
     
@@ -499,7 +542,7 @@ export const getLeadTracker = (): LeadTracker => {
   if (!globalLeadTracker) {
     globalLeadTracker = new LeadTracker();
   }
-  return globalLeadTracker;
+  return globalLeadTraacker;
 };
 
 export default LeadTracker;
