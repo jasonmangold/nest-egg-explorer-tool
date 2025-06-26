@@ -442,7 +442,7 @@ class EnhancedLeadTracker {
 
     try {
       const response = await fetch(this.config.apiEndpoint, {
-        method: 'POST',
+        method: 'UPSERT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.config.apiKey}`
