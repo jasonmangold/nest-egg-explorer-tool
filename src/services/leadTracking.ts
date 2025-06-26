@@ -1,4 +1,3 @@
-
 export interface CompleteLeadPayload {
   // Required Core Fields
   leadId: string;
@@ -345,7 +344,7 @@ class EnhancedLeadTracker {
     return !!(firstName && email);
   }
 
-  private getCurrentFinancialData() {
+  private getCurrentFinancialData(): CompleteLeadPayload['financialProfile'] {
     try {
       const currentSavings = 
         parseFloat((document.querySelector('[data-field="current-savings"], #currentSavings, input[name="currentSavings"]') as HTMLInputElement)?.value) || 100000;
@@ -357,7 +356,7 @@ class EnhancedLeadTracker {
         parseFloat((document.querySelector('[data-field="safe-withdrawal"], #safeWithdrawal, input[name="safeWithdrawal"]') as HTMLInputElement)?.value) || 4000;
       
       const viabilityElement = document.querySelector('[data-field="viability"], #viability, .viability-result');
-      const retirementViability = viabilityElement?.textContent?.toLowerCase().includes('sustainable') ? 'Sustainable' : 'Needs Adjustment';
+      const retirementViability: 'Sustainable' | 'Needs Adjustment' = viabilityElement?.textContent?.toLowerCase().includes('sustainable') ? 'Sustainable' : 'Needs Adjustment';
 
       return {
         currentSavings,
