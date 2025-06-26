@@ -64,7 +64,8 @@ serve(async (req) => {
       export_results_clicks: body.export_results_clicks || 0,
       listen_now_clicks: body.listen_now_clicks || 0,
       read_report_clicks: body.read_report_clicks || 0,
-      read_report_unique_clicks: body.read_report_unique_clicks || 0
+      read_report_unique_clicks: body.read_report_unique_clicks || 0,
+      status: body.status || 'new'
     }
 
     console.log('💾 Prepared lead data for upsert:', leadData)
