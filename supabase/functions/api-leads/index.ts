@@ -46,7 +46,7 @@ serve(async (req) => {
       current_savings: body.current_savings || 0,
       monthly_spending: body.monthly_spending || 0,
       safe_withdrawal_amount: body.safe_withdrawal_amount || 0,
-      retirement_viability: body.retirement_viability || 'Unknown',
+      retirement_viability: body.retirement_viability || 'Needs Adjustment',
       calculator_interactions: body.calculator_interactions || 0,
       pdf_downloaded: body.pdf_downloaded || false,
       podcast_engagement: body.podcast_engagement || 0,
