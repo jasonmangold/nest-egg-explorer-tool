@@ -1,576 +1,529 @@
 
-export interface LeadData {
-  sessionId: string;
-  timestamp: Date;
-  userInputs: {
-    currentSavings?: number;
-    monthlySpending?: number;
-    firstName?: string;
-    email?: string;
-  };
-  interactions: {
+export interface CompleteLeadPayload {
+  // Required Core Fields
+  leadId: string;
+  score: number;
+  quality: 'Cold' | 'Warm' | 'Hot' | 'Premium';
+  timestamp: string;
+
+  // Page Metrics
+  pageMetrics: {
     timeOnPage: number;
-    scrollPercentage: number;
-    calculatorUsage: number;
-    podcastListenTime: number;
-    pdfRequested: boolean;
-    contactFormSubmitted: boolean;
+    scrollDepth: number;
+    bounced: boolean;
+  };
+
+  // Financial Profile
+  financialProfile: {
+    currentSavings: number;
+    monthlySpending: number;
+    safeWithdrawalAmount: number;
+    retirementViability: 'Sustainable' | 'Needs Adjustment';
+  };
+
+  // Basic Engagement Data (legacy)
+  engagementData: {
+    calculatorInteractions: number;
+    pdfDownloaded: boolean;
+    podcastEngagement: number;
+    contactAttempted: boolean;
+  };
+
+  // NEW: Enhanced Engagement Tracking
+  enhancedEngagement: {
+    // High-Intent Interactions
+    findTimeClicked: boolean;
+    contactMeClicked: boolean;
+    calculateButtonClicks: number;
+    exportResultsClicked: boolean;
+    exportAfterCalculate: boolean;
+
+    // Content Engagement
+    listenNowClicked: boolean;
+    readReportClicks: number;
+    podcastListenTime: number; // in seconds
+
+    // Tool Engagement
+    inputChangesBeforeCalculate: number;
+    scrolledPast75: boolean;
     tooltipInteractions: number;
     educationalContentClicks: number;
+
+    // Behavioral & Loyalty
+    sessionActiveTime: number; // active time only
+    returnVisits: number;
+
+    // Negative/Disqualifying
+    quickBounce: boolean; // < 10 seconds
+    closedPlayerEarly: boolean; // < 5 seconds
+  };
+
+  // Contact Info (optional)
+  contactInfo?: {
+    firstName: string;
+    email: string;
+  };
+}
+
+class EnhancedLeadTracker {
+  private config: {
+    apiEndpoint: string;
+    apiKey: string;
+    sessionId: string;
+    pageLoadTime: number;
+    lastActiveTime: number;
+    debugMode: boolean;
+  };
+
+  private trackingData: {
+    maxScrollDepth: number;
+    timeOnPage: number;
+    activeTime: number;
+    bounced: boolean;
+    findTimeClicked: boolean;
+    contactMeClicked: boolean;
     calculateButtonClicks: number;
-    findATimeClicks: number;
-    contactMeClicks: number;
-    exportResultsClicks: number;
-    listenNowClicks: number;
+    exportResultsClicked: boolean;
+    exportAfterCalculate: boolean;
+    listenNowClicked: boolean;
     readReportClicks: number;
-    readReportClicksUnique: Set<string>;
+    podcastListenTime: number;
+    podcastStartTime: number | null;
     inputChangesBeforeCalculate: number;
-  };
-  calculatedScore: number;
-  leadQuality: 'Premium' | 'Hot' | 'Warm' | 'Cold';
-  projectedResults: {
-    safeMonthlyAmount: number;
-    yearsUntilEmpty: number;
-    isMoneyLasting: boolean;
-  };
-  negativeFlags: {
+    scrolledPast75: boolean;
+    tooltipInteractions: number;
+    educationalContentClicks: number;
+    calculatedYet: boolean;
+    returnVisits: number;
     quickBounce: boolean;
-    playerClosedEarly: boolean;
+    closedPlayerEarly: boolean;
+    calculatorInteractions: number;
+    pdfDownloaded: boolean;
+    podcastEngagement: number;
+    contactAttempted: boolean;
   };
-}
-
-export interface DashboardPayload {
-  leadId: string;
-  timestamp: string;
-  score: number;
-  quality: string;
-  time_on_page: number;
-  scroll_depth: number;
-  bounced: boolean;
-  current_savings: number;
-  monthly_spending: number;
-  safe_withdrawal_amount: number;
-  retirement_viability: string;
-  calculator_interactions: number;
-  pdf_downloaded: boolean;
-  podcast_engagement: number;
-  contact_attempted: boolean;
-  calculate_button_clicks: number;
-  input_changes_before_calculate: number;
-  podcast_listen_time: number;
-  tooltip_interactions: number;
-  educational_content_clicks: number;
-  engagement_score: number;
-  first_name?: string;
-  email?: string;
-  find_a_time_clicks: number;
-  contact_me_clicks: number;
-  export_results_clicks: number;
-  listen_now_clicks: number;
-  read_report_clicks: number;
-  read_report_unique_clicks: number;
-}
-
-// Updated scoring algorithm
-function calculateLeadScore(data: LeadData) {
-  let score = 0;
-  
-  console.log('🔍 Calculating lead score with data:', {
-    formCompleted: !!(data.userInputs.firstName && data.userInputs.email),
-    findATimeClicks: data.interactions.findATimeClicks,
-    contactMeClicks: data.interactions.contactMeClicks,
-    calculateButtonClicks: data.interactions.calculateButtonClicks,
-    exportResultsClicks: data.interactions.exportResultsClicks,
-    listenNowClicks: data.interactions.listenNowClicks,
-    readReportClicks: data.interactions.readReportClicks,
-    readReportUniqueCount: data.interactions.readReportClicksUnique.size,
-    podcastListenTime: data.interactions.podcastListenTime,
-    inputChangesBeforeCalculate: data.interactions.inputChangesBeforeCalculate,
-    scrollPercentage: data.interactions.scrollPercentage,
-    timeOnPage: data.interactions.timeOnPage,
-    quickBounce: data.negativeFlags.quickBounce,
-    playerClosedEarly: data.negativeFlags.playerClosedEarly
-  });
-  
-  // High-Intent Interactions
-  if (data.userInputs.firstName && data.userInputs.email) {
-    score += 35;
-    console.log('Added 35 points for form completion');
-  }
-  
-  if (data.interactions.findATimeClicks > 0) {
-    score += 35;
-    console.log('Added 35 points for Find a Time click');
-  }
-  
-  if (data.interactions.contactMeClicks > 0) {
-    score += 30;
-    console.log('Added 30 points for Contact Me click');
-  }
-  
-  if (data.interactions.calculateButtonClicks > 0) {
-    score += 25;
-    console.log('Added 25 points for Calculate button click');
-  }
-  
-  if (data.interactions.exportResultsClicks > 0) {
-    score += 20;
-    console.log('Added 20 points for Export Results');
-    if (data.interactions.calculateButtonClicks > 0) {
-      score += 10;
-      console.log('Added 10 bonus points for Export Results after Calculate');
-    }
-  }
-  
-  // Content Engagement
-  if (data.interactions.listenNowClicks > 0) {
-    score += 10;
-    console.log('Added 10 points for Listen Now click');
-  }
-  
-  const uniqueReadReportPoints = data.interactions.readReportClicksUnique.size * 5;
-  score += uniqueReadReportPoints;
-  if (uniqueReadReportPoints > 0) {
-    console.log(`Added ${uniqueReadReportPoints} points for ${data.interactions.readReportClicksUnique.size} unique Read Report buttons`);
-  }
-  
-  const podcastPoints = Math.min(10, Math.floor(data.interactions.podcastListenTime / 60) * 2);
-  score += podcastPoints;
-  if (podcastPoints > 0) {
-    console.log(`Added ${podcastPoints} points for podcast listening time`);
-  }
-  
-  // Tool Engagement
-  if (data.interactions.calculateButtonClicks > 0) {
-    const inputChangePoints = Math.min(8, data.interactions.inputChangesBeforeCalculate * 2);
-    score += inputChangePoints;
-    if (inputChangePoints > 0) {
-      console.log(`Added ${inputChangePoints} points for input changes before calculate`);
-    }
-  }
-  
-  if (data.interactions.scrollPercentage > 75) {
-    score += 10;
-    console.log('Added 10 points for scrolling past 75%');
-  }
-  
-  // Time on page scoring
-  if (data.interactions.timeOnPage >= 600) {
-    score += 15;
-    console.log('Added 15 points for 10+ minutes on page');
-  } else if (data.interactions.timeOnPage >= 300) {
-    score += 10;
-    console.log('Added 10 points for 5-10 minutes on page');
-  } else if (data.interactions.timeOnPage >= 120) {
-    score += 5;
-    console.log('Added 5 points for 2-5 minutes on page');
-  }
-  
-  // Negative flags
-  if (data.negativeFlags.quickBounce) {
-    score -= 15;
-    console.log('Deducted 15 points for quick bounce');
-  }
-  
-  if (data.negativeFlags.playerClosedEarly) {
-    score -= 8;
-    console.log('Deducted 8 points for player closed early');
-  }
-  
-  const finalScore = Math.max(0, score);
-  console.log(`🎯 Final calculated score: ${finalScore}`);
-  return finalScore;
-}
-
-function determineLeadQuality(score: number): 'Premium' | 'Hot' | 'Warm' | 'Cold' {
-  if (score >= 120) return 'Premium';
-  if (score >= 80) return 'Hot';
-  if (score >= 40) return 'Warm';
-  return 'Cold';
-}
-
-// Enhanced API submission with proper UPSERT
-async function submitLeadData(leadData: DashboardPayload) {
-  try {
-    console.log('📤 Submitting lead data with UPSERT:', leadData);
-    
-    const response = await fetch('https://gmksmcjmrsedozzkfewq.supabase.co/functions/v1/api-leads', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdta3NtY2ptcnNlZG96emtmZXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgxMjMsImV4cCI6MjA2NTQxNDEyM30.R3OmuPbcw7aRonYJ8eqq8FaZ_U5DLRZaGc7ILD53KEw'
-      },
-      body: JSON.stringify(leadData),
-      mode: 'cors'
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('❌ API Error Response:', errorText);
-      throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
-    }
-    
-    const result = await response.json();
-    console.log('✅ Lead data submitted/updated successfully:', result);
-    return result;
-  } catch (error) {
-    console.error('❌ Error submitting lead data to Supabase:', error);
-    // Store in localStorage as backup
-    localStorage.setItem(`leadData_${Date.now()}`, JSON.stringify(leadData));
-    throw error;
-  }
-}
-
-class LeadTracker {
-  private leadData: LeadData;
-  private startTime: number;
-  private maxScrollPercentage: number = 0;
-  private submissionInterval: NodeJS.Timeout | null = null;
-  private hasSubmittedInitially: boolean = false;
 
   constructor() {
-    this.leadData = {
+    this.config = {
+      apiEndpoint: 'https://gmksmcjmrsedozzkfewq.supabase.co/functions/v1/api-leads',
+      apiKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdta3NtY2ptcnNlZG96emtmZXdxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgxMjMsImV4cCI6MjA2NTQxNDEyM30.R3OmuPbcw7aRonYJ8eqq8FaZ_U5DLRZaGc7ILD53KEw',
       sessionId: this.generateSessionId(),
-      timestamp: new Date(),
-      userInputs: {},
-      interactions: {
-        timeOnPage: 0,
-        scrollPercentage: 0,
-        calculatorUsage: 0,
-        podcastListenTime: 0,
-        pdfRequested: false,
-        contactFormSubmitted: false,
-        tooltipInteractions: 0,
-        educationalContentClicks: 0,
-        calculateButtonClicks: 0,
-        findATimeClicks: 0,
-        contactMeClicks: 0,
-        exportResultsClicks: 0,
-        listenNowClicks: 0,
-        readReportClicks: 0,
-        readReportClicksUnique: new Set<string>(),
-        inputChangesBeforeCalculate: 0
-      },
-      calculatedScore: 0,
-      leadQuality: 'Cold',
-      projectedResults: {
-        safeMonthlyAmount: 0,
-        yearsUntilEmpty: 0,
-        isMoneyLasting: false
-      },
-      negativeFlags: {
-        quickBounce: false,
-        playerClosedEarly: false
-      }
+      pageLoadTime: Date.now(),
+      lastActiveTime: Date.now(),
+      debugMode: true
     };
-    this.startTime = Date.now();
+
+    this.trackingData = {
+      maxScrollDepth: 0,
+      timeOnPage: 0,
+      activeTime: 0,
+      bounced: false,
+      findTimeClicked: false,
+      contactMeClicked: false,
+      calculateButtonClicks: 0,
+      exportResultsClicked: false,
+      exportAfterCalculate: false,
+      listenNowClicked: false,
+      readReportClicks: 0,
+      podcastListenTime: 0,
+      podcastStartTime: null,
+      inputChangesBeforeCalculate: 0,
+      scrolledPast75: false,
+      tooltipInteractions: 0,
+      educationalContentClicks: 0,
+      calculatedYet: false,
+      returnVisits: this.getReturnVisits(),
+      quickBounce: false,
+      closedPlayerEarly: false,
+      calculatorInteractions: 0,
+      pdfDownloaded: false,
+      podcastEngagement: 0,
+      contactAttempted: false
+    };
+
     this.initializeTracking();
   }
 
   private generateSessionId(): string {
-    return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    return 'lead_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
   }
 
-  private initializeTracking() {
-    // Track time on page
-    setInterval(() => {
-      this.leadData.interactions.timeOnPage = (Date.now() - this.startTime) / 1000;
-      
-      if (this.leadData.interactions.timeOnPage < 10) {
-        this.leadData.negativeFlags.quickBounce = true;
-      } else if (this.leadData.interactions.timeOnPage >= 10) {
-        this.leadData.negativeFlags.quickBounce = false;
-      }
-      
-      this.calculateScore();
-    }, 5000);
-
-    // Track scroll depth
-    window.addEventListener('scroll', this.handleScroll.bind(this));
-    document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
-    window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
-
-    // Submit data every minute after initial 30 seconds
-    setTimeout(() => {
-      this.submitLead();
-      
-      this.submissionInterval = setInterval(() => {
-        this.submitLead();
-      }, 60000);
-    }, 30000);
+  private getReturnVisits(): number {
+    const visits = localStorage.getItem('nestEgg_visits') || '0';
+    const newCount = parseInt(visits) + 1;
+    localStorage.setItem('nestEgg_visits', newCount.toString());
+    localStorage.setItem('nestEgg_lastVisit', Date.now().toString());
+    return Math.max(0, newCount - 1);
   }
 
-  private handleScroll() {
+  private initializeTracking(): void {
+    this.setupEventListeners();
+    this.startActiveTimeTracking();
+    this.checkQuickBounce();
+  }
+
+  private setupEventListeners(): void {
+    window.addEventListener('scroll', () => this.trackScrollDepth());
+    document.addEventListener('click', (e) => this.handleClick(e));
+    document.addEventListener('input', (e) => this.handleInput(e));
+    document.addEventListener('mouseover', (e) => this.handleTooltipHover(e));
+    document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
+    window.addEventListener('beforeunload', () => this.submitFinalLead());
+  }
+
+  private trackScrollDepth(): void {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrollPercentage = Math.round((scrollTop / docHeight) * 100);
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const scrollPercent = Math.round((scrollTop / docHeight) * 100);
     
-    if (scrollPercentage > this.maxScrollPercentage) {
-      this.maxScrollPercentage = scrollPercentage;
-      this.leadData.interactions.scrollPercentage = this.maxScrollPercentage;
-      this.calculateScore();
-    }
-  }
-
-  private handleVisibilityChange() {
-    if (document.hidden) {
-      this.submitLead();
-    }
-  }
-
-  private handleBeforeUnload() {
-    this.submitLead();
-    if (this.submissionInterval) {
-      clearInterval(this.submissionInterval);
-    }
-  }
-
-  // Public tracking methods with enhanced logging
-  trackCalculateButtonClick() {
-    console.log('🎯 TRACK: Calculate button clicked!');
-    if (this.leadData.interactions.calculateButtonClicks === 0) {
-      this.leadData.interactions.calculateButtonClicks = 1;
-      console.log('✅ Calculate button clicked - will award 25 points');
-      this.calculateScore();
-      this.submitLead();
-    } else {
-      console.log('⚠️ Calculate button already clicked - no additional points');
-    }
-  }
-
-  trackFindATimeClick() {
-    console.log('🎯 TRACK: Find a Time button clicked!');
-    if (this.leadData.interactions.findATimeClicks === 0) {
-      this.leadData.interactions.findATimeClicks = 1;
-      console.log('✅ Find a Time clicked - awarded 35 points');
-      this.calculateScore();
-      this.submitLead();
-    } else {
-      console.log('⚠️ Find a Time already clicked - no additional points');
-    }
-  }
-
-  trackContactMeClick() {
-    console.log('🎯 TRACK: Contact Me button clicked!');
-    if (this.leadData.interactions.contactMeClicks === 0) {
-      this.leadData.interactions.contactMeClicks = 1;
-      console.log('✅ Contact Me clicked - awarded 30 points');
-      this.calculateScore();
-      this.submitLead();
-    } else {
-      console.log('⚠️ Contact Me already clicked - no additional points');
-    }
-  }
-
-  trackExportResultsClick() {
-    console.log('🎯 TRACK: Export Results button clicked!');
-    if (this.leadData.interactions.exportResultsClicks === 0) {
-      this.leadData.interactions.exportResultsClicks = 1;
-      console.log('✅ Export Results clicked - awarded points');
-      this.calculateScore();
-      this.submitLead();
-    } else {
-      console.log('⚠️ Export Results already clicked - no additional points');
-    }
-  }
-
-  trackListenNowClick() {
-    console.log('🎯 TRACK: Listen Now button clicked!');
-    if (this.leadData.interactions.listenNowClicks === 0) {
-      this.leadData.interactions.listenNowClicks = 1;
-      console.log('✅ Listen Now clicked - awarded 10 points');
-      this.calculateScore();
-    } else {
-      console.log('⚠️ Listen Now already clicked - no additional points');
-    }
-  }
-
-  trackReadReportClick(buttonId?: string) {
-    console.log('🎯 TRACK: Read Report button clicked!', buttonId ? `ID: ${buttonId}` : 'No ID provided');
-    
-    this.leadData.interactions.readReportClicks++;
-    
-    if (buttonId && !this.leadData.interactions.readReportClicksUnique.has(buttonId)) {
-      this.leadData.interactions.readReportClicksUnique.add(buttonId);
-      console.log(`✅ Read Report button ${buttonId} clicked - awarded 5 points (unique)`);
-      this.calculateScore();
-    } else if (!buttonId) {
-      const uniqueClicksCount = this.leadData.interactions.readReportClicksUnique.size;
-      if (uniqueClicksCount < 6) {
-        const fallbackId = `fallback-${uniqueClicksCount + 1}`;
-        this.leadData.interactions.readReportClicksUnique.add(fallbackId);
-        console.log(`✅ Read Report clicked - awarded 5 points (fallback unique: ${fallbackId})`);
-        this.calculateScore();
-      } else {
-        console.log('⚠️ Read Report clicked - no additional points (max 6 unique buttons reached)');
-      }
-    } else {
-      console.log(`⚠️ Read Report button ${buttonId} already clicked - no additional points`);
-    }
-  }
-
-  trackCalculatorInput(field: 'savings' | 'spending', value: number) {
-    if (field === 'savings') {
-      this.leadData.userInputs.currentSavings = value;
-    } else {
-      this.leadData.userInputs.monthlySpending = value;
-    }
-    this.calculateScore();
-  }
-
-  trackCalculatorInputChange(field: 'savings' | 'spending', value: number) {
-    this.leadData.interactions.inputChangesBeforeCalculate++;
-    this.trackCalculatorInput(field, value);
-  }
-
-  trackProjectedResults(safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) {
-    this.leadData.projectedResults = {
-      safeMonthlyAmount,
-      yearsUntilEmpty,
-      isMoneyLasting
-    };
-    this.calculateScore();
-  }
-
-  trackPodcastPlay() {
-    console.log('Podcast play started');
-  }
-
-  trackPodcastPause() {
-    // Handle podcast pause logic if needed
-  }
-
-  trackPodcastEnded() {
-    // Handle podcast end logic if needed
-  }
-
-  trackPodcastEngagement(timeInSeconds: number) {
-    this.leadData.interactions.podcastListenTime = timeInSeconds;
-    this.calculateScore();
-    console.log('Podcast engagement tracked:', timeInSeconds, 'seconds');
-  }
-
-  trackPlayerClosedEarly() {
-    this.leadData.negativeFlags.playerClosedEarly = true;
-    console.log('Player closed early - deducted 8 points');
-    this.calculateScore();
-  }
-
-  trackPDFRequest(firstName: string, email: string, wasCalculated: boolean = false) {
-    this.leadData.userInputs.firstName = firstName;
-    this.leadData.userInputs.email = email;
-    this.leadData.interactions.pdfRequested = true;
-    
-    this.calculateScore();
-    this.submitLead();
-    console.log('PDF request tracked:', firstName, email);
-  }
-
-  trackContactFormSubmission() {
-    this.leadData.interactions.contactFormSubmitted = true;
-    this.calculateScore();
-    this.submitLead();
-    console.log('Contact form submission tracked');
-  }
-
-  trackTooltipInteraction() {
-    this.leadData.interactions.tooltipInteractions++;
-    this.calculateScore();
-    console.log('Tooltip interaction tracked');
-  }
-
-  trackEducationalContentClick() {
-    this.leadData.interactions.educationalContentClicks++;
-    this.calculateScore();
-    console.log('Educational content click tracked');
-  }
-
-  private calculateScore() {
-    const oldScore = this.leadData.calculatedScore;
-    this.leadData.calculatedScore = calculateLeadScore(this.leadData);
-    this.leadData.leadQuality = determineLeadQuality(this.leadData.calculatedScore);
-
-    if (oldScore !== this.leadData.calculatedScore) {
-      console.log('🎯 Lead score updated:', this.leadData.calculatedScore, this.leadData.leadQuality);
-    }
-  }
-
-  private async submitLead() {
-    if (this.leadData.calculatedScore >= 5 || 
-        this.leadData.interactions.pdfRequested || 
-        this.leadData.interactions.contactFormSubmitted ||
-        this.leadData.interactions.calculateButtonClicks > 0 ||
-        this.leadData.interactions.findATimeClicks > 0 ||
-        this.leadData.interactions.contactMeClicks > 0 ||
-        this.leadData.interactions.timeOnPage > 60) {
+    if (scrollPercent > this.trackingData.maxScrollDepth) {
+      this.trackingData.maxScrollDepth = Math.min(scrollPercent, 100);
       
-      try {
-        const payload = this.createDashboardPayload();
-        await submitLeadData(payload);
-        
-        if (!this.hasSubmittedInitially) {
-          console.log('✅ Initial lead submission successful');
-          this.hasSubmittedInitially = true;
-        } else {
-          console.log('✅ Lead update successful');
-        }
-      } catch (error) {
-        console.error('❌ Failed to submit/update lead data:', error);
+      if (scrollPercent >= 75 && !this.trackingData.scrolledPast75) {
+        this.trackingData.scrolledPast75 = true;
+        this.debugLog('User scrolled past 75%');
       }
-    } else {
-      console.log('⏳ Lead not yet eligible for submission (score:', this.leadData.calculatedScore, ', time:', this.leadData.interactions.timeOnPage, 's)');
     }
   }
 
-  private createDashboardPayload(): DashboardPayload {
-    const bounced = this.leadData.interactions.timeOnPage < 30 && this.leadData.interactions.scrollPercentage < 25;
+  private handleClick(event: Event): void {
+    const element = event.target as HTMLElement;
+    const text = element.textContent?.toLowerCase() || '';
+    const className = element.className?.toLowerCase() || '';
+    const id = element.id?.toLowerCase() || '';
+
+    if (text.includes('find a time') || text.includes('schedule') || className.includes('schedule')) {
+      if (!this.trackingData.findTimeClicked) {
+        this.trackingData.findTimeClicked = true;
+        this.trackingData.contactAttempted = true;
+        this.debugLog('Find a Time clicked');
+        this.submitLead();
+      }
+    }
+
+    if (text.includes('contact me') || text.includes('contact') || className.includes('contact')) {
+      if (!this.trackingData.contactMeClicked) {
+        this.trackingData.contactMeClicked = true;
+        this.trackingData.contactAttempted = true;
+        this.debugLog('Contact Me clicked');
+        this.submitLead();
+      }
+    }
+
+    if (text.includes('calculate') || id.includes('calculate') || className.includes('calculate')) {
+      this.trackingData.calculateButtonClicks++;
+      this.trackingData.calculatedYet = true;
+      this.trackingData.calculatorInteractions++;
+      this.debugLog(`Calculate button clicked ${this.trackingData.calculateButtonClicks} times`);
+      this.submitLead();
+    }
+
+    if (text.includes('export') || text.includes('download') || text.includes('results')) {
+      if (!this.trackingData.exportResultsClicked) {
+        this.trackingData.exportResultsClicked = true;
+        this.trackingData.pdfDownloaded = true;
+        this.trackingData.exportAfterCalculate = this.trackingData.calculatedYet;
+        this.debugLog('Export Results clicked', { afterCalculate: this.trackingData.exportAfterCalculate });
+        this.submitLead();
+      }
+    }
+
+    if (text.includes('listen now') || text.includes('play') || className.includes('play')) {
+      if (!this.trackingData.listenNowClicked) {
+        this.trackingData.listenNowClicked = true;
+        this.trackingData.podcastStartTime = Date.now();
+        this.debugLog('Listen Now clicked');
+      }
+    }
+
+    if (text.includes('read report') || text.includes('report') || className.includes('report')) {
+      this.trackingData.readReportClicks = Math.min(this.trackingData.readReportClicks + 1, 6);
+      this.debugLog(`Read Report clicked ${this.trackingData.readReportClicks} times`);
+    }
+
+    if (className.includes('educational') || text.includes('learn') || text.includes('guide')) {
+      this.trackingData.educationalContentClicks++;
+      this.debugLog(`Educational content clicked ${this.trackingData.educationalContentClicks} times`);
+    }
+  }
+
+  private handleInput(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (target.matches('input[type="number"], select, input[type="range"]')) {
+      if (!this.trackingData.calculatedYet) {
+        this.trackingData.inputChangesBeforeCalculate++;
+        this.debugLog(`Input change ${this.trackingData.inputChangesBeforeCalculate} before calculate`);
+      }
+      this.trackingData.calculatorInteractions++;
+    }
+  }
+
+  private handleTooltipHover(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (target.matches('.tooltip, [data-tooltip], .info-icon, .help-icon')) {
+      this.trackingData.tooltipInteractions++;
+      this.debugLog(`Tooltip interaction ${this.trackingData.tooltipInteractions}`);
+    }
+  }
+
+  private handleVisibilityChange(): void {
+    if (document.hidden) {
+      this.config.lastActiveTime = Date.now();
+    } else {
+      const now = Date.now();
+      this.trackingData.activeTime += now - this.config.lastActiveTime;
+      this.config.lastActiveTime = now;
+    }
+  }
+
+  private startActiveTimeTracking(): void {
+    setInterval(() => {
+      if (!document.hidden) {
+        this.trackingData.activeTime += 1000;
+        this.trackingData.timeOnPage = Math.round((Date.now() - this.config.pageLoadTime) / 1000);
+      }
+    }, 1000);
+  }
+
+  private checkQuickBounce(): void {
+    setTimeout(() => {
+      const timeOnSite = Date.now() - this.config.pageLoadTime;
+      if (timeOnSite < 10000) {
+        this.trackingData.quickBounce = true;
+        this.debugLog('Quick bounce detected');
+      }
+    }, 10000);
+  }
+
+  private calculateEngagementScore(): number {
+    let score = 0;
+
+    if (this.hasFormCompletion()) score += 35;
+    if (this.trackingData.findTimeClicked) score += 35;
+    if (this.trackingData.contactMeClicked) score += 30;
+    if (this.trackingData.calculateButtonClicks > 0) score += 25;
+    if (this.trackingData.exportResultsClicked) {
+      score += 20;
+      if (this.trackingData.exportAfterCalculate) score += 10;
+    }
+
+    if (this.trackingData.listenNowClicked) score += 10;
+    score += Math.min(this.trackingData.readReportClicks * 5, 30);
+    if (this.trackingData.podcastListenTime > 60) {
+      const minutes = Math.floor((this.trackingData.podcastListenTime - 60) / 60);
+      score += Math.min(minutes * 2, 10);
+    }
+
+    if (this.trackingData.calculatedYet) {
+      score += Math.min(this.trackingData.inputChangesBeforeCalculate * 2, 8);
+    }
+    if (this.trackingData.scrolledPast75) score += 10;
+
+    const activeMinutes = Math.floor(this.trackingData.activeTime / 60000);
+    if (activeMinutes >= 10) score += 15;
+    else if (activeMinutes >= 5) score += 10;
+    else if (activeMinutes >= 2) score += 5;
+
+    score += Math.min(this.trackingData.returnVisits * 10, 20);
+
+    if (this.trackingData.quickBounce) score -= 15;
+    if (this.trackingData.closedPlayerEarly) score -= 8;
+
+    return Math.max(0, score);
+  }
+
+  private getLeadQuality(score: number): 'Cold' | 'Warm' | 'Hot' | 'Premium' {
+    if (score >= 120) return 'Premium';
+    if (score >= 80) return 'Hot';
+    if (score >= 20) return 'Warm';
+    return 'Cold';
+  }
+
+  private hasFormCompletion(): boolean {
+    const firstName = (document.querySelector('input[name="firstName"], input[name="first_name"], #firstName') as HTMLInputElement)?.value;
+    const email = (document.querySelector('input[name="email"], input[type="email"], #email') as HTMLInputElement)?.value;
+    return !!(firstName && email);
+  }
+
+  private getCurrentFinancialData() {
+    try {
+      const currentSavings = 
+        parseFloat((document.querySelector('[data-field="current-savings"], #currentSavings, input[name="currentSavings"]') as HTMLInputElement)?.value) || 100000;
+      
+      const monthlySpending = 
+        parseFloat((document.querySelector('[data-field="monthly-spending"], #monthlySpending, input[name="monthlySpending"]') as HTMLInputElement)?.value) || 3000;
+      
+      const safeWithdrawalAmount = 
+        parseFloat((document.querySelector('[data-field="safe-withdrawal"], #safeWithdrawal, input[name="safeWithdrawal"]') as HTMLInputElement)?.value) || 4000;
+      
+      const viabilityElement = document.querySelector('[data-field="viability"], #viability, .viability-result');
+      const retirementViability = viabilityElement?.textContent?.toLowerCase().includes('sustainable') ? 'Sustainable' : 'Needs Adjustment';
+
+      return {
+        currentSavings,
+        monthlySpending,
+        safeWithdrawalAmount,
+        retirementViability
+      };
+    } catch (error) {
+      console.error('Error extracting financial data:', error);
+      return {
+        currentSavings: 100000,
+        monthlySpending: 3000,
+        safeWithdrawalAmount: 4000,
+        retirementViability: 'Needs Adjustment' as const
+      };
+    }
+  }
+
+  private getContactInfo() {
+    const firstName = (document.querySelector('input[name="firstName"], input[name="first_name"], #firstName') as HTMLInputElement)?.value;
+    const email = (document.querySelector('input[name="email"], input[type="email"], #email') as HTMLInputElement)?.value;
     
+    if (firstName && email) {
+      return { firstName, email };
+    }
+    return null;
+  }
+
+  private buildPayload(): CompleteLeadPayload {
+    const financialData = this.getCurrentFinancialData();
+    const contactInfo = this.getContactInfo();
+    const engagementScore = this.calculateEngagementScore();
+    const quality = this.getLeadQuality(engagementScore);
+
     return {
-      leadId: this.leadData.sessionId,
+      leadId: this.config.sessionId,
+      score: engagementScore,
+      quality: quality,
       timestamp: new Date().toISOString(),
-      score: this.leadData.calculatedScore,
-      quality: this.leadData.leadQuality,
-      time_on_page: Math.round(this.leadData.interactions.timeOnPage),
-      scroll_depth: Math.round(this.leadData.interactions.scrollPercentage),
-      bounced,
-      current_savings: this.leadData.userInputs.currentSavings || 0,
-      monthly_spending: this.leadData.userInputs.monthlySpending || 0,
-      safe_withdrawal_amount: this.leadData.projectedResults.safeMonthlyAmount,
-      retirement_viability: this.leadData.projectedResults.isMoneyLasting ? 'Sustainable' : 'Needs Adjustment',
-      calculator_interactions: this.leadData.interactions.calculatorUsage,
-      pdf_downloaded: this.leadData.interactions.pdfRequested,
-      podcast_engagement: this.leadData.interactions.podcastListenTime,
-      contact_attempted: this.leadData.interactions.contactFormSubmitted,
-      calculate_button_clicks: this.leadData.interactions.calculateButtonClicks,
-      input_changes_before_calculate: this.leadData.interactions.inputChangesBeforeCalculate,
-      podcast_listen_time: this.leadData.interactions.podcastListenTime,
-      tooltip_interactions: this.leadData.interactions.tooltipInteractions,
-      educational_content_clicks: this.leadData.interactions.educationalContentClicks,
-      engagement_score: this.leadData.calculatedScore,
-      first_name: this.leadData.userInputs.firstName,
-      email: this.leadData.userInputs.email,
-      find_a_time_clicks: this.leadData.interactions.findATimeClicks,
-      contact_me_clicks: this.leadData.interactions.contactMeClicks,
-      export_results_clicks: this.leadData.interactions.exportResultsClicks,
-      listen_now_clicks: this.leadData.interactions.listenNowClicks,
-      read_report_clicks: this.leadData.interactions.readReportClicks,
-      read_report_unique_clicks: this.leadData.interactions.readReportClicksUnique.size
+      
+      pageMetrics: {
+        timeOnPage: this.trackingData.timeOnPage,
+        scrollDepth: this.trackingData.maxScrollDepth,
+        bounced: this.trackingData.quickBounce
+      },
+      
+      financialProfile: financialData,
+      
+      engagementData: {
+        calculatorInteractions: this.trackingData.calculatorInteractions,
+        pdfDownloaded: this.trackingData.pdfDownloaded,
+        podcastEngagement: this.trackingData.podcastListenTime,
+        contactAttempted: this.trackingData.contactAttempted
+      },
+
+      enhancedEngagement: {
+        findTimeClicked: this.trackingData.findTimeClicked,
+        contactMeClicked: this.trackingData.contactMeClicked,
+        calculateButtonClicks: this.trackingData.calculateButtonClicks,
+        exportResultsClicked: this.trackingData.exportResultsClicked,
+        exportAfterCalculate: this.trackingData.exportAfterCalculate,
+        listenNowClicked: this.trackingData.listenNowClicked,
+        readReportClicks: this.trackingData.readReportClicks,
+        podcastListenTime: this.trackingData.podcastListenTime,
+        inputChangesBeforeCalculate: this.trackingData.inputChangesBeforeCalculate,
+        scrolledPast75: this.trackingData.scrolledPast75,
+        tooltipInteractions: this.trackingData.tooltipInteractions,
+        educationalContentClicks: this.trackingData.educationalContentClicks,
+        sessionActiveTime: Math.round(this.trackingData.activeTime / 1000),
+        returnVisits: this.trackingData.returnVisits,
+        quickBounce: this.trackingData.quickBounce,
+        closedPlayerEarly: this.trackingData.closedPlayerEarly
+      },
+
+      contactInfo: contactInfo || undefined
     };
   }
 
-  getLeadData(): LeadData {
-    return { ...this.leadData };
+  public async submitLead(): Promise<any> {
+    const payload = this.buildPayload();
+    
+    this.debugLog('📤 Submitting complete lead payload:', payload);
+
+    try {
+      const response = await fetch(this.config.apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.config.apiKey}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}, response: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Lead submitted successfully:', result);
+      return result;
+
+    } catch (error) {
+      console.error('❌ Error submitting lead:', error);
+      throw error;
+    }
+  }
+
+  private submitFinalLead(): void {
+    if (this.trackingData.timeOnPage > 10) {
+      const payload = this.buildPayload();
+      
+      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      navigator.sendBeacon(this.config.apiEndpoint, blob);
+      
+      this.debugLog('👋 Final lead data submitted via sendBeacon');
+    }
+  }
+
+  private debugLog(message: string, data: any = null): void {
+    if (this.config.debugMode) {
+      console.log(`🐛 [Enhanced Lead Tracker] ${message}`, data || '');
+    }
+  }
+
+  // Public methods for manual tracking
+  public trackPodcastPlay(): void {
+    this.trackingData.podcastStartTime = Date.now();
+  }
+
+  public trackPodcastPause(): void {
+    if (this.trackingData.podcastStartTime) {
+      const elapsed = (Date.now() - this.trackingData.podcastStartTime) / 1000;
+      this.trackingData.podcastListenTime += elapsed;
+      this.trackingData.podcastEngagement = this.trackingData.podcastListenTime;
+      this.trackingData.podcastStartTime = null;
+    }
+  }
+
+  public trackPlayerClosedEarly(): void {
+    this.trackingData.closedPlayerEarly = true;
+    this.debugLog('Player closed early');
+  }
+
+  public trackPDFRequest(firstName: string, email: string): void {
+    this.trackingData.pdfDownloaded = true;
+    const firstNameInput = document.querySelector('#firstName') as HTMLInputElement;
+    const emailInput = document.querySelector('#email') as HTMLInputElement;
+    if (firstNameInput) firstNameInput.value = firstName;
+    if (emailInput) emailInput.value = email;
+    this.submitLead();
+  }
+
+  public getLeadData(): any {
+    return this.buildPayload();
   }
 }
 
 // Create global instance
-let globalLeadTracker: LeadTracker | null = null;
+let globalEnhancedTracker: EnhancedLeadTracker | null = null;
 
-export const getLeadTracker = (): LeadTracker => {
-  if (!globalLeadTracker) {
-    globalLeadTracker = new LeadTracker();
+export const getLeadTracker = (): EnhancedLeadTracker => {
+  if (!globalEnhancedTracker) {
+    globalEnhancedTracker = new EnhancedLeadTracker();
   }
-  return globalLeadTracker;
+  return globalEnhancedTracker;
 };
 
-export default LeadTracker;
+export default EnhancedLeadTracker;

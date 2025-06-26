@@ -7,6 +7,52 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface CompleteLeadPayload {
+  leadId: string;
+  score: number;
+  quality: 'Cold' | 'Warm' | 'Hot' | 'Premium';
+  timestamp: string;
+  pageMetrics: {
+    timeOnPage: number;
+    scrollDepth: number;
+    bounced: boolean;
+  };
+  financialProfile: {
+    currentSavings: number;
+    monthlySpending: number;
+    safeWithdrawalAmount: number;
+    retirementViability: 'Sustainable' | 'Needs Adjustment';
+  };
+  engagementData: {
+    calculatorInteractions: number;
+    pdfDownloaded: boolean;
+    podcastEngagement: number;
+    contactAttempted: boolean;
+  };
+  enhancedEngagement: {
+    findTimeClicked: boolean;
+    contactMeClicked: boolean;
+    calculateButtonClicks: number;
+    exportResultsClicked: boolean;
+    exportAfterCalculate: boolean;
+    listenNowClicked: boolean;
+    readReportClicks: number;
+    podcastListenTime: number;
+    inputChangesBeforeCalculate: number;
+    scrolledPast75: boolean;
+    tooltipInteractions: number;
+    educationalContentClicks: number;
+    sessionActiveTime: number;
+    returnVisits: number;
+    quickBounce: boolean;
+    closedPlayerEarly: boolean;
+  };
+  contactInfo?: {
+    firstName: string;
+    email: string;
+  };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -18,56 +64,78 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const body = await req.json();
-    console.log('📤 Received lead data:', JSON.stringify(body, null, 2));
+    const payload: CompleteLeadPayload = await req.json();
+    console.log('📤 Received enhanced lead payload:', JSON.stringify(payload, null, 2));
 
     // Validate required fields
-    if (!body.leadId || typeof body.score !== 'number' || !body.quality) {
-      console.error('❌ Missing required fields:', { leadId: body.leadId, score: body.score, quality: body.quality });
+    if (!payload.leadId || typeof payload.score !== 'number' || !payload.quality) {
+      console.error('❌ Missing required fields:', { 
+        leadId: payload.leadId, 
+        score: payload.score, 
+        quality: payload.quality 
+      });
       return new Response(
         JSON.stringify({ error: 'Missing required fields: leadId, score, quality' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Prepare the data for upsert
+    // Map the enhanced payload to database structure
     const leadData = {
-      lead_id: body.leadId,
-      timestamp: new Date().toISOString(),
-      score: parseInt(body.score, 10),
-      quality: body.quality,
-      time_on_page: body.time_on_page != null ? parseInt(body.time_on_page, 10) : 0,
-      scroll_depth: body.scroll_depth != null ? parseInt(body.scroll_depth, 10) : 0,
-      bounced: body.bounced || false,
-      current_savings: body.current_savings != null ? parseInt(body.current_savings, 10) : 0,
-      monthly_spending: body.monthly_spending != null ? parseInt(body.monthly_spending, 10) : 0,
-      safe_withdrawal_amount: body.safe_withdrawal_amount != null ? parseInt(body.safe_withdrawal_amount, 10) : 0,
-      retirement_viability: body.retirement_viability || 'Sustainable',
-      calculator_interactions: body.calculator_interactions != null ? parseInt(body.calculator_interactions, 10) : 0,
-      pdf_downloaded: body.pdf_downloaded || false,
-      podcast_engagement: body.podcast_engagement != null ? parseInt(body.podcast_engagement, 10) : 0,
-      contact_attempted: body.contact_attempted || false,
-      first_name: body.first_name || 'Unknown',
-      email: body.email || 'unknown@example.com',
-      advisor_notes: body.advisor_notes || 'No notes',
-      follow_up_date: body.follow_up_date || '2025-06-27',
-      status: body.status || 'new',
-      assigned_advisor: body.assigned_advisor || 'Unassigned',
-      calculate_button_clicks: body.calculate_button_clicks != null ? parseInt(body.calculate_button_clicks, 10) : 0,
-      input_changes_before_calculate: body.input_changes_before_calculate != null ? parseInt(body.input_changes_before_calculate, 10) : 0,
-      podcast_listen_time: body.podcast_listen_time != null ? parseInt(body.podcast_listen_time, 10) : 0,
-      tooltip_interactions: body.tooltip_interactions != null ? parseInt(body.tooltip_interactions, 10) : 0,
-      educational_content_clicks: body.educational_content_clicks != null ? parseInt(body.educational_content_clicks, 10) : 0,
-      engagement_score: body.engagement_score != null ? parseInt(body.engagement_score, 10) : body.score || 0,
-      find_a_time_clicks: body.find_a_time_clicks != null ? parseInt(body.find_a_time_clicks, 10) : 0,
-      contact_me_clicks: body.contact_me_clicks != null ? parseInt(body.contact_me_clicks, 10) : 0,
-      export_results_clicks: body.export_results_clicks != null ? parseInt(body.export_results_clicks, 10) : 0,
-      listen_now_clicks: body.listen_now_clicks != null ? parseInt(body.listen_now_clicks, 10) : 0,
-      read_report_clicks: body.read_report_clicks != null ? parseInt(body.read_report_clicks, 10) : 0,
-      read_report_unique_clicks: body.read_report_unique_clicks != null ? parseInt(body.read_report_unique_clicks, 10) : 0
+      lead_id: payload.leadId,
+      timestamp: payload.timestamp,
+      score: payload.score,
+      quality: payload.quality,
+      
+      // Page Metrics
+      time_on_page: payload.pageMetrics?.timeOnPage || 0,
+      scroll_depth: payload.pageMetrics?.scrollDepth || 0,
+      bounced: payload.pageMetrics?.bounced || false,
+      
+      // Financial Profile
+      current_savings: payload.financialProfile?.currentSavings || 0,
+      monthly_spending: payload.financialProfile?.monthlySpending || 0,
+      safe_withdrawal_amount: payload.financialProfile?.safeWithdrawalAmount || 0,
+      retirement_viability: payload.financialProfile?.retirementViability || 'Needs Adjustment',
+      
+      // Legacy Engagement Data
+      calculator_interactions: payload.engagementData?.calculatorInteractions || 0,
+      pdf_downloaded: payload.engagementData?.pdfDownloaded || false,
+      podcast_engagement: payload.engagementData?.podcastEngagement || 0,
+      contact_attempted: payload.engagementData?.contactAttempted || false,
+      
+      // Enhanced Engagement Tracking
+      find_a_time_clicks: payload.enhancedEngagement?.findTimeClicked ? 1 : 0,
+      contact_me_clicks: payload.enhancedEngagement?.contactMeClicked ? 1 : 0,
+      calculate_button_clicks: payload.enhancedEngagement?.calculateButtonClicks || 0,
+      export_results_clicks: payload.enhancedEngagement?.exportResultsClicked ? 1 : 0,
+      export_after_calculate: payload.enhancedEngagement?.exportAfterCalculate || false,
+      listen_now_clicks: payload.enhancedEngagement?.listenNowClicked ? 1 : 0,
+      read_report_clicks: payload.enhancedEngagement?.readReportClicks || 0,
+      read_report_unique_clicks: payload.enhancedEngagement?.readReportClicks || 0,
+      podcast_listen_time: payload.enhancedEngagement?.podcastListenTime || 0,
+      input_changes_before_calculate: payload.enhancedEngagement?.inputChangesBeforeCalculate || 0,
+      scrolled_past_75: payload.enhancedEngagement?.scrolledPast75 || false,
+      tooltip_interactions: payload.enhancedEngagement?.tooltipInteractions || 0,
+      educational_content_clicks: payload.enhancedEngagement?.educationalContentClicks || 0,
+      session_active_time: payload.enhancedEngagement?.sessionActiveTime || 0,
+      return_visits: payload.enhancedEngagement?.returnVisits || 0,
+      quick_bounce: payload.enhancedEngagement?.quickBounce || false,
+      closed_player_early: payload.enhancedEngagement?.closedPlayerEarly || false,
+      
+      // Contact Info
+      first_name: payload.contactInfo?.firstName || 'Unknown',
+      email: payload.contactInfo?.email || 'unknown@example.com',
+      
+      // Additional fields with defaults
+      engagement_score: payload.score,
+      advisor_notes: 'Auto-generated from enhanced tracker',
+      follow_up_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+      status: 'new',
+      assigned_advisor: 'Unassigned'
     };
 
-    console.log('💾 Prepared lead data for upsert:', JSON.stringify(leadData, null, 2));
+    console.log('💾 Prepared enhanced lead data for upsert:', JSON.stringify(leadData, null, 2));
 
     // Perform UPSERT operation
     const { data, error } = await supabaseClient
@@ -87,16 +155,15 @@ serve(async (req) => {
       );
     }
 
-    console.log('✅ Lead data upserted successfully:', JSON.stringify(data, null, 2));
+    console.log('✅ Enhanced lead data upserted successfully:', JSON.stringify(data, null, 2));
 
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ success: true, data, message: 'Enhanced lead tracking data processed successfully' }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('❌ Function error:', JSON.stringify(error, null, 2));
-    console.error('❌ Request body:', JSON.stringify(await req.json().catch(() => 'Invalid JSON'), null, 2));
     return new Response(
       JSON.stringify({ error: error.message, details: error }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

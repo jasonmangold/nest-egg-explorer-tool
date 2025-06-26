@@ -1,42 +1,47 @@
 
 import { getLeadTracker } from '@/services/leadTracking';
 
-// Helper functions to ensure proper tracking calls
+// Helper functions to ensure proper tracking calls using the enhanced tracker
 export const trackButtonClick = {
   calculate: () => {
     console.log('🔥 trackButtonClick.calculate called');
     const tracker = getLeadTracker();
-    tracker.trackCalculateButtonClick();
+    // The enhanced tracker handles this automatically via click detection
+    // But we can also trigger it manually if needed
+    tracker.submitLead();
   },
   
   findATime: () => {
     console.log('🔥 trackButtonClick.findATime called');
     const tracker = getLeadTracker();
-    tracker.trackFindATimeClick();
+    // Enhanced tracker handles this via click detection
+    tracker.submitLead();
   },
   
   contactMe: () => {
     console.log('🔥 trackButtonClick.contactMe called');
     const tracker = getLeadTracker();
-    tracker.trackContactMeClick();
+    // Enhanced tracker handles this via click detection
+    tracker.submitLead();
   },
   
   exportResults: () => {
     console.log('🔥 trackButtonClick.exportResults called');
     const tracker = getLeadTracker();
-    tracker.trackExportResultsClick();
+    tracker.submitLead();
   },
   
   listenNow: () => {
     console.log('🔥 trackButtonClick.listenNow called');
     const tracker = getLeadTracker();
-    tracker.trackListenNowClick();
+    tracker.trackPodcastPlay();
   },
   
   readReport: (buttonId?: string) => {
     console.log('🔥 trackButtonClick.readReport called with ID:', buttonId);
+    // Enhanced tracker handles this via click detection
     const tracker = getLeadTracker();
-    tracker.trackReadReportClick(buttonId);
+    tracker.submitLead();
   }
 };
 
@@ -44,14 +49,12 @@ export const trackButtonClick = {
 export const trackInput = {
   savings: (value: number) => {
     console.log('🔥 trackInput.savings called with value:', value);
-    const tracker = getLeadTracker();
-    tracker.trackCalculatorInputChange('savings', value);
+    // Enhanced tracker handles this via input detection
   },
   
   spending: (value: number) => {
     console.log('🔥 trackInput.spending called with value:', value);
-    const tracker = getLeadTracker();
-    tracker.trackCalculatorInputChange('spending', value);
+    // Enhanced tracker handles this via input detection
   }
 };
 
@@ -59,35 +62,33 @@ export const trackInput = {
 export const trackResults = (safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) => {
   console.log('🔥 trackResults called with:', { safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting });
   const tracker = getLeadTracker();
-  tracker.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
+  tracker.submitLead();
 };
 
 // Helper for PDF requests
 export const trackPDFRequest = (firstName: string, email: string, wasCalculated: boolean = false) => {
   console.log('🔥 trackPDFRequest called with:', { firstName, email, wasCalculated });
   const tracker = getLeadTracker();
-  tracker.trackPDFRequest(firstName, email, wasCalculated);
+  tracker.trackPDFRequest(firstName, email);
 };
 
 // Helper for form submissions
 export const trackFormSubmission = () => {
   console.log('🔥 trackFormSubmission called');
   const tracker = getLeadTracker();
-  tracker.trackContactFormSubmission();
+  tracker.submitLead();
 };
 
 // Helper for educational content
 export const trackEducationalContent = () => {
   console.log('🔥 trackEducationalContent called');
-  const tracker = getLeadTracker();
-  tracker.trackEducationalContentClick();
+  // Enhanced tracker handles this via click detection
 };
 
 // Helper for tooltip interactions
 export const trackTooltip = () => {
   console.log('🔥 trackTooltip called');
-  const tracker = getLeadTracker();
-  tracker.trackTooltipInteraction();
+  // Enhanced tracker handles this via mouseover detection
 };
 
 // Helper for podcast tracking
@@ -107,7 +108,7 @@ export const trackPodcast = {
   ended: () => {
     console.log('🔥 trackPodcast.ended called');
     const tracker = getLeadTracker();
-    tracker.trackPodcastEnded();
+    tracker.trackPodcastPause();
   },
   
   closedEarly: () => {
@@ -126,6 +127,5 @@ export const getLeadData = () => {
 // Debug helper to manually submit lead
 export const debugSubmitLead = () => {
   const tracker = getLeadTracker();
-  // Access private method through type assertion for debugging
-  (tracker as any).submitLead();
+  tracker.submitLead();
 };
