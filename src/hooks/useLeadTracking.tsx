@@ -44,16 +44,29 @@ export const useLeadTracking = () => {
 
   const trackCalculatorInput = (field: 'savings' | 'spending', value: number) => {
     console.log('🎯 useLeadTracking: trackCalculatorInput called with:', field, value);
-    // Enhanced tracker handles this automatically
+    // Update the tracker with the actual values
+    if (field === 'savings') {
+      tracker.updateFinancialData(value, undefined, undefined, undefined);
+    } else if (field === 'spending') {
+      tracker.updateFinancialData(undefined, value, undefined, undefined);
+    }
   };
 
   const trackCalculatorInputChange = (field: 'savings' | 'spending', value: number) => {
     console.log('🎯 useLeadTracking: trackCalculatorInputChange called with:', field, value);
-    // Enhanced tracker handles this automatically
+    // Update the tracker with the actual values
+    if (field === 'savings') {
+      tracker.updateFinancialData(value, undefined, undefined, undefined);
+    } else if (field === 'spending') {
+      tracker.updateFinancialData(undefined, value, undefined, undefined);
+    }
   };
 
   const trackProjectedResults = (safeMonthlyAmount: number, yearsUntilEmpty: number, isMoneyLasting: boolean) => {
     console.log('🎯 useLeadTracking: trackProjectedResults called with:', { safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting });
+    // Update the tracker with calculated results
+    const viability = isMoneyLasting ? 'Sustainable' : 'Needs Adjustment';
+    tracker.updateFinancialData(undefined, undefined, safeMonthlyAmount, viability);
     tracker.submitLead();
   };
 

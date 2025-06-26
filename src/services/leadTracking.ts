@@ -1,3 +1,4 @@
+
 export interface CompleteLeadPayload {
   // Required Core Fields
   leadId: string;
@@ -100,6 +101,11 @@ class EnhancedLeadTracker {
     pdfDownloaded: boolean;
     podcastEngagement: number;
     contactAttempted: boolean;
+    // Store actual input values
+    currentSavings: number;
+    monthlySpending: number;
+    safeWithdrawalAmount: number;
+    retirementViability: 'Sustainable' | 'Needs Adjustment';
   };
 
   constructor() {
@@ -137,7 +143,12 @@ class EnhancedLeadTracker {
       calculatorInteractions: 0,
       pdfDownloaded: false,
       podcastEngagement: 0,
-      contactAttempted: false
+      contactAttempted: false,
+      // Initialize with default values
+      currentSavings: 0,
+      monthlySpending: 0,
+      safeWithdrawalAmount: 0,
+      retirementViability: 'Needs Adjustment'
     };
 
     this.initializeTracking();
@@ -213,6 +224,8 @@ class EnhancedLeadTracker {
       this.trackingData.calculateButtonClicks++;
       this.trackingData.calculatedYet = true;
       this.trackingData.calculatorInteractions++;
+      // Capture values when calculate is clicked
+      this.captureCurrentValues();
       this.debugLog(`Calculate button clicked ${this.trackingData.calculateButtonClicks} times`);
       this.submitLead();
     }
@@ -247,13 +260,65 @@ class EnhancedLeadTracker {
   }
 
   private handleInput(event: Event): void {
-    const target = event.target as HTMLElement;
+    const target = event.target as HTMLInputElement;
     if (target.matches('input[type="number"], select, input[type="range"]')) {
       if (!this.trackingData.calculatedYet) {
         this.trackingData.inputChangesBeforeCalculate++;
         this.debugLog(`Input change ${this.trackingData.inputChangesBeforeCalculate} before calculate`);
       }
       this.trackingData.calculatorInteractions++;
+      
+      // Capture the actual input values as they change
+      this.captureCurrentValues();
+    }
+  }
+
+  private captureCurrentValues(): void {
+    // Try multiple selectors to find the savings input
+    const savingsInput = document.querySelector('input[name="currentSavings"], input[placeholder*="savings"], input[placeholder*="Savings"], input[type="number"]:first-of-type') as HTMLInputElement;
+    if (savingsInput && savingsInput.value) {
+      const value = parseFloat(savingsInput.value.replace(/[,$]/g, ''));
+      if (!isNaN(value) && value > 0) {
+        this.trackingData.currentSavings = value;
+        this.debugLog(`Captured current savings: ${value}`);
+      }
+    }
+
+    // Try multiple selectors to find the spending input
+    const spendingInput = document.querySelector('input[name="monthlySpending"], input[placeholder*="spending"], input[placeholder*="Spending"], input[type="number"]:last-of-type') as HTMLInputElement;
+    if (spendingInput && spendingInput.value) {
+      const value = parseFloat(spendingInput.value.replace(/[,$]/g, ''));
+      if (!isNaN(value) && value > 0) {
+        this.trackingData.monthlySpending = value;
+        this.debugLog(`Captured monthly spending: ${value}`);
+      }
+    }
+
+    // Try to find calculated safe withdrawal amount
+    const safeWithdrawalElement = document.querySelector('[data-testid*="safe"], [class*="safe"], .result-amount, .withdrawal-amount') as HTMLElement;
+    if (safeWithdrawalElement) {
+      const text = safeWithdrawalElement.textContent || '';
+      const match = text.match(/[\d,]+/);
+      if (match) {
+        const value = parseFloat(match[0].replace(/,/g, ''));
+        if (!isNaN(value) && value > 0) {
+          this.trackingData.safeWithdrawalAmount = value;
+          this.debugLog(`Captured safe withdrawal amount: ${value}`);
+        }
+      }
+    }
+
+    // Try to determine retirement viability
+    const viabilityElement = document.querySelector('[data-testid*="viability"], [class*="viability"], .result-text, .sustainability-text') as HTMLElement;
+    if (viabilityElement) {
+      const text = viabilityElement.textContent?.toLowerCase() || '';
+      if (text.includes('sustainable') || text.includes('good') || text.includes('sufficient')) {
+        this.trackingData.retirementViability = 'Sustainable';
+        this.debugLog('Captured retirement viability: Sustainable');
+      } else if (text.includes('adjustment') || text.includes('insufficient') || text.includes('concern')) {
+        this.trackingData.retirementViability = 'Needs Adjustment';
+        this.debugLog('Captured retirement viability: Needs Adjustment');
+      }
     }
   }
 
@@ -345,34 +410,13 @@ class EnhancedLeadTracker {
   }
 
   private getCurrentFinancialData(): CompleteLeadPayload['financialProfile'] {
-    try {
-      const currentSavings = 
-        parseFloat((document.querySelector('[data-field="current-savings"], #currentSavings, input[name="currentSavings"]') as HTMLInputElement)?.value) || 100000;
-      
-      const monthlySpending = 
-        parseFloat((document.querySelector('[data-field="monthly-spending"], #monthlySpending, input[name="monthlySpending"]') as HTMLInputElement)?.value) || 3000;
-      
-      const safeWithdrawalAmount = 
-        parseFloat((document.querySelector('[data-field="safe-withdrawal"], #safeWithdrawal, input[name="safeWithdrawal"]') as HTMLInputElement)?.value) || 4000;
-      
-      const viabilityElement = document.querySelector('[data-field="viability"], #viability, .viability-result');
-      const retirementViability: 'Sustainable' | 'Needs Adjustment' = viabilityElement?.textContent?.toLowerCase().includes('sustainable') ? 'Sustainable' : 'Needs Adjustment';
-
-      return {
-        currentSavings,
-        monthlySpending,
-        safeWithdrawalAmount,
-        retirementViability
-      };
-    } catch (error) {
-      console.error('Error extracting financial data:', error);
-      return {
-        currentSavings: 100000,
-        monthlySpending: 3000,
-        safeWithdrawalAmount: 4000,
-        retirementViability: 'Needs Adjustment' as const
-      };
-    }
+    // Use the captured values from trackingData instead of trying to query DOM again
+    return {
+      currentSavings: this.trackingData.currentSavings || 0,
+      monthlySpending: this.trackingData.monthlySpending || 0,
+      safeWithdrawalAmount: this.trackingData.safeWithdrawalAmount || 0,
+      retirementViability: this.trackingData.retirementViability || 'Needs Adjustment'
+    };
   }
 
   private getContactInfo() {
@@ -508,6 +552,26 @@ class EnhancedLeadTracker {
     if (firstNameInput) firstNameInput.value = firstName;
     if (emailInput) emailInput.value = email;
     this.submitLead();
+  }
+
+  // Public method to manually update financial data
+  public updateFinancialData(savings?: number, spending?: number, safeWithdrawal?: number, viability?: 'Sustainable' | 'Needs Adjustment'): void {
+    if (typeof savings === 'number' && savings > 0) {
+      this.trackingData.currentSavings = savings;
+      this.debugLog(`Manually updated current savings: ${savings}`);
+    }
+    if (typeof spending === 'number' && spending > 0) {
+      this.trackingData.monthlySpending = spending;
+      this.debugLog(`Manually updated monthly spending: ${spending}`);
+    }
+    if (typeof safeWithdrawal === 'number' && safeWithdrawal > 0) {
+      this.trackingData.safeWithdrawalAmount = safeWithdrawal;
+      this.debugLog(`Manually updated safe withdrawal: ${safeWithdrawal}`);
+    }
+    if (viability) {
+      this.trackingData.retirementViability = viability;
+      this.debugLog(`Manually updated retirement viability: ${viability}`);
+    }
   }
 
   public getLeadData(): any {
