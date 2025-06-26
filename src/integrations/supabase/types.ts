@@ -48,6 +48,141 @@ export type Database = {
         }
         Relationships: []
       }
+      leads: {
+        Row: {
+          advisor_notes: string | null
+          assigned_advisor: string | null
+          bounced: boolean | null
+          calculate_button_clicks: number | null
+          calculator_interactions: number | null
+          closed_player_early: boolean | null
+          contact_attempted: boolean | null
+          contact_me_clicks: number | null
+          created_at: string | null
+          current_savings: number | null
+          educational_content_clicks: number | null
+          email: string | null
+          engagement_score: number | null
+          export_after_calculate: boolean | null
+          export_results_clicks: number | null
+          find_a_time_clicks: number | null
+          first_name: string | null
+          follow_up_date: string | null
+          id: string
+          input_changes_before_calculate: number | null
+          lead_id: string
+          listen_now_clicks: number | null
+          monthly_spending: number | null
+          pdf_downloaded: boolean | null
+          podcast_engagement: number | null
+          podcast_listen_time: number | null
+          quality: string | null
+          quick_bounce: boolean | null
+          read_report_clicks: number | null
+          read_report_unique_clicks: number | null
+          retirement_viability: string | null
+          return_visits: number | null
+          safe_withdrawal_amount: number | null
+          score: number | null
+          scroll_depth: number | null
+          scrolled_past_75: boolean | null
+          session_active_time: number | null
+          status: string | null
+          time_on_page: number | null
+          timestamp: string | null
+          tooltip_interactions: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          advisor_notes?: string | null
+          assigned_advisor?: string | null
+          bounced?: boolean | null
+          calculate_button_clicks?: number | null
+          calculator_interactions?: number | null
+          closed_player_early?: boolean | null
+          contact_attempted?: boolean | null
+          contact_me_clicks?: number | null
+          created_at?: string | null
+          current_savings?: number | null
+          educational_content_clicks?: number | null
+          email?: string | null
+          engagement_score?: number | null
+          export_after_calculate?: boolean | null
+          export_results_clicks?: number | null
+          find_a_time_clicks?: number | null
+          first_name?: string | null
+          follow_up_date?: string | null
+          id?: string
+          input_changes_before_calculate?: number | null
+          lead_id: string
+          listen_now_clicks?: number | null
+          monthly_spending?: number | null
+          pdf_downloaded?: boolean | null
+          podcast_engagement?: number | null
+          podcast_listen_time?: number | null
+          quality?: string | null
+          quick_bounce?: boolean | null
+          read_report_clicks?: number | null
+          read_report_unique_clicks?: number | null
+          retirement_viability?: string | null
+          return_visits?: number | null
+          safe_withdrawal_amount?: number | null
+          score?: number | null
+          scroll_depth?: number | null
+          scrolled_past_75?: boolean | null
+          session_active_time?: number | null
+          status?: string | null
+          time_on_page?: number | null
+          timestamp?: string | null
+          tooltip_interactions?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          advisor_notes?: string | null
+          assigned_advisor?: string | null
+          bounced?: boolean | null
+          calculate_button_clicks?: number | null
+          calculator_interactions?: number | null
+          closed_player_early?: boolean | null
+          contact_attempted?: boolean | null
+          contact_me_clicks?: number | null
+          created_at?: string | null
+          current_savings?: number | null
+          educational_content_clicks?: number | null
+          email?: string | null
+          engagement_score?: number | null
+          export_after_calculate?: boolean | null
+          export_results_clicks?: number | null
+          find_a_time_clicks?: number | null
+          first_name?: string | null
+          follow_up_date?: string | null
+          id?: string
+          input_changes_before_calculate?: number | null
+          lead_id?: string
+          listen_now_clicks?: number | null
+          monthly_spending?: number | null
+          pdf_downloaded?: boolean | null
+          podcast_engagement?: number | null
+          podcast_listen_time?: number | null
+          quality?: string | null
+          quick_bounce?: boolean | null
+          read_report_clicks?: number | null
+          read_report_unique_clicks?: number | null
+          retirement_viability?: string | null
+          return_visits?: number | null
+          safe_withdrawal_amount?: number | null
+          score?: number | null
+          scroll_depth?: number | null
+          scrolled_past_75?: boolean | null
+          session_active_time?: number | null
+          status?: string | null
+          time_on_page?: number | null
+          timestamp?: string | null
+          tooltip_interactions?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -80,31 +80,31 @@ serve(async (req) => {
       );
     }
 
-    // Map the enhanced payload to database structure
+    // Map the enhanced payload to database structure with safe defaults
     const leadData = {
       lead_id: payload.leadId,
-      timestamp: payload.timestamp,
-      score: payload.score,
-      quality: payload.quality,
+      timestamp: payload.timestamp || new Date().toISOString(),
+      score: payload.score || 0,
+      quality: payload.quality || 'Cold',
       
-      // Page Metrics
+      // Page Metrics - with safe defaults
       time_on_page: payload.pageMetrics?.timeOnPage || 0,
       scroll_depth: payload.pageMetrics?.scrollDepth || 0,
       bounced: payload.pageMetrics?.bounced || false,
       
-      // Financial Profile
+      // Financial Profile - with safe defaults
       current_savings: payload.financialProfile?.currentSavings || 0,
       monthly_spending: payload.financialProfile?.monthlySpending || 0,
       safe_withdrawal_amount: payload.financialProfile?.safeWithdrawalAmount || 0,
       retirement_viability: payload.financialProfile?.retirementViability || 'Needs Adjustment',
       
-      // Legacy Engagement Data
+      // Legacy Engagement Data - with safe defaults
       calculator_interactions: payload.engagementData?.calculatorInteractions || 0,
       pdf_downloaded: payload.engagementData?.pdfDownloaded || false,
       podcast_engagement: payload.engagementData?.podcastEngagement || 0,
       contact_attempted: payload.engagementData?.contactAttempted || false,
       
-      // Enhanced Engagement Tracking
+      // Enhanced Engagement Tracking - with safe defaults
       find_a_time_clicks: payload.enhancedEngagement?.findTimeClicked ? 1 : 0,
       contact_me_clicks: payload.enhancedEngagement?.contactMeClicked ? 1 : 0,
       calculate_button_clicks: payload.enhancedEngagement?.calculateButtonClicks || 0,
@@ -123,12 +123,12 @@ serve(async (req) => {
       quick_bounce: payload.enhancedEngagement?.quickBounce || false,
       closed_player_early: payload.enhancedEngagement?.closedPlayerEarly || false,
       
-      // Contact Info
+      // Contact Info - with safe defaults
       first_name: payload.contactInfo?.firstName || 'Unknown',
       email: payload.contactInfo?.email || 'unknown@example.com',
       
       // Additional fields with defaults
-      engagement_score: payload.score,
+      engagement_score: payload.score || 0,
       advisor_notes: 'Auto-generated from enhanced tracker',
       follow_up_date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
       status: 'new',
@@ -150,7 +150,11 @@ serve(async (req) => {
       console.error('❌ Database error details:', JSON.stringify(error, null, 2));
       console.error('❌ Lead data sent:', JSON.stringify(leadData, null, 2));
       return new Response(
-        JSON.stringify({ error: `Database error: ${error.message}`, details: error }),
+        JSON.stringify({ 
+          error: `Database error: ${error.message}`, 
+          details: error,
+          leadData: leadData 
+        }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -158,14 +162,23 @@ serve(async (req) => {
     console.log('✅ Enhanced lead data upserted successfully:', JSON.stringify(data, null, 2));
 
     return new Response(
-      JSON.stringify({ success: true, data, message: 'Enhanced lead tracking data processed successfully' }),
+      JSON.stringify({ 
+        success: true, 
+        data, 
+        message: 'Enhanced lead tracking data processed successfully' 
+      }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('❌ Function error:', JSON.stringify(error, null, 2));
+    console.error('❌ Function error:', error);
+    console.error('❌ Error stack:', error.stack);
     return new Response(
-      JSON.stringify({ error: error.message, details: error }),
+      JSON.stringify({ 
+        error: error.message || 'Unknown error', 
+        details: error,
+        stack: error.stack 
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
