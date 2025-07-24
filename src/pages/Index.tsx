@@ -13,8 +13,8 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
 const Index = () => {
-  const [currentSavings, setCurrentSavings] = useState(500000);
-  const [monthlySpending, setMonthlySpending] = useState(3000);
+  const [currentSavings, setCurrentSavings] = useState(0);
+  const [monthlySpending, setMonthlySpending] = useState(0);
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
