@@ -567,7 +567,7 @@ const Index = () => {
             <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
               <CardHeader>
                 <CardTitle className="text-2xl text-slate-800">Your Financial Situation</CardTitle>
-                <CardDescription className="text-slate-600">Enter your current savings and spending to see your retirement projection</CardDescription>
+                <CardDescription className="text-slate-600">Enter your current savings and spending goal to see your retirement projection</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="space-y-2">
@@ -649,7 +649,7 @@ const Index = () => {
                     <p>• We calculate how your savings will change over 30 years of retirement</p>
                     <p>• Your spending increases each year with inflation (3% annually)</p>
                     <p>• Your remaining savings earn a 6% annual return</p>
-                    <p>• The "safe" amount ensures your money lasts the full 30 years</p>
+                    <p>• The "safe" amount estimates that your money lasts the full 30 years</p>
                   </div>
                 </div>
               </CardContent>
