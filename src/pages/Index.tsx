@@ -87,7 +87,10 @@ const Index = () => {
       // If not the first year, simulate 12 months of returns and withdrawals
       if (year > 0) {
         for (let month = 0; month < 12; month++) {
-          balance = balance * (1 + monthlyReturnRate) - adjustedMonthlySpending;
+          // Apply interest at the beginning of the month
+          balance = balance * (1 + monthlyReturnRate);
+          // Then subtract monthly spending
+          balance = balance - adjustedMonthlySpending;
           if (balance <= 0) break;
         }
       }
@@ -119,7 +122,10 @@ const Index = () => {
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
       if (month > 0) {
-        balance = balance * (1 + monthlyReturnRate) - adjustedMonthlySpending;
+        // Apply interest at the beginning of the month
+        balance = balance * (1 + monthlyReturnRate);
+        // Then subtract monthly spending
+        balance = balance - adjustedMonthlySpending;
       }
       
       if (balance <= 0) {
