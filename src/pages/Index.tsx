@@ -557,7 +557,7 @@ const Index = () => {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">Spend in Retirement?</span>
             </h1>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
-              Plan your retirement spending with confidence. Our calculator shows you exactly how much you can spend monthly without running out of money.
+              Plan your retirement spending with confidence. Our calculator shows you how much you can spend monthly without running out of money.
             </p>
           </div>
 
