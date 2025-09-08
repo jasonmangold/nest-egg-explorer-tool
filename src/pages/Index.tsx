@@ -75,19 +75,29 @@ const Index = () => {
     if (!hasCalculated || needsCalculation) return [];
     const data = [];
     let balance = currentSavings;
-    const annualSpending = monthlySpending * 12;
-    const inflationRate = 0.03;
-    const returnRate = 0.06;
+    const monthlySpendingAmount = monthlySpending;
+    const annualInflationRate = 0.03;
+    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
+    
+    // Calculate monthly for 30 years, but show yearly data points for the chart
     for (let year = 0; year <= 30; year++) {
-      const adjustedSpending = annualSpending * Math.pow(1 + inflationRate, year);
+      // Apply annual inflation to the base monthly spending
+      const adjustedMonthlySpending = monthlySpendingAmount * Math.pow(1 + annualInflationRate, year);
+      
+      // If not the first year, simulate 12 months of returns and withdrawals
       if (year > 0) {
-        balance = balance * (1 + returnRate) - adjustedSpending;
+        for (let month = 0; month < 12; month++) {
+          balance = balance * (1 + monthlyReturnRate) - adjustedMonthlySpending;
+          if (balance <= 0) break;
+        }
       }
+      
       data.push({
         year,
         balance: Math.max(0, balance),
-        spending: adjustedSpending
+        spending: adjustedMonthlySpending * 12 // Show annual spending for display
       });
+      
       if (balance <= 0) break;
     }
     return data;
@@ -98,13 +108,15 @@ const Index = () => {
     if (!hasCalculated || needsCalculation) return { years: 0, months: 0, totalMonths: 0 };
     
     let balance = currentSavings;
-    const monthlySpendingReal = monthlySpending;
-    const monthlyInflationRate = Math.pow(1.03, 1/12) - 1; // 3% annual = monthly rate
-    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual = monthly rate
+    const monthlySpendingBase = monthlySpending;
+    const annualInflationRate = 0.03; // Apply inflation annually, not monthly
+    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
     
     let totalMonths = 0;
     for (let month = 0; month <= 30 * 12; month++) { // 30 years max
-      const adjustedMonthlySpending = monthlySpendingReal * Math.pow(1 + monthlyInflationRate, month);
+      // Calculate which year we're in and apply annual inflation
+      const currentYear = Math.floor(month / 12);
+      const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
       if (month > 0) {
         balance = balance * (1 + monthlyReturnRate) - adjustedMonthlySpending;
