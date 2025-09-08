@@ -93,6 +93,41 @@ const Index = () => {
     return data;
   }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
 
+  // Calculate precise years and months until money runs out
+  const timeUntilEmpty = useMemo(() => {
+    if (!hasCalculated || needsCalculation) return { years: 0, months: 0, totalMonths: 0 };
+    
+    let balance = currentSavings;
+    const monthlySpendingReal = monthlySpending;
+    const monthlyInflationRate = Math.pow(1.03, 1/12) - 1; // 3% annual = monthly rate
+    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual = monthly rate
+    
+    let totalMonths = 0;
+    for (let month = 0; month <= 30 * 12; month++) { // 30 years max
+      const adjustedMonthlySpending = monthlySpendingReal * Math.pow(1 + monthlyInflationRate, month);
+      
+      if (month > 0) {
+        balance = balance * (1 + monthlyReturnRate) - adjustedMonthlySpending;
+      }
+      
+      if (balance <= 0) {
+        totalMonths = month;
+        break;
+      }
+      
+      // If we reach 30 years, set to max
+      if (month === 30 * 12) {
+        totalMonths = 30 * 12;
+        break;
+      }
+    }
+    
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    
+    return { years, months, totalMonths };
+  }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
+
   // Calculate safe withdrawal amount using proper present value formula
   const safeMonthlyAmount = useMemo(() => {
     if (!hasCalculated || needsCalculation) return 0;
@@ -104,15 +139,16 @@ const Index = () => {
     const safeAnnualAmount = currentSavings / presentValueFactor;
     return Math.round(safeAnnualAmount / 12);
   }, [currentSavings, hasCalculated, needsCalculation]);
-  const yearsUntilEmpty = hasCalculated && !needsCalculation ? projectionData[projectionData.length - 1]?.year || 30 : 0;
-  const isMoneyLasting = hasCalculated && !needsCalculation ? yearsUntilEmpty >= 30 : false;
+  const yearsUntilEmpty = timeUntilEmpty.years;
+  const monthsUntilEmpty = timeUntilEmpty.months;
+  const isMoneyLasting = hasCalculated && !needsCalculation ? timeUntilEmpty.totalMonths >= 30 * 12 : false;
 
   // Track projected results when they change
   useEffect(() => {
     if (hasCalculated && !needsCalculation && currentSavings > 0 && monthlySpending > 0) {
-      leadTracking.trackProjectedResults(safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting);
+      leadTracking.trackProjectedResults(safeMonthlyAmount, timeUntilEmpty.totalMonths / 12, isMoneyLasting);
     }
-  }, [safeMonthlyAmount, yearsUntilEmpty, isMoneyLasting, hasCalculated, needsCalculation, currentSavings, monthlySpending, leadTracking]);
+  }, [safeMonthlyAmount, yearsUntilEmpty, monthsUntilEmpty, isMoneyLasting, hasCalculated, needsCalculation, currentSavings, monthlySpending, leadTracking]);
 
   // Generate graph image for PDF
   const generateGraphImage = (): Promise<string> => {
@@ -319,7 +355,7 @@ const Index = () => {
       pdf.setTextColor(statusTextColor[0], statusTextColor[1], statusTextColor[2]);
       pdf.text('Money Duration', rightCol + 5, currentY + 8);
       pdf.setFontSize(16);
-      const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years`;
+      const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`;
       pdf.text(durationText, rightCol + 5, currentY + 16);
       currentY += 30;
 
@@ -679,7 +715,7 @@ const Index = () => {
                     <div className="mt-6 space-y-4">
                       <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'}`}>
                         <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
-                          {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} Years`}
+                          {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} year${yearsUntilEmpty !== 1 ? 's' : ''}${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`}
                         </h3>
                         <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
                           {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
