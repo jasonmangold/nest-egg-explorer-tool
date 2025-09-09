@@ -463,6 +463,40 @@ const Index = () => {
 
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
+      {/* Structured Data for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          "name": "Retirement Spending Calculator",
+          "description": "Free retirement spending calculator to determine safe monthly spending in retirement",
+          "url": "https://retirement-calculator.lovable.app/",
+          "applicationCategory": "FinanceApplication",
+          "operatingSystem": "Any",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "provider": {
+            "@type": "Organization", 
+            "name": "Financial Planning Company",
+            "contactPoint": {
+              "@type": "ContactPoint",
+              "telephone": "(555) 123-4567",
+              "email": "advisor@financialplanning.com",
+              "contactType": "customer service"
+            }
+          },
+          "featureList": [
+            "Retirement spending projection",
+            "30-year financial planning",
+            "Safe withdrawal rate calculation",
+            "PDF report generation",
+            "Retirement education resources"
+          ]
+        })}
+      </script>
       {/* Enhanced Financial Background */}
       <div className="fixed inset-0 -z-10">
         {/* Primary gradient background */}
@@ -503,11 +537,11 @@ const Index = () => {
       </div>
 
       {/* Header with Logo and Contact Button */}
-      <header className="relative pt-6 pb-4 backdrop-blur-sm">
+      <header className="relative pt-6 pb-4 backdrop-blur-sm" role="banner">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img alt="Financial Planning Company" src="/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png" className="h-12 w-auto object-contain" />
+              <img alt="Financial Planning Company - Expert Retirement Planning Services and Calculators" src="/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png" className="h-12 w-auto object-contain" />
             </div>
             <Button onClick={scrollToContact} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               Contact Me
@@ -517,7 +551,8 @@ const Index = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pb-20">
+      <main>
+        <section className="relative pb-20">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
@@ -777,10 +812,11 @@ const Index = () => {
             </Card>
           </div>
         </div>
-      </section>
+        </section>
+      </main>
 
       {/* Learn More and Related Topics Section */}
-      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-emerald-100 to-blue-100 backdrop-blur-sm">
+      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-emerald-100 to-blue-100 backdrop-blur-sm" aria-label="Educational Resources">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Learn More Section - Left Side */}
@@ -903,7 +939,7 @@ const Index = () => {
       </section>
 
       {/* Podcast Section */}
-      <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm">
+      <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
         <div className="container mx-auto px-4 max-w-4xl">
           <Card className="bg-gradient-to-r from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl ring-1 ring-white/20">
             <CardContent className="p-8 text-center">
@@ -922,7 +958,7 @@ const Index = () => {
       </section>
 
       {/* Contact Me Section */}
-      <section id="contact-section" className="relative py-16 bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 backdrop-blur-sm">
+      <section id="contact-section" className="relative py-16 bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 backdrop-blur-sm" aria-label="Contact Information">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-800 mb-4">Contact Your Financial Professional</h2>
@@ -981,7 +1017,7 @@ const Index = () => {
       </section>
 
       {/* Disclaimer */}
-      <section className="relative py-12 bg-gradient-to-t from-slate-100/90 to-white/60 backdrop-blur-sm">
+      <footer className="relative py-12 bg-gradient-to-t from-slate-100/90 to-white/60 backdrop-blur-sm" role="contentinfo">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Important Disclaimer</h3>
@@ -993,7 +1029,7 @@ const Index = () => {
             </p>
           </div>
         </div>
-      </section>
+      </footer>
 
       {/* Audio Player Component with tracking */}
       <AudioPlayer 
