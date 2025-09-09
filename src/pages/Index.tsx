@@ -10,7 +10,6 @@ import { Calculator, TrendingDown, Users, BookOpen, Headphones, ExternalLink, Do
 import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
-import { useLeadTracking } from '@/hooks/useLeadTracking';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
 const Index = () => {
   const [currentSavings, setCurrentSavings] = useState(0);
@@ -24,9 +23,6 @@ const Index = () => {
   // Audio player hook
   const audioPlayer = useAudioPlayer();
 
-  // Lead tracking hook
-  const leadTracking = useLeadTracking();
-
   // Format number with commas
   const formatNumber = (num: number) => {
     return num.toLocaleString();
@@ -37,7 +33,7 @@ const Index = () => {
     return parseInt(str.replace(/,/g, ''));
   };
 
-  // Handle input changes with formatting and tracking
+  // Handle input changes with formatting
   const handleSavingsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseNumber(e.target.value) || 0;
     setCurrentSavings(value);
@@ -45,7 +41,6 @@ const Index = () => {
     // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
       setNeedsCalculation(true);
-      leadTracking.trackCalculatorInputChange('savings', value);
     }
   };
   const handleSpendingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,19 +50,13 @@ const Index = () => {
     // If we've calculated before, mark that we need to recalculate
     if (hasCalculated) {
       setNeedsCalculation(true);
-      leadTracking.trackCalculatorInputChange('spending', value);
     }
   };
 
-  // Handle Calculate button click - track every click
+  // Handle Calculate button click
   const handleCalculate = () => {
     setHasCalculated(true);
     setNeedsCalculation(false);
-
-    // Track this calculation (will award points for each click)
-    leadTracking.trackCalculateButtonClick();
-    leadTracking.trackCalculatorInput('savings', currentSavings);
-    leadTracking.trackCalculatorInput('spending', monthlySpending);
   };
 
   // Calculate retirement projections (only if hasCalculated is true and no pending changes)
@@ -161,12 +150,6 @@ const Index = () => {
   const monthsUntilEmpty = timeUntilEmpty.months;
   const isMoneyLasting = hasCalculated && !needsCalculation ? timeUntilEmpty.totalMonths >= 30 * 12 : false;
 
-  // Track projected results when they change
-  useEffect(() => {
-    if (hasCalculated && !needsCalculation && currentSavings > 0 && monthlySpending > 0) {
-      leadTracking.trackProjectedResults(safeMonthlyAmount, timeUntilEmpty.totalMonths / 12, isMoneyLasting);
-    }
-  }, [safeMonthlyAmount, yearsUntilEmpty, monthsUntilEmpty, isMoneyLasting, hasCalculated, needsCalculation, currentSavings, monthlySpending, leadTracking]);
 
   // Generate graph image for PDF
   const generateGraphImage = (): Promise<string> => {
@@ -306,9 +289,6 @@ const Index = () => {
   };
   const handleExportPDF = async () => {
     if (firstName && email) {
-      const wasCalculated = hasCalculated && !needsCalculation;
-      leadTracking.trackExportResultsClick();
-      leadTracking.trackPDFRequest(firstName, email, wasCalculated);
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
 
@@ -438,7 +418,6 @@ const Index = () => {
     }
   };
   const scrollToContact = () => {
-    leadTracking.trackContactMeClick();
     const contactSection = document.getElementById('contact-section');
     contactSection?.scrollIntoView({
       behavior: 'smooth'
@@ -446,7 +425,6 @@ const Index = () => {
   };
   const handleListenNow = async () => {
     console.log('=== Listen Now button clicked ===');
-    leadTracking.trackListenNowClick();
 
     // Test multiple potential paths
     const possiblePaths = ['/retirement-podcast.mp3', './retirement-podcast.mp3', 'retirement-podcast.mp3', '/public/retirement-podcast.mp3'];
@@ -472,24 +450,14 @@ const Index = () => {
     audioPlayer.loadAudio('/retirement-podcast.mp3');
   };
 
-  // Track tooltip interactions
-  const handleTooltipInteraction = () => {
-    leadTracking.trackTooltipInteraction();
-  };
-
-  // Track educational content clicks - now opens PDFs from Supabase
+  // Handle educational content clicks - opens PDFs from Supabase
   const handleEducationalClick = (documentTitle: string, buttonId?: string) => {
-    leadTracking.trackEducationalContentClick();
-    if (documentTitle.includes('Read Report') || buttonId) {
-      leadTracking.trackReadReportClick(buttonId || `report-${Date.now()}`);
-    }
     openPDFByTitle(documentTitle);
   };
 
   // New handler for Find a Time button
   const handleFindATimeClick = () => {
     console.log('🎯 Find a Time button clicked!');
-    leadTracking.trackFindATimeClick();
     scrollToContact();
   };
 
@@ -574,7 +542,7 @@ const Index = () => {
                   <div className="flex items-center gap-2">
                     <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
                     <UITooltip>
-                      <TooltipTrigger onClick={handleTooltipInteraction}>
+                      <TooltipTrigger>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -592,7 +560,7 @@ const Index = () => {
                   <div className="flex items-center gap-2">
                     <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
                     <UITooltip>
-                      <TooltipTrigger onClick={handleTooltipInteraction}>
+                      <TooltipTrigger>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                       </TooltipTrigger>
                       <TooltipContent>
@@ -1038,20 +1006,10 @@ const Index = () => {
         isMinimized={audioPlayer.isMinimized} 
         isLoading={audioPlayer.isLoading} 
         error={audioPlayer.error} 
-        onTogglePlay={() => {
-          if (audioPlayer.isPlaying) {
-            leadTracking.trackPodcastPause();
-          } else {
-            leadTracking.trackPodcastPlay();
-          }
-          audioPlayer.togglePlay();
-        }} 
+        onTogglePlay={audioPlayer.togglePlay} 
         onSeek={audioPlayer.seek} 
         onVolumeChange={audioPlayer.changeVolume} 
-        onClose={() => {
-          leadTracking.trackPodcastPause();
-          audioPlayer.closePlayer();
-        }} 
+        onClose={audioPlayer.closePlayer}
         onToggleMinimize={audioPlayer.toggleMinimize} 
         onRetryLoad={audioPlayer.retryLoad} 
       />
