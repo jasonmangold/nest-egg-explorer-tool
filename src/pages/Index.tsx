@@ -164,6 +164,7 @@ const Index = () => {
       const currentYear = Math.floor((month - 1) / 12);
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
+      // Starting balance for this month is the ending balance from previous month
       const startingBalance = balance;
       
       // Subtract withdrawal first
@@ -176,7 +177,7 @@ const Index = () => {
       
       data.push({
         month,
-        startingBalance,
+        startingBalance, // Balance at start of month (before withdrawal)
         withdrawal: actualWithdrawal,
         inflation: ((Math.pow(1 + annualInflationRate, currentYear) - 1) * 100).toFixed(1) + '%',
         rateOfReturn: (monthlyReturnRate * 100).toFixed(2) + '%',
