@@ -113,13 +113,15 @@ const Index = () => {
       if (month > 0) {
         // Apply interest at the beginning of the month
         balance = balance * (1 + monthlyReturnRate);
-        // Then subtract monthly spending
+        
+        // Check if we can afford this month's spending
+        if (balance < adjustedMonthlySpending) {
+          totalMonths = month - 1; // Money ran out before this month's spending
+          break;
+        }
+        
+        // Subtract monthly spending
         balance = balance - adjustedMonthlySpending;
-      }
-      
-      if (balance <= 0) {
-        totalMonths = month;
-        break;
       }
       
       // If we reach 30 years, set to max
