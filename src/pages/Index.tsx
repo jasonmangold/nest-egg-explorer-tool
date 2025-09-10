@@ -103,40 +103,40 @@ const Index = () => {
     
     let balance = currentSavings;
     const monthlySpendingBase = monthlySpending;
-    const annualInflationRate = 0.03; // Apply inflation annually, not monthly
+    const annualInflationRate = 0.03;
     const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
     
-    let totalMonths = 0;
-    for (let month = 0; month <= 30 * 12; month++) { // 30 years max
-      // Calculate which year we're in and apply annual inflation
-      const currentYear = Math.floor(month / 12);
+    let lastPositiveMonth = 0;
+    
+    for (let month = 1; month <= 30 * 12; month++) { // Start from month 1
+      const currentYear = Math.floor((month - 1) / 12);
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
-      if (month > 0) {
-        // Apply interest at the beginning of the month
-        balance = balance * (1 + monthlyReturnRate);
-        
-        // Check if we can afford this month's spending
-        if (balance < adjustedMonthlySpending) {
-          totalMonths = month - 1; // Money ran out before this month's spending
-          break;
-        }
-        
-        // Subtract monthly spending
-        balance = balance - adjustedMonthlySpending;
+      // Subtract monthly spending first
+      balance = balance - adjustedMonthlySpending;
+      
+      // If balance goes negative, we're done
+      if (balance <= 0) {
+        break;
       }
+      
+      // Apply interest after spending
+      balance = balance * (1 + monthlyReturnRate);
+      
+      // Track the last month with positive balance
+      lastPositiveMonth = month;
       
       // If we reach 30 years, set to max
       if (month === 30 * 12) {
-        totalMonths = 30 * 12;
+        lastPositiveMonth = 30 * 12;
         break;
       }
     }
     
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
+    const years = Math.floor(lastPositiveMonth / 12);
+    const months = lastPositiveMonth % 12;
     
-    return { years, months, totalMonths };
+    return { years, months, totalMonths: lastPositiveMonth };
   }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
 
   // Generate detailed month-by-month timeline data
@@ -149,22 +149,30 @@ const Index = () => {
     const annualInflationRate = 0.03;
     const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
     
+    // Add month 0 showing starting balance
+    data.push({
+      month: 0,
+      startingBalance: balance,
+      withdrawal: 0,
+      inflation: '0.0%',
+      rateOfReturn: (monthlyReturnRate * 100).toFixed(2) + '%',
+      interestEarned: 0,
+      endingBalance: balance
+    });
+    
     for (let month = 1; month <= Math.min(timeUntilEmpty.totalMonths + 6, 30 * 12); month++) {
       const currentYear = Math.floor((month - 1) / 12);
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
       const startingBalance = balance;
       
-      // Apply interest at the beginning of the month
-      balance = balance * (1 + monthlyReturnRate);
-      const interestEarned = balance - startingBalance;
+      // Subtract withdrawal first
+      const actualWithdrawal = Math.min(adjustedMonthlySpending, balance);
+      balance = balance - actualWithdrawal;
       
-      // Check if we can afford this month's spending
-      const canAfford = balance >= adjustedMonthlySpending;
-      const actualWithdrawal = canAfford ? adjustedMonthlySpending : balance;
-      
-      // Subtract spending
-      balance = Math.max(0, balance - actualWithdrawal);
+      // Then apply interest if balance is still positive
+      const interestEarned = balance > 0 ? balance * monthlyReturnRate : 0;
+      balance = balance + interestEarned;
       
       data.push({
         month,
@@ -173,7 +181,7 @@ const Index = () => {
         inflation: ((Math.pow(1 + annualInflationRate, currentYear) - 1) * 100).toFixed(1) + '%',
         rateOfReturn: (monthlyReturnRate * 100).toFixed(2) + '%',
         interestEarned,
-        endingBalance: balance
+        endingBalance: Math.max(0, balance)
       });
       
       if (balance <= 0) break;
