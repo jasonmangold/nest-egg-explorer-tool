@@ -68,7 +68,7 @@ const Index = () => {
     let balance = currentSavings;
     const monthlySpendingAmount = monthlySpending;
     const annualInflationRate = 0.03;
-    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
+    const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
     
     // Calculate monthly for 30 years, but show yearly data points for the chart
     for (let year = 0; year <= 30; year++) {
@@ -104,7 +104,7 @@ const Index = () => {
     let balance = currentSavings;
     const monthlySpendingBase = monthlySpending;
     const annualInflationRate = 0.03;
-    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
+    const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
     
     let lastPositiveMonth = 0;
     
@@ -147,29 +147,29 @@ const Index = () => {
     let balance = currentSavings;
     const monthlySpendingBase = monthlySpending;
     const annualInflationRate = 0.03;
-    const monthlyReturnRate = Math.pow(1.06, 1/12) - 1; // 6% annual converted to monthly
+    const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
     
     // Add month 0 showing starting balance
     data.push({
       month: 0,
-      startingBalance: balance,
-      withdrawal: 0,
+      startingBalance: balance.toFixed(2),
+      withdrawal: '$0',
       inflation: '0.0%',
-      rateOfReturn: (monthlyReturnRate * 100).toFixed(2) + '%',
-      interestEarned: 0,
-      endingBalance: balance
+      rateOfReturn: (monthlyReturnRate * 100).toFixed(1) + '%',
+      interestEarned: '$0',
+      endingBalance: balance.toFixed(2)
     });
     
     for (let month = 1; month <= Math.min(timeUntilEmpty.totalMonths + 6, 30 * 12); month++) {
       const currentYear = Math.floor((month - 1) / 12);
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
       
-      // Starting balance for this month is the ending balance from previous month
-      const startingBalance = balance;
-      
       // Subtract withdrawal first
       const actualWithdrawal = Math.min(adjustedMonthlySpending, balance);
       balance = balance - actualWithdrawal;
+      
+      // Starting balance for this month is after withdrawal
+      const startingBalance = balance;
       
       // Then apply interest if balance is still positive
       const interestEarned = balance > 0 ? balance * monthlyReturnRate : 0;
@@ -177,12 +177,12 @@ const Index = () => {
       
       data.push({
         month,
-        startingBalance, // Balance at start of month (before withdrawal)
-        withdrawal: actualWithdrawal,
+        startingBalance: '$' + startingBalance.toFixed(2), // Balance after withdrawal
+        withdrawal: '$' + actualWithdrawal.toFixed(2),
         inflation: ((Math.pow(1 + annualInflationRate, currentYear) - 1) * 100).toFixed(1) + '%',
-        rateOfReturn: (monthlyReturnRate * 100).toFixed(2) + '%',
-        interestEarned,
-        endingBalance: Math.max(0, balance)
+        rateOfReturn: (monthlyReturnRate * 100).toFixed(1) + '%',
+        interestEarned: '$' + interestEarned.toFixed(2),
+        endingBalance: '$' + Math.max(0, balance).toFixed(2)
       });
       
       if (balance <= 0) break;
@@ -821,21 +821,21 @@ const Index = () => {
                                   <TableHead>Ending Balance</TableHead>
                                 </TableRow>
                               </TableHeader>
-                              <TableBody>
-                                {timelineData.map((row) => (
-                                  <TableRow key={row.month}>
-                                    <TableCell className="font-medium">{row.month}</TableCell>
-                                    <TableCell>${row.withdrawal.toLocaleString()}</TableCell>
-                                    <TableCell>{row.inflation}</TableCell>
-                                    <TableCell>${row.startingBalance.toLocaleString()}</TableCell>
-                                    <TableCell>{row.rateOfReturn}</TableCell>
-                                    <TableCell>${row.interestEarned.toLocaleString()}</TableCell>
-                                    <TableCell className={row.endingBalance <= 0 ? 'text-red-600 font-semibold' : ''}>
-                                      ${row.endingBalance.toLocaleString()}
-                                    </TableCell>
-                                  </TableRow>
-                                ))}
-                              </TableBody>
+                                <TableBody>
+                                  {timelineData.map((row) => (
+                                    <TableRow key={row.month}>
+                                      <TableCell className="font-medium">{row.month}</TableCell>
+                                      <TableCell>{row.withdrawal}</TableCell>
+                                      <TableCell>{row.inflation}</TableCell>
+                                      <TableCell>{row.startingBalance}</TableCell>
+                                      <TableCell>{row.rateOfReturn}</TableCell>
+                                      <TableCell>{row.interestEarned}</TableCell>
+                                      <TableCell className={row.endingBalance.includes('0.00') && !row.endingBalance.includes('$0.00') ? '' : row.endingBalance === '$0.00' ? 'text-red-600 font-semibold' : ''}>
+                                        {row.endingBalance}
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                                </TableBody>
                             </Table>
                           </div>
                         </div>
