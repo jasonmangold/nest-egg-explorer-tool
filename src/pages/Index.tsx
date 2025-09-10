@@ -191,16 +191,55 @@ const Index = () => {
     return data;
   }, [currentSavings, monthlySpending, hasCalculated, needsCalculation, showTimeline, timeUntilEmpty.totalMonths]);
 
-  // Calculate safe withdrawal amount using proper present value formula
+  // Calculate maximum withdrawal that leaves ~$1,000 after 30 years (360 months)
   const safeMonthlyAmount = useMemo(() => {
     if (!hasCalculated || needsCalculation) return 0;
-    const returnRate = 0.06;
-    const inflationRate = 0.03;
-    const years = 30;
-    const realReturnRate = (1 + returnRate) / (1 + inflationRate) - 1;
-    const presentValueFactor = (1 - Math.pow(1 + realReturnRate, -years)) / realReturnRate;
-    const safeAnnualAmount = currentSavings / presentValueFactor;
-    return Math.round(safeAnnualAmount / 12);
+    
+    const targetEndingBalance = 1000;
+    const monthlyReturnRate = 0.06 / 12; // 0.5% monthly
+    const annualInflationRate = 0.03;
+    const totalMonths = 360; // 30 years
+    
+    // Binary search to find maximum monthly withdrawal
+    let low = 0;
+    let high = currentSavings / 12; // Conservative upper bound
+    let bestWithdrawal = 0;
+    
+    // Binary search with precision of $1
+    while (high - low > 1) {
+      const midWithdrawal = Math.floor((low + high) / 2);
+      
+      // Simulate 360 months with this withdrawal amount
+      let balance = currentSavings;
+      let simulationSuccessful = true;
+      
+      for (let month = 1; month <= totalMonths; month++) {
+        const currentYear = Math.floor((month - 1) / 12);
+        const adjustedMonthlySpending = midWithdrawal * Math.pow(1 + annualInflationRate, currentYear);
+        
+        // Subtract withdrawal
+        balance = balance - adjustedMonthlySpending;
+        
+        // If balance goes negative, this withdrawal is too high
+        if (balance < 0) {
+          simulationSuccessful = false;
+          break;
+        }
+        
+        // Apply interest
+        balance = balance * (1 + monthlyReturnRate);
+      }
+      
+      // Check if ending balance is close to target
+      if (simulationSuccessful && balance >= targetEndingBalance) {
+        bestWithdrawal = midWithdrawal;
+        low = midWithdrawal;
+      } else {
+        high = midWithdrawal;
+      }
+    }
+    
+    return bestWithdrawal;
   }, [currentSavings, hasCalculated, needsCalculation]);
   const yearsUntilEmpty = timeUntilEmpty.years;
   const monthsUntilEmpty = timeUntilEmpty.months;
