@@ -821,9 +821,9 @@ const Index = () => {
                       <span className="text-sm font-medium text-slate-700">Retirement Period</span>
                       <span className="text-sm font-bold text-primary">30 years</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: `hsl(var(--secondary) / 0.1)` }}>
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: `hsl(var(--primary) / 0.1)` }}>
                       <span className="text-sm font-medium text-slate-700">Annual Inflation</span>
-                      <span className="text-sm font-bold" style={{ color: `hsl(var(--secondary))` }}>3%</span>
+                      <span className="text-sm font-bold" style={{ color: `hsl(var(--primary))` }}>3%</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Annual Return</span>
@@ -835,7 +835,7 @@ const Index = () => {
                 {/* How It Works Section */}
                 <div className="pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
-                    <Calculator className="w-5 h-5 text-secondary mr-2" />
+                    <Calculator className="w-5 h-5 text-primary mr-2" />
                     <h3 className="text-lg font-semibold text-slate-800">How It Works</h3>
                   </div>
                   <div className="space-y-3 text-sm text-slate-600">
@@ -1112,7 +1112,7 @@ const Index = () => {
             {/* Related Topics Section - Right Side */}
             <div>
               <div className="text-center mb-8">
-                <FileText className="w-12 h-12 mx-auto text-secondary mb-4" />
+                <FileText className="w-12 h-12 mx-auto text-primary mb-4" />
                 <h2 className="text-3xl font-bold text-slate-800 mb-4">Related Financial Topics</h2>
                 <p className="text-lg text-slate-600">
                   Explore other important areas of financial planning to secure your future.
@@ -1120,10 +1120,10 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--secondary))` }}>
+                      <div style={{ color: `hsl(var(--primary))` }}>
                         <TrendingDown className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
@@ -1136,10 +1136,10 @@ const Index = () => {
                       size="sm" 
                       className="self-start w-28" 
                       style={{ 
-                        borderColor: `hsl(var(--secondary) / 0.2)`,
-                        color: `hsl(var(--secondary))`
+                        borderColor: `hsl(var(--primary) / 0.2)`,
+                        color: `hsl(var(--primary))`
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}
                     >
@@ -1148,10 +1148,10 @@ const Index = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--secondary))` }}>
+                      <div style={{ color: `hsl(var(--primary))` }}>
                         <Shield className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
@@ -1164,10 +1164,10 @@ const Index = () => {
                       size="sm" 
                       className="self-start w-28"
                       style={{ 
-                        borderColor: `hsl(var(--secondary) / 0.2)`,
-                        color: `hsl(var(--secondary))`
+                        borderColor: `hsl(var(--primary) / 0.2)`,
+                        color: `hsl(var(--primary))`
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}
                     >
@@ -1176,10 +1176,10 @@ const Index = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--secondary))` }}>
+                      <div style={{ color: `hsl(var(--primary))` }}>
                         <Users className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
@@ -1192,10 +1192,10 @@ const Index = () => {
                       size="sm" 
                       className="self-start w-28"
                       style={{ 
-                        borderColor: `hsl(var(--secondary) / 0.2)`,
-                        color: `hsl(var(--secondary))`
+                        borderColor: `hsl(var(--primary) / 0.2)`,
+                        color: `hsl(var(--primary))`
                       }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}
                     >
@@ -1254,8 +1254,8 @@ const Index = () => {
                   </div>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `hsl(var(--secondary) / 0.1)` }}>
-                      <Mail className="w-6 h-6" style={{ color: `hsl(var(--secondary))` }} />
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `hsl(var(--primary) / 0.1)` }}>
+                      <Mail className="w-6 h-6" style={{ color: `hsl(var(--primary))` }} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Email</h3>
