@@ -821,9 +821,9 @@ const Index = () => {
                       <span className="text-sm font-medium text-slate-700">Retirement Period</span>
                       <span className="text-sm font-bold text-primary">30 years</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: `hsl(var(--secondary) / 0.1)` }}>
                       <span className="text-sm font-medium text-slate-700">Annual Inflation</span>
-                      <span className="text-sm font-bold text-secondary">3%</span>
+                      <span className="text-sm font-bold" style={{ color: `hsl(var(--secondary))` }}>3%</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Annual Return</span>
@@ -1123,13 +1123,26 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <TrendingDown className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
+                      <div style={{ color: `hsl(var(--secondary))` }}>
+                        <TrendingDown className="w-6 h-6 mt-1 flex-shrink-0" />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Managing Your Debt</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="self-start w-28" 
+                      style={{ 
+                        borderColor: `hsl(var(--secondary) / 0.2)`,
+                        color: `hsl(var(--secondary))`
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}
+                    >
                       Read Report
                     </Button>
                   </CardContent>
@@ -1138,13 +1151,26 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <Shield className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
+                      <div style={{ color: `hsl(var(--secondary))` }}>
+                        <Shield className="w-6 h-6 mt-1 flex-shrink-0" />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">How Individual Disability Income Insurance Works</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="self-start w-28"
+                      style={{ 
+                        borderColor: `hsl(var(--secondary) / 0.2)`,
+                        color: `hsl(var(--secondary))`
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}
+                    >
                       Read Report
                     </Button>
                   </CardContent>
@@ -1153,13 +1179,26 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <Users className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
+                      <div style={{ color: `hsl(var(--secondary))` }}>
+                        <Users className="w-6 h-6 mt-1 flex-shrink-0" />
+                      </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">General Purposes of Life Insurance</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="self-start w-28"
+                      style={{ 
+                        borderColor: `hsl(var(--secondary) / 0.2)`,
+                        color: `hsl(var(--secondary))`
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--secondary) / 0.1)`}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}
+                    >
                       Read Report
                     </Button>
                   </CardContent>
@@ -1215,8 +1254,8 @@ const Index = () => {
                   </div>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-secondary" />
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `hsl(var(--secondary) / 0.1)` }}>
+                      <Mail className="w-6 h-6" style={{ color: `hsl(var(--secondary))` }} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Email</h3>
