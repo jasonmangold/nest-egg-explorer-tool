@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +13,79 @@ import jsPDF from 'jspdf';
 import AudioPlayer from '@/components/AudioPlayer';
 import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
+import { supabase } from "@/integrations/supabase/client";
+import { useTheme } from "@/contexts/ThemeContext";
+
 const Index = () => {
+  // Advisor Information - fetched dynamically from database
+  const { advisorSlug } = useParams();
+  const { setColors } = useTheme();
+  const [advisorInfo, setAdvisorInfo] = useState<{
+    name: string;
+    title: string;
+    bio: string;
+    phone: string;
+    email: string;
+    address: string;
+    photoUrl: string;
+    logo_url: string;
+    contact_button_type: 'scroll' | 'phone' | 'email' | 'website';
+    contact_button_url?: string;
+    show_podcast: boolean;
+    disclaimer_text: string | null;
+  }>({
+    name: "Sarah Johnson, CFP®",
+    title: "Certified Financial Planner",
+    bio: "15+ years experience helping clients achieve their goals",
+    phone: "(555) 123-4567",
+    email: "advisor@financialplanning.com",
+    address: "123 Financial Street\nSuite 456\nFinancial City, FC 12345",
+    photoUrl: "",
+    logo_url: "/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png",
+    contact_button_type: "scroll",
+    contact_button_url: undefined,
+    show_podcast: true,
+    disclaimer_text: null,
+  });
+
+  // Fetch advisor data from database
+  useEffect(() => {
+    const fetchAdvisor = async () => {
+      if (!advisorSlug) return;
+      
+      const { data } = await supabase
+        .from('advisors' as any)
+        .select('*')
+        .eq('slug', advisorSlug)
+        .eq('is_active', true)
+        .maybeSingle();
+      
+      if (data) {
+        setAdvisorInfo({
+          name: (data as any).name,
+          title: (data as any).title,
+          bio: (data as any).bio,
+          phone: (data as any).phone,
+          email: (data as any).email,
+          address: (data as any).address,
+          photoUrl: (data as any).profile_picture_url || "",
+          logo_url: (data as any).logo_url,
+          contact_button_type: (data as any).contact_button_type as 'scroll' | 'phone' | 'email' | 'website',
+          contact_button_url: (data as any).contact_button_url,
+          show_podcast: (data as any).show_podcast ?? true,
+          disclaimer_text: (data as any).disclaimer_text,
+        });
+        
+        setColors({
+          primary: (data as any).theme_primary_color,
+          secondary: (data as any).theme_secondary_color,
+        });
+      }
+    };
+    
+    fetchAdvisor();
+  }, [advisorSlug, setColors]);
+
   const [currentSavings, setCurrentSavings] = useState(0);
   const [monthlySpending, setMonthlySpending] = useState(0);
   const [firstName, setFirstName] = useState("");
@@ -299,7 +372,7 @@ const Index = () => {
 
       // Draw data line
       const maxBalance = Math.max(...projectionData.map(d => d.balance));
-      ctx.strokeStyle = '#059669';
+      ctx.strokeStyle = 'hsl(var(--primary))';
       ctx.lineWidth = 5; // Thicker line for better visibility
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -316,7 +389,7 @@ const Index = () => {
       ctx.stroke();
 
       // Add data points
-      ctx.fillStyle = '#059669';
+      ctx.fillStyle = 'hsl(var(--primary))';
       projectionData.forEach((point, index) => {
         if (index % 3 === 0) {
           const x = chartX + point.year / 30 * chartWidth;
@@ -388,7 +461,7 @@ const Index = () => {
       const pageWidth = pdf.internal.pageSize.getWidth();
 
       // Header with gradient effect (simulated with colors)
-      pdf.setFillColor(5, 150, 105); // emerald-600
+      pdf.setFillColor(5, 150, 105); // primary color
       pdf.rect(0, 0, pageWidth, 25, 'F');
 
       // Title in header
@@ -413,10 +486,10 @@ const Index = () => {
       let currentY = 55;
 
       // Financial Situation Section
-      pdf.setFillColor(236, 253, 245); // emerald-50
+      pdf.setFillColor(236, 253, 245); // primary light
       pdf.rect(15, currentY, pageWidth - 30, 25, 'F');
       pdf.setFontSize(14);
-      pdf.setTextColor(5, 150, 105); // emerald-600
+      pdf.setTextColor(5, 150, 105); // primary color
       pdf.text('Your Financial Situation', 20, currentY + 8);
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
@@ -474,7 +547,7 @@ const Index = () => {
       pdf.setFillColor(241, 245, 249); // slate-100
       pdf.rect(15, currentY, pageWidth - 30, 18, 'F');
       pdf.setFontSize(11);
-      pdf.setTextColor(15, 118, 110); // teal-600
+      pdf.setTextColor(5, 150, 105); // primary color
       pdf.text('Calculation Assumptions', 20, currentY + 8);
       pdf.setFontSize(9);
       pdf.setTextColor(71, 85, 105);
@@ -482,15 +555,15 @@ const Index = () => {
       currentY += 25;
 
       // Advisor Contact Section
-      pdf.setFillColor(240, 253, 250); // emerald-50
+      pdf.setFillColor(240, 253, 250); // primary light
       pdf.rect(15, currentY, pageWidth - 30, 28, 'F');
       pdf.setFontSize(12);
-      pdf.setTextColor(5, 150, 105);
+      pdf.setTextColor(5, 150, 105); // primary color
       pdf.text('Your Financial Advisor', 20, currentY + 8);
       pdf.setFontSize(10);
       pdf.setTextColor(51, 65, 85);
-      pdf.text('Sarah Johnson, CFP® - Certified Financial Planner', 20, currentY + 16);
-      pdf.text('Phone: (555) 123-4567  |  Email: advisor@financialplanning.com', 20, currentY + 22);
+      pdf.text(`${advisorInfo.name} - ${advisorInfo.title}`, 20, currentY + 16);
+      pdf.text(`Phone: ${advisorInfo.phone}  |  Email: ${advisorInfo.email}`, 20, currentY + 22);
 
       // Disclaimer at bottom
       const disclaimerY = 265;
@@ -556,6 +629,26 @@ const Index = () => {
     scrollToContact();
   };
 
+  // Dynamic contact button handler
+  const handleContactClick = () => {
+    switch (advisorInfo.contact_button_type) {
+      case 'scroll':
+        scrollToContact();
+        break;
+      case 'phone':
+        window.location.href = `tel:${advisorInfo.phone}`;
+        break;
+      case 'email':
+        window.location.href = `mailto:${advisorInfo.email}`;
+        break;
+      case 'website':
+        if (advisorInfo.contact_button_url) {
+          window.open(advisorInfo.contact_button_url, '_blank');
+        }
+        break;
+    }
+  };
+
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Structured Data for SEO */}
@@ -595,19 +688,19 @@ const Index = () => {
       {/* Enhanced Financial Background */}
       <div className="fixed inset-0 -z-10">
         {/* Primary gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-emerald-50 via-blue-50 to-slate-100"></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-primary/5 via-primary/3 to-slate-100"></div>
         
         {/* Floating geometric shapes */}
-        <div className="absolute top-10 left-10 w-32 h-32 bg-emerald-200/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute top-40 right-20 w-48 h-48 bg-blue-200/15 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-primary/10 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute top-40 right-20 w-48 h-48 bg-secondary/8 rounded-full blur-2xl animate-pulse delay-1000"></div>
         <div className="absolute bottom-40 left-20 w-40 h-40 bg-slate-300/20 rounded-full blur-xl animate-pulse delay-2000"></div>
-        <div className="absolute bottom-10 right-10 w-60 h-60 bg-emerald-300/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+        <div className="absolute bottom-10 right-10 w-60 h-60 bg-primary/5 rounded-full blur-3xl animate-pulse delay-500"></div>
         
         {/* Subtle grid pattern overlay */}
         <div className="absolute inset-0 opacity-20" style={{
           backgroundImage: `
-            linear-gradient(rgba(15, 118, 110, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(15, 118, 110, 0.03) 1px, transparent 1px)
+            linear-gradient(hsl(var(--primary) / 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, hsl(var(--primary) / 0.03) 1px, transparent 1px)
           `,
           backgroundSize: '60px 60px'
         }}></div>
@@ -618,14 +711,14 @@ const Index = () => {
           <path d="M0,600 Q250,400 500,600 T1000,600 V1000 H0 Z" fill="url(#gradient2)" fillOpacity="0.08" />
           <defs>
             <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#059669" stopOpacity="0.3" />
-              <stop offset="50%" stopColor="#0f766e" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#1e40af" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+              <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
             </linearGradient>
             <linearGradient id="gradient2" x1="0%" y1="100%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#1e40af" stopOpacity="0.2" />
-              <stop offset="50%" stopColor="#0f766e" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#059669" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
             </linearGradient>
           </defs>
         </svg>
@@ -636,9 +729,9 @@ const Index = () => {
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img alt="Financial Planning Company - Expert Retirement Planning Services and Calculators" src="/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png" className="h-12 w-auto object-contain" />
+              <img alt="Financial Planning Company - Expert Retirement Planning Services and Calculators" src={advisorInfo.logo_url} className="h-12 w-auto object-contain" />
             </div>
-            <Button onClick={scrollToContact} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            <Button onClick={handleContactClick} className="bg-primary hover:bg-primary/90 text-primary-foreground">
               Contact Me
             </Button>
           </div>
@@ -652,7 +745,7 @@ const Index = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
               What Can I Safely<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-600">Spend in Retirement?</span>
+              <span className="text-primary">Spend in Retirement?</span>
             </h1>
             <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
               Plan your retirement spending with confidence. Our calculator shows you how much you can spend monthly without running out of money.
@@ -682,7 +775,7 @@ const Index = () => {
                   </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="savings" type="text" value={formatNumber(currentSavings)} onChange={handleSavingsChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="500,000" />
+                    <Input id="savings" type="text" value={formatNumber(currentSavings)} onChange={handleSavingsChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="500,000" />
                   </div>
                 </div>
                 
@@ -700,13 +793,13 @@ const Index = () => {
                   </div>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="spending" type="text" value={formatNumber(monthlySpending)} onChange={handleSpendingChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" placeholder="3,000" />
+                    <Input id="spending" type="text" value={formatNumber(monthlySpending)} onChange={handleSpendingChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="3,000" />
                   </div>
                 </div>
 
                 {/* Calculate Button */}
                 <div className="pt-4">
-                  <Button onClick={handleCalculate} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg font-semibold">
+                  <Button onClick={handleCalculate} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-lg font-semibold">
                     <Calculator className="w-5 h-5 mr-2" />
                     {hasCalculated && needsCalculation ? 'Recalculate My Plan' : 'Calculate My Retirement Plan'}
                   </Button>
@@ -718,21 +811,21 @@ const Index = () => {
                 {/* Assumptions Section */}
                 <div className="pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
-                    <Info className="w-5 h-5 text-emerald-600 mr-2" />
+                    <Info className="w-5 h-5 text-primary mr-2" />
                     <h3 className="text-lg font-semibold text-slate-800">Calculation Assumptions</h3>
                   </div>
                   <div className="grid grid-cols-1 gap-3">
-                    <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Retirement Period</span>
-                      <span className="text-sm font-bold text-emerald-700">30 years</span>
+                      <span className="text-sm font-bold text-primary">30 years</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Annual Inflation</span>
-                      <span className="text-sm font-bold text-blue-700">3%</span>
+                      <span className="text-sm font-bold text-secondary">3%</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                    <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Annual Return</span>
-                      <span className="text-sm font-bold text-purple-700">6%</span>
+                      <span className="text-sm font-bold text-primary">6%</span>
                     </div>
                   </div>
                 </div>
@@ -740,7 +833,7 @@ const Index = () => {
                 {/* How It Works Section */}
                 <div className="pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
-                    <Calculator className="w-5 h-5 text-teal-600 mr-2" />
+                    <Calculator className="w-5 h-5 text-secondary mr-2" />
                     <h3 className="text-lg font-semibold text-slate-800">How It Works</h3>
                   </div>
                   <div className="space-y-3 text-sm text-slate-600">
@@ -810,18 +903,18 @@ const Index = () => {
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
                           fontSize: '14px',
                           fontWeight: '500'
-                        }} cursor={{
-                          stroke: '#059669',
+                         }} cursor={{
+                          stroke: 'hsl(var(--primary))',
                           strokeWidth: 1,
                           strokeDasharray: '4 4'
-                        }} />
-                          <Line type="monotone" dataKey="balance" stroke="#059669" strokeWidth={3} dot={false} activeDot={{
+                         }} />
+                          <Line type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} activeDot={{
                           r: 6,
-                          fill: '#059669',
+                          fill: 'hsl(var(--primary))',
                           stroke: '#ffffff',
                           strokeWidth: 2
                         }} style={{
-                          filter: 'drop-shadow(0 2px 4px rgba(5, 150, 105, 0.2))'
+                          filter: 'drop-shadow(0 2px 4px hsl(var(--primary) / 0.2))'
                         }} />
                         </LineChart>
                       </ResponsiveContainer>
@@ -830,16 +923,16 @@ const Index = () => {
                     {/* Results Section */}
                     <div className="mt-6 space-y-4">
                       <div 
-                        className={`p-4 rounded-lg cursor-pointer transition-all hover:shadow-md ${isMoneyLasting ? 'bg-emerald-50 border border-emerald-200 hover:bg-emerald-100' : 'bg-red-50 border border-red-200 hover:bg-red-100'}`}
+                        className={`p-4 rounded-lg cursor-pointer transition-all hover:shadow-md ${isMoneyLasting ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15' : 'bg-red-50 border border-red-200 hover:bg-red-100'}`}
                         onClick={() => setShowTimeline(!showTimeline)}
                       >
-                        <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-emerald-800' : 'text-red-800'}`}>
+                        <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-primary' : 'text-red-800'}`}>
                           {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} year${yearsUntilEmpty !== 1 ? 's' : ''}${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`}
                         </h3>
-                        <p className={`text-sm ${isMoneyLasting ? 'text-emerald-600' : 'text-red-600'}`}>
+                        <p className={`text-sm ${isMoneyLasting ? 'text-primary' : 'text-red-600'}`}>
                           {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
                         </p>
-                        <p className={`text-xs mt-2 ${isMoneyLasting ? 'text-emerald-500' : 'text-red-500'}`}>
+                        <p className={`text-xs mt-2 ${isMoneyLasting ? 'text-primary/70' : 'text-red-500'}`}>
                           Click to {showTimeline ? 'hide' : 'view'} month-by-month timeline
                         </p>
                       </div>
@@ -880,15 +973,15 @@ const Index = () => {
                         </div>
                       )}
                       
-                      <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
-                        <h3 className="font-semibold text-lg text-emerald-800">Safe Monthly Spending</h3>
-                        <p className="text-2xl font-bold text-emerald-600">${safeMonthlyAmount.toLocaleString()}</p>
-                        <p className="text-sm text-emerald-600">Sustainable for 30 years with 3% annual increases</p>
+                      <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
+                        <h3 className="font-semibold text-lg text-primary">Safe Monthly Spending</h3>
+                        <p className="text-2xl font-bold text-primary">${safeMonthlyAmount.toLocaleString()}</p>
+                        <p className="text-sm text-primary">Sustainable for 30 years with 3% annual increases</p>
                       </div>
                       
                       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" className="w-full border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                          <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/10">
                             <Download className="w-4 h-4 mr-2" />
                             Export Results as PDF
                           </Button>
@@ -903,13 +996,13 @@ const Index = () => {
                           <div className="space-y-4">
                             <div className="space-y-2">
                               <Label htmlFor="firstName" className="text-slate-700">First Name</Label>
-                              <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter your first name" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
+                              <Input id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} placeholder="Enter your first name" className="border-slate-200 focus:border-primary focus:ring-primary" />
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="email" className="text-slate-700">Email Address</Label>
-                              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" className="border-slate-200 focus:border-emerald-500 focus:ring-emerald-500" />
+                              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Enter your email" className="border-slate-200 focus:border-primary focus:ring-primary" />
                             </div>
-                            <Button onClick={handleExportPDF} disabled={!firstName || !email} className="w-full bg-emerald-600 hover:bg-emerald-700">
+                            <Button onClick={handleExportPDF} disabled={!firstName || !email} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                               <Download className="w-4 h-4 mr-2" />
                               Generate PDF
                             </Button>
@@ -934,14 +1027,14 @@ const Index = () => {
 
           {/* CTA Section */}
           <div className="text-center mt-12">
-            <Card className="bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
+            <Card className="bg-gradient-to-r from-primary via-secondary to-primary text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
               <CardContent className="p-8">
                 <Users className="w-12 h-12 mx-auto mb-4 opacity-90" />
                 <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
-                <p className="text-emerald-100 mb-6">
+                <p className="text-white/90 mb-6">
                   Schedule a meeting with a financial professional to create a personalized retirement strategy.
                 </p>
-                <Button size="lg" variant="secondary" className="bg-white text-emerald-600 hover:bg-emerald-50" onClick={handleFindATimeClick}>
+                <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
                   Find a Time
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </Button>
@@ -953,13 +1046,13 @@ const Index = () => {
       </main>
 
       {/* Learn More and Related Topics Section */}
-      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-emerald-100 to-blue-100 backdrop-blur-sm" aria-label="Educational Resources">
+      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-primary/5 to-secondary/5 backdrop-blur-sm" aria-label="Educational Resources">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Learn More Section - Left Side */}
             <div>
               <div className="text-center mb-8">
-                <BookOpen className="w-12 h-12 mx-auto text-emerald-600 mb-4" />
+                <BookOpen className="w-12 h-12 mx-auto text-primary mb-4" />
                 <h2 className="text-3xl font-bold text-slate-800 mb-4">Learn More About Retirement</h2>
                 <p className="text-lg text-slate-600">
                   Deepen your understanding with our comprehensive retirement planning resources.
@@ -967,46 +1060,46 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <TrendingDown className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <TrendingDown className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
+                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
                       Read Report
                     </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <Calculator className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <Calculator className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">How a Roth IRA Works</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
+                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
                       Read Report
                     </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-emerald-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <PiggyBank className="w-6 h-6 text-emerald-600 mt-1 flex-shrink-0" />
+                      <PiggyBank className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Retirement Claiming Strategies for Married Couples</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
+                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1017,7 +1110,7 @@ const Index = () => {
             {/* Related Topics Section - Right Side */}
             <div>
               <div className="text-center mb-8">
-                <FileText className="w-12 h-12 mx-auto text-teal-600 mb-4" />
+                <FileText className="w-12 h-12 mx-auto text-secondary mb-4" />
                 <h2 className="text-3xl font-bold text-slate-800 mb-4">Related Financial Topics</h2>
                 <p className="text-lg text-slate-600">
                   Explore other important areas of financial planning to secure your future.
@@ -1025,46 +1118,46 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <TrendingDown className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <TrendingDown className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Managing Your Debt</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
+                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
                       Read Report
                     </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <Shield className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <Shield className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">How Individual Disability Income Insurance Works</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
+                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
                       Read Report
                     </Button>
                   </CardContent>
                 </Card>
                 
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-teal-300/50 h-40">
+                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-secondary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <Users className="w-6 h-6 text-teal-600 mt-1 flex-shrink-0" />
+                      <Users className="w-6 h-6 text-secondary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">General Purposes of Life Insurance</h3>
                         <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="border-teal-200 text-teal-700 hover:bg-teal-50 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
+                    <Button variant="outline" size="sm" className="border-secondary/20 text-secondary hover:bg-secondary/10 self-start w-28" onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1076,26 +1169,28 @@ const Index = () => {
       </section>
 
       {/* Podcast Section */}
-      <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <Card className="bg-gradient-to-r from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl ring-1 ring-white/20">
-            <CardContent className="p-8 text-center">
-              <Headphones className="w-16 h-16 mx-auto mb-6 opacity-90" />
-              <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
-              <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
-              <div className="flex justify-center">
-                <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={handleListenNow}>
-                  <Headphones className="w-5 h-5 mr-2" />
-                  Listen Now
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+      {advisorInfo.show_podcast && (
+        <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <Card className="bg-gradient-to-r from-slate-700 via-primary to-secondary text-white border-0 shadow-2xl ring-1 ring-white/20">
+              <CardContent className="p-8 text-center">
+                <Headphones className="w-16 h-16 mx-auto mb-6 opacity-90" />
+                <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
+                <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
+                <div className="flex justify-center">
+                  <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={handleListenNow}>
+                    <Headphones className="w-5 h-5 mr-2" />
+                    Listen Now
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+      )}
 
       {/* Contact Me Section */}
-      <section id="contact-section" className="relative py-16 bg-gradient-to-br from-emerald-50 via-teal-50 to-blue-50 backdrop-blur-sm" aria-label="Contact Information">
+      <section id="contact-section" className="relative py-16 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 backdrop-blur-sm" aria-label="Contact Information">
         <div className="container mx-auto px-4 max-w-4xl">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-slate-800 mb-4">Contact Your Financial Professional</h2>
@@ -1108,44 +1203,52 @@ const Index = () => {
                 {/* Contact Information */}
                 <div className="space-y-6">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <Phone className="w-6 h-6 text-emerald-600" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <Phone className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Phone</h3>
-                      <p className="text-slate-600">(555) 123-4567</p>
+                      <p className="text-slate-600">{advisorInfo.phone}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center">
-                      <Mail className="w-6 h-6 text-teal-600" />
+                    <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center">
+                      <Mail className="w-6 h-6 text-secondary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Email</h3>
-                      <p className="text-slate-600">advisor@financialplanning.com</p>
+                      <p className="text-slate-600">{advisorInfo.email}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-blue-600" />
+                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+                      <MapPin className="w-6 h-6 text-primary" />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Office</h3>
-                      <p className="text-slate-600">123 Financial Street<br />Suite 456<br />Financial City, FC 12345</p>
+                      <p className="text-slate-600 whitespace-pre-line">{advisorInfo.address}</p>
                     </div>
                   </div>
                 </div>
                 
                 {/* Advisor Photo */}
                 <div className="text-center">
-                  <div className="w-48 h-48 mx-auto bg-gradient-to-br from-emerald-200 to-teal-300 rounded-full flex items-center justify-center mb-4">
-                    <Users className="w-24 h-24 text-emerald-700 opacity-60" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">Sarah Johnson, CFP®</h3>
-                  <p className="text-slate-600">Certified Financial Planner</p>
-                  <p className="text-sm text-slate-500 mt-2">15+ years experience helping clients achieve their retirement goals</p>
+                  {advisorInfo.photoUrl ? (
+                    <img 
+                      src={advisorInfo.photoUrl} 
+                      alt={advisorInfo.name}
+                      className="w-48 h-48 mx-auto rounded-full object-cover mb-4"
+                    />
+                  ) : (
+                    <div className="w-48 h-48 mx-auto bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full flex items-center justify-center mb-4">
+                      <Users className="w-24 h-24 text-primary opacity-60" />
+                    </div>
+                  )}
+                  <h3 className="text-xl font-bold text-slate-800 mb-2">{advisorInfo.name}</h3>
+                  <p className="text-slate-600">{advisorInfo.title}</p>
+                  <p className="text-sm text-slate-500 mt-2">{advisorInfo.bio}</p>
                 </div>
               </div>
             </CardContent>
@@ -1159,10 +1262,7 @@ const Index = () => {
           <div className="text-center">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Important Disclaimer</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              This calculator is provided for educational purposes only and should not be considered personalized investment advice. 
-              The calculations are based on simplified assumptions and may not reflect your actual financial situation. Market returns, inflation rates, 
-              and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified 
-              financial advisor before making any investment or retirement planning decisions. All investments carry risk, including the potential loss of principal.
+              {advisorInfo.disclaimer_text || 'This calculator is provided for educational purposes only and should not be considered personalized investment advice. The calculations are based on simplified assumptions and may not reflect your actual financial situation. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making any investment or retirement planning decisions. All investments carry risk, including the potential loss of principal.'}
             </p>
           </div>
         </div>
