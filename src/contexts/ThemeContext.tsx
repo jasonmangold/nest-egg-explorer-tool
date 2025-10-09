@@ -24,18 +24,24 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     const primaryHSL = hexToHSL(colors.primary);
     const secondaryHSL = hexToHSL(colors.secondary);
     
-    // Remove old values first
-    root.style.removeProperty('--primary');
-    root.style.removeProperty('--secondary');
+    console.log('🎨 ThemeContext: Setting colors', {
+      primary: colors.primary,
+      primaryHSL,
+      secondary: colors.secondary,
+      secondaryHSL
+    });
     
-    // Set new values
+    // Set new values directly on root element
     root.style.setProperty('--primary', primaryHSL);
     root.style.setProperty('--secondary', secondaryHSL);
     
-    // Force repaint
-    document.body.style.display = 'none';
-    document.body.offsetHeight; // Force reflow
-    document.body.style.display = '';
+    // Verify they were set
+    const verifyPrimary = root.style.getPropertyValue('--primary');
+    const verifySecondary = root.style.getPropertyValue('--secondary');
+    console.log('🎨 ThemeContext: Verified CSS variables', {
+      '--primary': verifyPrimary,
+      '--secondary': verifySecondary
+    });
   }, [colors]);
 
   return (
