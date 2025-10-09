@@ -19,13 +19,23 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    // Convert hex to HSL and inject CSS variables with !important
+    // Convert hex to HSL and inject CSS variables
     const root = document.documentElement;
     const primaryHSL = hexToHSL(colors.primary);
     const secondaryHSL = hexToHSL(colors.secondary);
     
-    root.style.setProperty('--primary', primaryHSL, 'important');
-    root.style.setProperty('--secondary', secondaryHSL, 'important');
+    // Remove old values first
+    root.style.removeProperty('--primary');
+    root.style.removeProperty('--secondary');
+    
+    // Set new values
+    root.style.setProperty('--primary', primaryHSL);
+    root.style.setProperty('--secondary', secondaryHSL);
+    
+    // Force repaint
+    document.body.style.display = 'none';
+    document.body.offsetHeight; // Force reflow
+    document.body.style.display = '';
   }, [colors]);
 
   return (

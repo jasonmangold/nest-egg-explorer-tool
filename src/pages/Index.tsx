@@ -372,7 +372,9 @@ const Index = () => {
 
       // Draw data line
       const maxBalance = Math.max(...projectionData.map(d => d.balance));
-      ctx.strokeStyle = 'hsl(var(--primary))';
+      // Get computed primary color from CSS variable
+      const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+      ctx.strokeStyle = primaryColor ? `hsl(${primaryColor})` : '#059669';
       ctx.lineWidth = 5; // Thicker line for better visibility
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
@@ -389,7 +391,7 @@ const Index = () => {
       ctx.stroke();
 
       // Add data points
-      ctx.fillStyle = 'hsl(var(--primary))';
+      ctx.fillStyle = primaryColor ? `hsl(${primaryColor})` : '#059669';
       projectionData.forEach((point, index) => {
         if (index % 3 === 0) {
           const x = chartX + point.year / 30 * chartWidth;
