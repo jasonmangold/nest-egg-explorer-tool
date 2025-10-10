@@ -91,7 +91,6 @@ const Index = () => {
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [showTimeline, setShowTimeline] = useState(false);
   const [hasCalculated, setHasCalculated] = useState(false);
   const [needsCalculation, setNeedsCalculation] = useState(false);
 
@@ -212,57 +211,6 @@ const Index = () => {
     return { years, months, totalMonths: lastPositiveMonth };
   }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
 
-  // Generate detailed month-by-month timeline data
-  const timelineData = useMemo(() => {
-    if (!hasCalculated || needsCalculation || !showTimeline) return [];
-    
-    const data = [];
-    let balance = currentSavings;
-    const monthlySpendingBase = monthlySpending;
-    const annualInflationRate = 0.03;
-    const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
-    
-    // Add month 0 showing starting balance
-    data.push({
-      month: 0,
-      startingBalance: balance.toFixed(2),
-      withdrawal: '$0',
-      inflation: '0.0%',
-      rateOfReturn: (monthlyReturnRate * 100).toFixed(1) + '%',
-      interestEarned: '$0',
-      endingBalance: balance.toFixed(2)
-    });
-    
-    for (let month = 1; month <= Math.min(timeUntilEmpty.totalMonths + 6, 30 * 12); month++) {
-      const currentYear = Math.floor((month - 1) / 12);
-      const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
-      
-      // Subtract withdrawal first
-      const actualWithdrawal = Math.min(adjustedMonthlySpending, balance);
-      balance = balance - actualWithdrawal;
-      
-      // Starting balance for this month is after withdrawal
-      const startingBalance = balance;
-      
-      // Then apply interest if balance is still positive
-      const interestEarned = balance > 0 ? balance * monthlyReturnRate : 0;
-      balance = balance + interestEarned;
-      
-      data.push({
-        month,
-        startingBalance: '$' + startingBalance.toFixed(2), // Balance after withdrawal
-        withdrawal: '$' + actualWithdrawal.toFixed(2),
-        inflation: ((Math.pow(1 + annualInflationRate, currentYear) - 1) * 100).toFixed(1) + '%',
-        rateOfReturn: (monthlyReturnRate * 100).toFixed(1) + '%',
-        interestEarned: '$' + interestEarned.toFixed(2),
-        endingBalance: '$' + Math.max(0, balance).toFixed(2)
-      });
-      
-      if (balance <= 0) break;
-    }
-    
-    return data;
-  }, [currentSavings, monthlySpending, hasCalculated, needsCalculation, showTimeline, timeUntilEmpty.totalMonths]);
 
   // Calculate maximum withdrawal that leaves ~$1,000 after 30 years (360 months)
   const safeMonthlyAmount = useMemo(() => {
@@ -924,56 +872,14 @@ const Index = () => {
                     
                     {/* Results Section */}
                     <div className="mt-6 space-y-4">
-                      <div 
-                        className={`p-4 rounded-lg cursor-pointer transition-all hover:shadow-md ${isMoneyLasting ? 'bg-primary/10 border border-primary/20 hover:bg-primary/15' : 'bg-red-50 border border-red-200 hover:bg-red-100'}`}
-                        onClick={() => setShowTimeline(!showTimeline)}
-                      >
+                      <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-primary/10 border border-primary/20' : 'bg-red-50 border border-red-200'}`}>
                         <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-primary' : 'text-red-800'}`}>
                           {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} year${yearsUntilEmpty !== 1 ? 's' : ''}${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`}
                         </h3>
                         <p className={`text-sm ${isMoneyLasting ? 'text-primary' : 'text-red-600'}`}>
                           {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
                         </p>
-                        <p className={`text-xs mt-2 ${isMoneyLasting ? 'text-primary/70' : 'text-red-500'}`}>
-                          Click to {showTimeline ? 'hide' : 'view'} month-by-month timeline
-                        </p>
                       </div>
-
-                      {showTimeline && (
-                        <div className="bg-white border border-slate-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-lg text-slate-800 mb-4">Monthly Timeline</h4>
-                          <div className="max-h-96 overflow-y-auto">
-                            <Table>
-                              <TableHeader>
-                                <TableRow>
-                                  <TableHead>Month</TableHead>
-                                  <TableHead>Withdrawal</TableHead>
-                                  <TableHead>Inflation</TableHead>
-                                  <TableHead>Starting Balance</TableHead>
-                                  <TableHead>Rate of Return</TableHead>
-                                  <TableHead>Interest Earned</TableHead>
-                                  <TableHead>Ending Balance</TableHead>
-                                </TableRow>
-                              </TableHeader>
-                                <TableBody>
-                                  {timelineData.map((row) => (
-                                    <TableRow key={row.month}>
-                                      <TableCell className="font-medium">{row.month}</TableCell>
-                                      <TableCell>{row.withdrawal}</TableCell>
-                                      <TableCell>{row.inflation}</TableCell>
-                                      <TableCell>{row.startingBalance}</TableCell>
-                                      <TableCell>{row.rateOfReturn}</TableCell>
-                                      <TableCell>{row.interestEarned}</TableCell>
-                                      <TableCell className={row.endingBalance.includes('0.00') && !row.endingBalance.includes('$0.00') ? '' : row.endingBalance === '$0.00' ? 'text-red-600 font-semibold' : ''}>
-                                        {row.endingBalance}
-                                      </TableCell>
-                                    </TableRow>
-                                  ))}
-                                </TableBody>
-                            </Table>
-                          </div>
-                        </div>
-                      )}
                       
                       <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
                         <h3 className="font-semibold text-lg text-primary">Safe Monthly Spending</h3>
