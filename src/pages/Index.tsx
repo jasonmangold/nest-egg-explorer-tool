@@ -403,70 +403,75 @@ const Index = () => {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
 
-      // Header with gradient effect (simulated with colors)
-      pdf.setFillColor(5, 150, 105); // primary color
-      pdf.rect(0, 0, pageWidth, 25, 'F');
+      let currentY = 20;
 
-      // Title in header
-      pdf.setFontSize(20);
-      pdf.setTextColor(255, 255, 255);
-      pdf.text('Retirement Spending Analysis', pageWidth / 2, 16, {
+      // Title
+      pdf.setFontSize(22);
+      pdf.setTextColor(51, 65, 85); // slate-700
+      pdf.text('Retirement Spending Analysis', pageWidth / 2, currentY, {
         align: 'center'
       });
+      currentY += 8;
 
-      // Client info section with background
-      pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.rect(0, 25, pageWidth, 20, 'F');
-      pdf.setFontSize(11);
-      pdf.setTextColor(51, 65, 85); // slate-700
-      pdf.text(`Prepared for: ${firstName}`, 15, 35);
-      pdf.text(`Email: ${email}`, 15, 42);
-      pdf.text(`Date: ${new Date().toLocaleDateString()}`, pageWidth - 15, 35, {
-        align: 'right'
+      // Subtitle with date
+      pdf.setFontSize(10);
+      pdf.setTextColor(100, 116, 139); // slate-500
+      pdf.text(`Prepared for ${firstName} on ${new Date().toLocaleDateString()}`, pageWidth / 2, currentY, {
+        align: 'center'
       });
+      currentY += 15;
 
-      // Main content area
-      let currentY = 55;
-
-      // Financial Situation Section
-      pdf.setFillColor(236, 253, 245); // primary light
-      pdf.rect(15, currentY, pageWidth - 30, 25, 'F');
-      pdf.setFontSize(14);
-      pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text('Your Financial Situation', 20, currentY + 8);
+      // Your Inputs Section
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.roundedRect(15, currentY, pageWidth - 30, 30, 3, 3, 'F');
+      pdf.setFontSize(12);
+      pdf.setTextColor(51, 65, 85); // slate-700
+      pdf.text('Your Inputs', 20, currentY + 8);
+      
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
-      pdf.text(`Current Savings: $${currentSavings.toLocaleString()}`, 20, currentY + 16);
-      pdf.text(`Monthly Spending: $${monthlySpending.toLocaleString()}`, 20, currentY + 22);
-      currentY += 35;
+      pdf.text('Amount at Retirement:', 20, currentY + 16);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text(`$${currentSavings.toLocaleString()}`, 80, currentY + 16);
+      
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('Monthly Spending:', 20, currentY + 23);
+      pdf.setTextColor(30, 41, 59);
+      pdf.text(`$${monthlySpending.toLocaleString()}`, 80, currentY + 23);
+      currentY += 40;
 
-      // Results Section - Two columns
-      const leftCol = 15;
-      const rightCol = pageWidth / 2 + 5;
-
-      // Safe Monthly Amount (left)
-      pdf.setFillColor(220, 252, 231); // green-100
-      pdf.rect(leftCol, currentY, (pageWidth - 40) / 2, 20, 'F');
+      // Your Results Section
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.roundedRect(15, currentY, pageWidth - 30, 35, 3, 3, 'F');
       pdf.setFontSize(12);
-      pdf.setTextColor(5, 150, 105);
-      pdf.text('Safe Monthly Spending', leftCol + 5, currentY + 8);
-      pdf.setFontSize(16);
-      pdf.setTextColor(22, 101, 52); // green-800
-      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, leftCol + 5, currentY + 16);
+      pdf.setTextColor(51, 65, 85);
+      pdf.text('Your Results', 20, currentY + 8);
 
-      // Status (right)
-      const statusColor: [number, number, number] = isMoneyLasting ? [220, 252, 231] : [254, 226, 226]; // green-100 or red-100
-      const statusTextColor: [number, number, number] = isMoneyLasting ? [22, 101, 52] : [153, 27, 27]; // green-800 or red-800
+      // Safe Monthly Amount
+      pdf.setFontSize(10);
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('Safe Monthly Spending:', 20, currentY + 16);
+      pdf.setFontSize(14);
+      pdf.setTextColor(5, 150, 105); // primary color
+      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, 20, currentY + 24);
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(100, 116, 139);
+      pdf.text('Sustainable for 30 years with 3% annual increases', 20, currentY + 30);
 
-      pdf.setFillColor(statusColor[0], statusColor[1], statusColor[2]);
-      pdf.rect(rightCol, currentY, (pageWidth - 40) / 2, 20, 'F');
-      pdf.setFontSize(12);
-      pdf.setTextColor(statusTextColor[0], statusTextColor[1], statusTextColor[2]);
-      pdf.text('Money Duration', rightCol + 5, currentY + 8);
-      pdf.setFontSize(16);
-      const durationText = isMoneyLasting ? '30+ years' : `${yearsUntilEmpty} years${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`;
-      pdf.text(durationText, rightCol + 5, currentY + 16);
-      currentY += 30;
+      // Status indicator
+      const statusColor: [number, number, number] = isMoneyLasting ? [5, 150, 105] : [220, 38, 38]; // primary or red
+      const statusBgColor: [number, number, number] = isMoneyLasting ? [236, 253, 245] : [254, 226, 226]; // green/red light
+
+      pdf.setFillColor(statusBgColor[0], statusBgColor[1], statusBgColor[2]);
+      pdf.roundedRect(pageWidth / 2 + 5, currentY + 12, pageWidth / 2 - 20, 20, 3, 3, 'F');
+      pdf.setFontSize(11);
+      pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+      const statusText = isMoneyLasting 
+        ? '✓ Money Lasts 30+ Years' 
+        : `⚠ Runs Out in ${yearsUntilEmpty}y ${monthsUntilEmpty}m`;
+      pdf.text(statusText, pageWidth / 2 + 10, currentY + 22);
+      currentY += 45;
 
       // Add the improved larger graph
       if (hasCalculated && !needsCalculation) {
@@ -487,37 +492,54 @@ const Index = () => {
       }
 
       // Assumptions section
-      pdf.setFillColor(241, 245, 249); // slate-100
-      pdf.rect(15, currentY, pageWidth - 30, 18, 'F');
-      pdf.setFontSize(11);
-      pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text('Calculation Assumptions', 20, currentY + 8);
-      pdf.setFontSize(9);
-      pdf.setTextColor(71, 85, 105);
-      pdf.text('• 30-year retirement period  • 3% annual inflation  • 6% annual return', 20, currentY + 14);
-      currentY += 25;
-
-      // Advisor Contact Section
-      pdf.setFillColor(240, 253, 250); // primary light
-      pdf.rect(15, currentY, pageWidth - 30, 28, 'F');
-      pdf.setFontSize(12);
-      pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text('Your Financial Advisor', 20, currentY + 8);
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.roundedRect(15, currentY, pageWidth - 30, 20, 3, 3, 'F');
       pdf.setFontSize(10);
       pdf.setTextColor(51, 65, 85);
-      pdf.text(`${advisorInfo.name} - ${advisorInfo.title}`, 20, currentY + 16);
-      pdf.text(`Phone: ${advisorInfo.phone}  |  Email: ${advisorInfo.email}`, 20, currentY + 22);
+      pdf.text('Assumptions', 20, currentY + 8);
+      pdf.setFontSize(9);
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('30-year retirement  •  3% annual inflation  •  6% annual return', 20, currentY + 15);
+      currentY += 28;
+
+      // Advisor Contact Section - Enhanced styling
+      pdf.setFillColor(255, 255, 255);
+      pdf.setDrawColor(226, 232, 240); // slate-200
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(15, currentY, pageWidth - 30, 40, 3, 3, 'FD');
+      
+      // Advisor header
+      pdf.setFillColor(248, 250, 252);
+      pdf.roundedRect(15, currentY, pageWidth - 30, 10, 3, 3, 'F');
+      pdf.setFontSize(11);
+      pdf.setTextColor(5, 150, 105); // primary color
+      pdf.text('Your Financial Advisor', 20, currentY + 7);
+      
+      // Advisor details
+      pdf.setFontSize(11);
+      pdf.setTextColor(30, 41, 59); // slate-800
+      pdf.text(`${advisorInfo.name}`, 20, currentY + 18);
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(71, 85, 105); // slate-600
+      pdf.text(advisorInfo.title, 20, currentY + 24);
+      
+      pdf.setFontSize(9);
+      pdf.text(`📞 ${advisorInfo.phone}`, 20, currentY + 30);
+      pdf.text(`✉ ${advisorInfo.email}`, 20, currentY + 36);
+      
+      currentY += 48;
 
       // Disclaimer at bottom
       const disclaimerY = 265;
       pdf.setFillColor(248, 250, 252); // slate-50
       pdf.rect(0, disclaimerY, pageWidth, 30, 'F');
-      pdf.setFontSize(7);
+      pdf.setFontSize(8);
       pdf.setTextColor(100, 116, 139); // slate-500
       pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, disclaimerY + 6, {
         align: 'center'
       });
-      const disclaimerText = 'This calculator is for educational purposes only and should not be considered personalized investment advice. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making investment decisions. All investments carry risk, including potential loss of principal.';
+      const disclaimerText = advisorInfo.disclaimer_text || 'Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.';
       const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 20);
       pdf.text(lines, 10, disclaimerY + 12);
 
