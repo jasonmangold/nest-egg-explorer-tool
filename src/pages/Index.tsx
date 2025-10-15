@@ -676,16 +676,21 @@ const Index = () => {
 
       {/* Header with Logo and Contact Button */}
       <header className="relative pt-6 pb-4 backdrop-blur-sm" role="banner">
-        <div className="container mx-auto px-4 max-w-6xl">
+        <nav className="container mx-auto px-2 sm:px-4 max-w-6xl" aria-label="Main navigation">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img alt="Financial Planning Company - Expert Retirement Planning Services and Calculators" src={advisorInfo.logo_url} className="h-12 w-auto object-contain" />
+              <img 
+                alt={`${advisorInfo.name} - Financial Planning Services Logo`} 
+                src={advisorInfo.logo_url} 
+                className="h-16 max-w-[200px] w-auto object-contain" 
+                loading="eager" 
+              />
             </div>
-            <Button onClick={handleContactClick} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+            <Button onClick={handleContactClick} variant="default" aria-label="Contact financial advisor">
               Contact Me
             </Button>
           </div>
-        </div>
+        </nav>
       </header>
 
       {/* Hero Section */}
