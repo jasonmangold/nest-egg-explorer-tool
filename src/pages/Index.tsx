@@ -1209,7 +1209,7 @@ const Index = () => {
           <div className="text-center">
             <h3 className="text-lg font-semibold text-slate-800 mb-4">Important Disclaimer</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              {advisorInfo.disclaimer_text || 'This calculator is provided for educational purposes only and should not be considered personalized investment advice. The calculations are based on simplified assumptions and may not reflect your actual financial situation. Market returns, inflation rates, and personal circumstances can vary significantly. Past performance does not guarantee future results. Please consult with a qualified financial advisor before making any investment or retirement planning decisions. All investments carry risk, including the potential loss of principal.'}
+              {advisorInfo.disclaimer_text}
             </p>
           </div>
         </div>
