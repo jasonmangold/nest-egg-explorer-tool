@@ -964,7 +964,7 @@ const Index = () => {
                       <TrendingDown className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Discover why early retirement planning is essential for long-term financial security.</p>
+                        <p className="text-slate-600 text-sm mb-3">Discover why early retirement planning is essential for long-term financial security.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
@@ -979,7 +979,7 @@ const Index = () => {
                       <Calculator className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">IRA's Compared</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Compare Traditional and Roth IRA options to choose the best retirement savings strategy.</p>
+                        <p className="text-slate-600 text-sm mb-3">Compare Traditional and Roth IRA options to choose the best retirement savings strategy.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
@@ -994,7 +994,7 @@ const Index = () => {
                       <PiggyBank className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">An Overview of Social Security Benefits</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Discover how Social Security works and strategies to maximize your benefits.</p>
+                        <p className="text-slate-600 text-sm mb-3">Discover how Social Security works and strategies to maximize your benefits.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
@@ -1026,7 +1026,7 @@ const Index = () => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Choose the Financial Planning Team</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-2">Selecting the right professionals to help guide your financial journey.</p>
+                        <p className="text-slate-600 text-sm mb-3">Selecting the right professionals to help guide your financial journey.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="self-start w-28" style={{
@@ -1048,7 +1048,7 @@ const Index = () => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Responsible Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-2">Protect your family's financial future with the right life insurance coverage.</p>
+                        <p className="text-slate-600 text-sm mb-3">Protect your family's financial future with the right life insurance coverage.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="self-start w-28" style={{
@@ -1070,7 +1070,7 @@ const Index = () => {
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">Basic Investment Tools</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-2">Understanding fundamental investment options to build your portfolio.</p>
+                        <p className="text-slate-600 text-sm mb-3">Understanding fundamental investment options to build your portfolio.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="self-start w-28" style={{
