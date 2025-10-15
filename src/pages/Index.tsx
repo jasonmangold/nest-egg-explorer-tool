@@ -407,18 +407,14 @@ const Index = () => {
 
       // Title
       pdf.setFontSize(22);
-      pdf.setTextColor(51, 65, 85); // slate-700
-      pdf.text('Retirement Spending Analysis', pageWidth / 2, currentY, {
-        align: 'center'
-      });
-      currentY += 8;
+      pdf.setTextColor(30, 41, 59);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Your Financial Fitness Score", pageWidth / 2, 20, { align: "center" });
 
-      // Subtitle with date
       pdf.setFontSize(10);
-      pdf.setTextColor(100, 116, 139); // slate-500
-      pdf.text(`Prepared for ${firstName} on ${new Date().toLocaleDateString()}`, pageWidth / 2, currentY, {
-        align: 'center'
-      });
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(71, 85, 105);
+      pdf.text(`Assessment of your financial health across three key areas`, pageWidth / 2, 28, { align: "center" });
       currentY += 15;
 
       // Your Inputs Section
@@ -502,55 +498,114 @@ const Index = () => {
       pdf.text('30-year retirement  •  3% annual inflation  •  6% annual return', 20, currentY + 15);
       currentY += 28;
 
-      // Advisor Contact Section - Blue box design matching reference
-      pdf.setFillColor(255, 255, 255); // White background
-      pdf.setDrawColor(59, 130, 246); // Blue border (blue-500)
-      pdf.setLineWidth(0.8);
-      pdf.roundedRect(15, currentY, pageWidth - 30, 45, 4, 4, 'FD');
-      
-      // Company name and tagline (left side)
-      pdf.setFontSize(13);
-      pdf.setTextColor(30, 41, 59); // Dark text
-      pdf.text(advisorInfo.name, 25, currentY + 15);
-      
-      pdf.setFontSize(9);
-      pdf.setTextColor(71, 85, 105); // Gray text
-      pdf.text(advisorInfo.title, 25, currentY + 21);
-      
-      // Contact info (right side)
-      const rightX = pageWidth - 90;
-      pdf.setFontSize(9);
-      pdf.setTextColor(71, 85, 105);
-      pdf.text('Phone:', rightX, currentY + 10);
-      pdf.text(advisorInfo.phone, rightX + 15, currentY + 10);
-      
-      pdf.text('Email:', rightX, currentY + 16);
-      pdf.text(advisorInfo.email, rightX + 15, currentY + 16);
-      
-      pdf.text('Office:', rightX, currentY + 22);
-      pdf.text('8 Corporate Park', rightX + 15, currentY + 22);
-      pdf.text('Suite 300', rightX + 15, currentY + 27);
-      pdf.text('Irvine, CA 92606', rightX + 15, currentY + 32);
-      
-      // Prepared for line
-      pdf.setFontSize(8);
-      pdf.setTextColor(59, 130, 246); // Blue text
-      const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
-      pdf.text(`Prepared for: ${firstName} (${email}) on ${today}`, 25, currentY + 40);
-      
-      currentY += 53;
+      // Advisor Contact Info (with photo support)
+      const contactY = currentY;
+      const boxHeight = 48;
 
-      // Disclaimer at bottom - Plain text style
-      const disclaimerY = 265;
-      pdf.setFontSize(9);
-      pdf.setTextColor(30, 41, 59); // Dark text
-      pdf.text('Important Disclaimer', 15, disclaimerY);
-      
+      // Box around contact info
+      pdf.setFillColor(240, 249, 255); // Light blue background
+      pdf.setDrawColor(59, 130, 246); // Blue border
+      pdf.setLineWidth(0.5);
+      pdf.roundedRect(15, contactY - 5, pageWidth - 30, boxHeight, 2, 2, 'FD');
+
+      // Add advisor photo if available (maintain aspect ratio)
+      const photoX = 20;
+      const maxPhotoHeight = 20;
+      const maxPhotoWidth = 30;
+
+      if (advisorInfo.photoUrl) {
+        try {
+          // Create image to get dimensions
+          const img = new Image();
+          img.src = advisorInfo.photoUrl;
+          
+          // Calculate dimensions maintaining aspect ratio
+          let photoWidth = maxPhotoWidth;
+          let photoHeight = maxPhotoHeight;
+          const aspectRatio = img.width / img.height;
+          
+          if (aspectRatio > 1) {
+            // Wider than tall
+            photoHeight = maxPhotoWidth / aspectRatio;
+          } else {
+            // Taller than wide
+            photoWidth = maxPhotoHeight * aspectRatio;
+          }
+          
+          // Center vertically if smaller than max height
+          const photoY = contactY + (maxPhotoHeight - photoHeight) / 2;
+          
+          pdf.addImage(advisorInfo.photoUrl, 'JPEG', photoX, photoY, photoWidth, photoHeight);
+        } catch (e) {
+          // If image fails to load, draw a placeholder circle
+          pdf.setFillColor(167, 243, 208);
+          pdf.circle(photoX + maxPhotoHeight / 2, contactY + maxPhotoHeight / 2, maxPhotoHeight / 2, 'F');
+        }
+      } else {
+        // Draw placeholder circle
+        pdf.setFillColor(167, 243, 208);
+        pdf.circle(photoX + maxPhotoHeight / 2, contactY + maxPhotoHeight / 2, maxPhotoHeight / 2, 'F');
+      }
+
+      // Advisor info (right of photo)
+      const textX = photoX + maxPhotoWidth + 5;
+
+      pdf.setFontSize(10);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(51, 65, 85);
+      pdf.text(advisorInfo.name, textX, contactY + 5);
+
+      // Contact details in second column
+      const col2X = pageWidth / 2 + 10;
+
+      // Wrap advisor title to fit available space (don't overlap with contact info)
+      const maxTitleWidth = col2X - textX - 5;
       pdf.setFontSize(8);
-      pdf.setTextColor(71, 85, 105); // Gray text
-      const disclaimerText = advisorInfo.disclaimer_text || 'Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.';
-      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 30);
-      pdf.text(lines, 15, disclaimerY + 6);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(71, 85, 105);
+      const wrappedTitle = pdf.splitTextToSize(advisorInfo.title, maxTitleWidth);
+      pdf.text(wrappedTitle, textX, contactY + 11);
+
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Phone:", col2X, contactY + 3);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(advisorInfo.phone, col2X + 15, contactY + 3);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Email:", col2X, contactY + 9);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(advisorInfo.email, col2X + 15, contactY + 9);
+
+      pdf.setFont("helvetica", "bold");
+      pdf.text("Office:", col2X, contactY + 15);
+      pdf.setFont("helvetica", "normal");
+      const addressLines = advisorInfo.address.split('\n');
+      addressLines.forEach((line, index) => {
+        pdf.text(line, col2X + 15, contactY + 15 + (index * 4));
+      });
+
+      // Client info at bottom of box
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "italic");
+      pdf.setTextColor(100, 116, 139);
+      pdf.text(`Prepared for: ${firstName} (${email}) on ${new Date().toLocaleDateString()}`, textX, contactY + boxHeight - 7);
+      
+      currentY = contactY + boxHeight + 8;
+
+      // Disclaimer Section
+      const disclaimerY = currentY;
+      pdf.setFontSize(8);
+      pdf.setFont("helvetica", "bold");
+      pdf.setTextColor(51, 65, 85);
+      pdf.text("Important Disclaimer", 15, disclaimerY);
+
+      pdf.setFontSize(6.5);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(71, 85, 105);
+      const disclaimerText = advisorInfo.disclaimer_text || "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.";
+      const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 30);
+      pdf.text(disclaimerLines, 15, disclaimerY + 5);
 
       // Download the PDF
       pdf.save(`${firstName}_Retirement_Analysis.pdf`);
