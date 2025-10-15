@@ -502,46 +502,55 @@ const Index = () => {
       pdf.text('30-year retirement  •  3% annual inflation  •  6% annual return', 20, currentY + 15);
       currentY += 28;
 
-      // Advisor Contact Section - Enhanced styling
-      pdf.setFillColor(255, 255, 255);
-      pdf.setDrawColor(226, 232, 240); // slate-200
-      pdf.setLineWidth(0.5);
-      pdf.roundedRect(15, currentY, pageWidth - 30, 40, 3, 3, 'FD');
+      // Advisor Contact Section - Blue box design matching reference
+      pdf.setFillColor(255, 255, 255); // White background
+      pdf.setDrawColor(59, 130, 246); // Blue border (blue-500)
+      pdf.setLineWidth(0.8);
+      pdf.roundedRect(15, currentY, pageWidth - 30, 45, 4, 4, 'FD');
       
-      // Advisor header
-      pdf.setFillColor(248, 250, 252);
-      pdf.roundedRect(15, currentY, pageWidth - 30, 10, 3, 3, 'F');
-      pdf.setFontSize(11);
-      pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text('Your Financial Advisor', 20, currentY + 7);
-      
-      // Advisor details
-      pdf.setFontSize(11);
-      pdf.setTextColor(30, 41, 59); // slate-800
-      pdf.text(`${advisorInfo.name}`, 20, currentY + 18);
+      // Company name and tagline (left side)
+      pdf.setFontSize(13);
+      pdf.setTextColor(30, 41, 59); // Dark text
+      pdf.text(advisorInfo.name, 25, currentY + 15);
       
       pdf.setFontSize(9);
-      pdf.setTextColor(71, 85, 105); // slate-600
-      pdf.text(advisorInfo.title, 20, currentY + 24);
+      pdf.setTextColor(71, 85, 105); // Gray text
+      pdf.text(advisorInfo.title, 25, currentY + 21);
       
+      // Contact info (right side)
+      const rightX = pageWidth - 90;
       pdf.setFontSize(9);
-      pdf.text(`📞 ${advisorInfo.phone}`, 20, currentY + 30);
-      pdf.text(`✉ ${advisorInfo.email}`, 20, currentY + 36);
+      pdf.setTextColor(71, 85, 105);
+      pdf.text('Phone:', rightX, currentY + 10);
+      pdf.text(advisorInfo.phone, rightX + 15, currentY + 10);
       
-      currentY += 48;
-
-      // Disclaimer at bottom
-      const disclaimerY = 265;
-      pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.rect(0, disclaimerY, pageWidth, 30, 'F');
+      pdf.text('Email:', rightX, currentY + 16);
+      pdf.text(advisorInfo.email, rightX + 15, currentY + 16);
+      
+      pdf.text('Office:', rightX, currentY + 22);
+      pdf.text('8 Corporate Park', rightX + 15, currentY + 22);
+      pdf.text('Suite 300', rightX + 15, currentY + 27);
+      pdf.text('Irvine, CA 92606', rightX + 15, currentY + 32);
+      
+      // Prepared for line
       pdf.setFontSize(8);
-      pdf.setTextColor(100, 116, 139); // slate-500
-      pdf.text('IMPORTANT DISCLAIMER', pageWidth / 2, disclaimerY + 6, {
-        align: 'center'
-      });
+      pdf.setTextColor(59, 130, 246); // Blue text
+      const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
+      pdf.text(`Prepared for: ${firstName} (${email}) on ${today}`, 25, currentY + 40);
+      
+      currentY += 53;
+
+      // Disclaimer at bottom - Plain text style
+      const disclaimerY = 265;
+      pdf.setFontSize(9);
+      pdf.setTextColor(30, 41, 59); // Dark text
+      pdf.text('Important Disclaimer', 15, disclaimerY);
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(71, 85, 105); // Gray text
       const disclaimerText = advisorInfo.disclaimer_text || 'Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.';
-      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 20);
-      pdf.text(lines, 10, disclaimerY + 12);
+      const lines = pdf.splitTextToSize(disclaimerText, pageWidth - 30);
+      pdf.text(lines, 15, disclaimerY + 6);
 
       // Download the PDF
       pdf.save(`${firstName}_Retirement_Analysis.pdf`);
