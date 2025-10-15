@@ -718,7 +718,7 @@ const Index = () => {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="savings" className="text-base font-medium text-slate-700">Current Amount Saved</Label>
+                    <Label htmlFor="savings" className="text-base font-medium text-slate-700">Amount at Retirement</Label>
                     <UITooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
