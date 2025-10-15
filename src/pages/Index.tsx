@@ -836,7 +836,7 @@ const Index = () => {
                               fill: '#64748b'
                             }
                           }} />
-                          <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
+                          <Tooltip formatter={(value: number) => [`$${Math.round(value).toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
                             backgroundColor: 'white',
                             border: '1px solid #e2e8f0',
                             borderRadius: '12px',
