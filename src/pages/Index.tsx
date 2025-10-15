@@ -15,11 +15,14 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
-
 const Index = () => {
   // Advisor Information - fetched dynamically from database
-  const { advisorSlug } = useParams();
-  const { setColors } = useTheme();
+  const {
+    advisorSlug
+  } = useParams();
+  const {
+    setColors
+  } = useTheme();
   const [advisorInfo, setAdvisorInfo] = useState<{
     name: string;
     title: string;
@@ -45,21 +48,16 @@ const Index = () => {
     contact_button_type: "scroll",
     contact_button_url: undefined,
     show_podcast: true,
-    disclaimer_text: "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.",
+    disclaimer_text: "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations."
   });
 
   // Fetch advisor data from database
   useEffect(() => {
     const fetchAdvisor = async () => {
       if (!advisorSlug) return;
-      
-      const { data } = await supabase
-        .from('advisors' as any)
-        .select('*')
-        .eq('slug', advisorSlug)
-        .eq('is_active', true)
-        .maybeSingle();
-      
+      const {
+        data
+      } = await supabase.from('advisors' as any).select('*').eq('slug', advisorSlug).eq('is_active', true).maybeSingle();
       if (data) {
         setAdvisorInfo({
           name: (data as any).name,
@@ -73,19 +71,16 @@ const Index = () => {
           contact_button_type: (data as any).contact_button_type as 'scroll' | 'phone' | 'email' | 'website',
           contact_button_url: (data as any).contact_button_url,
           show_podcast: (data as any).show_podcast ?? true,
-          disclaimer_text: (data as any).disclaimer_text,
+          disclaimer_text: (data as any).disclaimer_text
         });
-        
         setColors({
           primary: (data as any).theme_primary_color,
-          secondary: (data as any).theme_secondary_color,
+          secondary: (data as any).theme_secondary_color
         });
       }
     };
-    
     fetchAdvisor();
   }, [advisorSlug, setColors]);
-
   const [currentSavings, setCurrentSavings] = useState(0);
   const [monthlySpending, setMonthlySpending] = useState(0);
   const [firstName, setFirstName] = useState("");
@@ -141,12 +136,12 @@ const Index = () => {
     const monthlySpendingAmount = monthlySpending;
     const annualInflationRate = 0.03;
     const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
-    
+
     // Calculate monthly for 30 years, but show yearly data points for the chart
     for (let year = 0; year <= 30; year++) {
       // Apply annual inflation to the base monthly spending
       const adjustedMonthlySpending = monthlySpendingAmount * Math.pow(1 + annualInflationRate, year);
-      
+
       // If not the first year, simulate 12 months of returns and withdrawals
       if (year > 0) {
         for (let month = 0; month < 12; month++) {
@@ -157,13 +152,11 @@ const Index = () => {
           if (balance <= 0) break;
         }
       }
-      
       data.push({
         year,
         balance: Math.max(0, balance),
         spending: adjustedMonthlySpending * 12 // Show annual spending for display
       });
-      
       if (balance <= 0) break;
     }
     return data;
@@ -171,86 +164,88 @@ const Index = () => {
 
   // Calculate precise years and months until money runs out
   const timeUntilEmpty = useMemo(() => {
-    if (!hasCalculated || needsCalculation) return { years: 0, months: 0, totalMonths: 0 };
-    
+    if (!hasCalculated || needsCalculation) return {
+      years: 0,
+      months: 0,
+      totalMonths: 0
+    };
     let balance = currentSavings;
     const monthlySpendingBase = monthlySpending;
     const annualInflationRate = 0.03;
     const monthlyReturnRate = 0.06 / 12; // 6% annual = 0.5% monthly
-    
+
     let lastPositiveMonth = 0;
-    
-    for (let month = 1; month <= 30 * 12; month++) { // Start from month 1
+    for (let month = 1; month <= 30 * 12; month++) {
+      // Start from month 1
       const currentYear = Math.floor((month - 1) / 12);
       const adjustedMonthlySpending = monthlySpendingBase * Math.pow(1 + annualInflationRate, currentYear);
-      
+
       // Subtract monthly spending first
       balance = balance - adjustedMonthlySpending;
-      
+
       // If balance goes negative, we're done
       if (balance <= 0) {
         break;
       }
-      
+
       // Apply interest after spending
       balance = balance * (1 + monthlyReturnRate);
-      
+
       // Track the last month with positive balance
       lastPositiveMonth = month;
-      
+
       // If we reach 30 years, set to max
       if (month === 30 * 12) {
         lastPositiveMonth = 30 * 12;
         break;
       }
     }
-    
     const years = Math.floor(lastPositiveMonth / 12);
     const months = lastPositiveMonth % 12;
-    
-    return { years, months, totalMonths: lastPositiveMonth };
+    return {
+      years,
+      months,
+      totalMonths: lastPositiveMonth
+    };
   }, [currentSavings, monthlySpending, hasCalculated, needsCalculation]);
-
 
   // Calculate maximum withdrawal that leaves ~$1,000 after 30 years (360 months)
   const safeMonthlyAmount = useMemo(() => {
     if (!hasCalculated || needsCalculation) return 0;
-    
     const targetEndingBalance = 1000;
     const monthlyReturnRate = 0.06 / 12; // 0.5% monthly
     const annualInflationRate = 0.03;
     const totalMonths = 360; // 30 years
-    
+
     // Binary search to find maximum monthly withdrawal
     let low = 0;
     let high = currentSavings / 12; // Conservative upper bound
     let bestWithdrawal = 0;
-    
+
     // Binary search with precision of $1
     while (high - low > 1) {
       const midWithdrawal = Math.floor((low + high) / 2);
-      
+
       // Simulate 360 months with this withdrawal amount
       let balance = currentSavings;
       let simulationSuccessful = true;
-      
       for (let month = 1; month <= totalMonths; month++) {
         const currentYear = Math.floor((month - 1) / 12);
         const adjustedMonthlySpending = midWithdrawal * Math.pow(1 + annualInflationRate, currentYear);
-        
+
         // Subtract withdrawal
         balance = balance - adjustedMonthlySpending;
-        
+
         // If balance goes negative, this withdrawal is too high
         if (balance < 0) {
           simulationSuccessful = false;
           break;
         }
-        
+
         // Apply interest
         balance = balance * (1 + monthlyReturnRate);
       }
-      
+
       // Check if ending balance is close to target
       if (simulationSuccessful && balance >= targetEndingBalance) {
         bestWithdrawal = midWithdrawal;
@@ -259,13 +254,11 @@ const Index = () => {
         high = midWithdrawal;
       }
     }
-    
     return bestWithdrawal;
   }, [currentSavings, hasCalculated, needsCalculation]);
   const yearsUntilEmpty = timeUntilEmpty.years;
   const monthsUntilEmpty = timeUntilEmpty.months;
   const isMoneyLasting = hasCalculated && !needsCalculation ? timeUntilEmpty.totalMonths >= 30 * 12 : false;
-
 
   // Generate graph image for PDF
   const generateGraphImage = (): Promise<string> => {
@@ -598,7 +591,6 @@ const Index = () => {
         break;
     }
   };
-
   return <TooltipProvider>
     <div className="min-h-screen relative overflow-hidden bg-slate-50">
       {/* Structured Data for SEO */}
@@ -617,7 +609,7 @@ const Index = () => {
             "priceCurrency": "USD"
           },
           "provider": {
-            "@type": "Organization", 
+            "@type": "Organization",
             "name": "Financial Planning Company",
             "contactPoint": {
               "@type": "ContactPoint",
@@ -626,13 +618,7 @@ const Index = () => {
               "contactType": "customer service"
             }
           },
-          "featureList": [
-            "Retirement spending projection",
-            "30-year financial planning",
-            "Safe withdrawal rate calculation",
-            "PDF report generation",
-            "Retirement education resources"
-          ]
+          "featureList": ["Retirement spending projection", "30-year financial planning", "Safe withdrawal rate calculation", "PDF report generation", "Retirement education resources"]
         })}
       </script>
       {/* Enhanced Financial Background */}
@@ -679,12 +665,7 @@ const Index = () => {
         <nav className="container mx-auto px-2 sm:px-4 max-w-6xl" aria-label="Main navigation">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
-              <img 
-                alt={`${advisorInfo.name} - Financial Planning Services Logo`} 
-                src={advisorInfo.logo_url} 
-                className="h-16 max-w-[200px] w-auto object-contain" 
-                loading="eager" 
-              />
+              <img alt={`${advisorInfo.name} - Financial Planning Services Logo`} src={advisorInfo.logo_url} className="h-16 max-w-[200px] w-auto object-contain" loading="eager" />
             </div>
             <Button onClick={handleContactClick} variant="default" aria-label="Contact financial advisor">
               Contact Me
@@ -774,9 +755,13 @@ const Index = () => {
                       <span className="text-sm font-medium text-slate-700">Retirement Period</span>
                       <span className="text-sm font-bold text-primary">30 years</span>
                     </div>
-                    <div className="flex justify-between items-center p-3 rounded-lg" style={{ backgroundColor: `hsl(var(--primary) / 0.1)` }}>
+                    <div className="flex justify-between items-center p-3 rounded-lg" style={{
+                        backgroundColor: `hsl(var(--primary) / 0.1)`
+                      }}>
                       <span className="text-sm font-medium text-slate-700">Annual Inflation</span>
-                      <span className="text-sm font-bold" style={{ color: `hsl(var(--primary))` }}>3%</span>
+                      <span className="text-sm font-bold" style={{
+                          color: `hsl(var(--primary))`
+                        }}>3%</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
                       <span className="text-sm font-medium text-slate-700">Annual Return</span>
@@ -812,65 +797,65 @@ const Index = () => {
                     <div className="h-80 -mx-2">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={projectionData} margin={{
-                        top: 30,
-                        right: 30,
-                        left: 30,
-                        bottom: 50
-                      }}>
+                          top: 30,
+                          right: 30,
+                          left: 30,
+                          bottom: 50
+                        }}>
                           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.6} />
                           <XAxis dataKey="year" stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} tickLine={{
-                          stroke: '#cbd5e1'
-                        }} label={{
-                          value: 'Years in Retirement',
-                          position: 'insideBottom',
-                          offset: -30,
-                          style: {
-                            textAnchor: 'middle',
-                            fontSize: '12px',
-                            fontWeight: '500',
-                            fill: '#64748b'
-                          }
-                        }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
+                            stroke: '#cbd5e1',
+                            strokeWidth: 1
+                          }} tickLine={{
+                            stroke: '#cbd5e1'
+                          }} label={{
+                            value: 'Years in Retirement',
+                            position: 'insideBottom',
+                            offset: -30,
+                            style: {
+                              textAnchor: 'middle',
+                              fontSize: '12px',
+                              fontWeight: '500',
+                              fill: '#64748b'
+                            }
+                          }} domain={[0, 30]} type="number" ticks={[0, 5, 10, 15, 20, 25, 30]} />
                           <YAxis stroke="#64748b" fontSize={12} fontWeight={500} tickMargin={20} axisLine={{
-                          stroke: '#cbd5e1',
-                          strokeWidth: 1
-                        }} tickLine={{
-                          stroke: '#cbd5e1'
-                        }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
-                          value: 'Remaining Balance',
-                          angle: -90,
-                          position: 'insideLeft',
-                          offset: -20,
-                          style: {
-                            textAnchor: 'middle',
-                            fontWeight: '500',
-                            fontSize: '12px',
-                            fill: '#64748b'
-                          }
-                        }} />
+                            stroke: '#cbd5e1',
+                            strokeWidth: 1
+                          }} tickLine={{
+                            stroke: '#cbd5e1'
+                          }} tickFormatter={value => `$${(value / 1000).toFixed(0)}k`} label={{
+                            value: 'Remaining Balance',
+                            angle: -90,
+                            position: 'insideLeft',
+                            offset: -20,
+                            style: {
+                              textAnchor: 'middle',
+                              fontWeight: '500',
+                              fontSize: '12px',
+                              fill: '#64748b'
+                            }
+                          }} />
                           <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`, 'Balance']} labelFormatter={year => `Year ${year}`} contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '12px',
-                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                          fontSize: '14px',
-                          fontWeight: '500'
-                         }} cursor={{
-                          stroke: 'hsl(var(--primary))',
-                          strokeWidth: 1,
-                          strokeDasharray: '4 4'
-                         }} />
+                            backgroundColor: 'white',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '12px',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            fontSize: '14px',
+                            fontWeight: '500'
+                          }} cursor={{
+                            stroke: 'hsl(var(--primary))',
+                            strokeWidth: 1,
+                            strokeDasharray: '4 4'
+                          }} />
                           <Line type="monotone" dataKey="balance" stroke="hsl(var(--primary))" strokeWidth={3} dot={false} activeDot={{
-                          r: 6,
-                          fill: 'hsl(var(--primary))',
-                          stroke: '#ffffff',
-                          strokeWidth: 2
-                        }} style={{
-                          filter: 'drop-shadow(0 2px 4px hsl(var(--primary) / 0.2))'
-                        }} />
+                            r: 6,
+                            fill: 'hsl(var(--primary))',
+                            stroke: '#ffffff',
+                            strokeWidth: 2
+                          }} style={{
+                            filter: 'drop-shadow(0 2px 4px hsl(var(--primary) / 0.2))'
+                          }} />
                         </LineChart>
                       </ResponsiveContainer>
                     </div>
@@ -979,7 +964,7 @@ const Index = () => {
                       <TrendingDown className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
                         <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Highlights the importance of proactively preparing for retirement to ensure long-term financial security.</p>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Discover why early retirement planning is essential for long-term financial security.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
@@ -993,8 +978,8 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <Calculator className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">How a Roth IRA Works</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how a Roth IRA allows for tax-free growth and withdrawals in retirement through after-tax contributions.</p>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">IRA's Compared</h3>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Compare Traditional and Roth IRA options to choose the best retirement savings strategy.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
@@ -1008,8 +993,8 @@ const Index = () => {
                     <div className="flex items-start space-x-3">
                       <PiggyBank className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Social Security Retirement Claiming Strategies for Married Couples</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Outlines various strategies for claiming Social Security benefits to maximize lifetime income.</p>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">An Overview of Social Security Benefits</h3>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Discover how Social Security works and strategies to maximize your benefits.</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
@@ -1034,26 +1019,20 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--primary))` }}>
+                      <div style={{
+                        color: `hsl(var(--primary))`
+                      }}>
                         <TrendingDown className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Managing Your Debt</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Provides guidance on effectively reducing and managing debt to improve financial stability and long-term well-being.</p>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Choose the Financial Planning Team</h3>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Selecting the right professionals to help guide your financial journey.</p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="self-start w-28" 
-                      style={{ 
-                        borderColor: `hsl(var(--primary) / 0.2)`,
-                        color: `hsl(var(--primary))`
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}
-                    >
+                    <Button variant="outline" size="sm" className="self-start w-28" style={{
+                      borderColor: `hsl(var(--primary) / 0.2)`,
+                      color: `hsl(var(--primary))`
+                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1062,26 +1041,20 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--primary))` }}>
+                      <div style={{
+                        color: `hsl(var(--primary))`
+                      }}>
                         <Shield className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">How Individual Disability Income Insurance Works</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Explains how individual disability income insurance provides income protection by replacing a portion of earnings.</p>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Responsible Planning</h3>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Protect your family's financial future with the right life insurance coverage.</p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="self-start w-28"
-                      style={{ 
-                        borderColor: `hsl(var(--primary) / 0.2)`,
-                        color: `hsl(var(--primary))`
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}
-                    >
+                    <Button variant="outline" size="sm" className="self-start w-28" style={{
+                      borderColor: `hsl(var(--primary) / 0.2)`,
+                      color: `hsl(var(--primary))`
+                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1090,26 +1063,20 @@ const Index = () => {
                 <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
                   <CardContent className="p-4 h-full flex flex-col justify-between">
                     <div className="flex items-start space-x-3">
-                      <div style={{ color: `hsl(var(--primary))` }}>
+                      <div style={{
+                        color: `hsl(var(--primary))`
+                      }}>
                         <Users className="w-6 h-6 mt-1 flex-shrink-0" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">General Purposes of Life Insurance</h3>
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Describes the main reasons for purchasing life insurance, including income replacement, debt coverage, and estate planning.</p>
+                        <h3 className="font-semibold text-base mb-2 text-slate-800">Basic Investment Tools</h3>
+                        <p className="text-slate-600 text-sm mb-3 line-clamp-1">Understanding fundamental investment options to build your portfolio.</p>
                       </div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="self-start w-28"
-                      style={{ 
-                        borderColor: `hsl(var(--primary) / 0.2)`,
-                        color: `hsl(var(--primary))`
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                      onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}
-                    >
+                    <Button variant="outline" size="sm" className="self-start w-28" style={{
+                      borderColor: `hsl(var(--primary) / 0.2)`,
+                      color: `hsl(var(--primary))`
+                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
                       Read Report
                     </Button>
                   </CardContent>
@@ -1121,8 +1088,7 @@ const Index = () => {
       </section>
 
       {/* Podcast Section */}
-      {advisorInfo.show_podcast && (
-        <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
+      {advisorInfo.show_podcast && <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
           <div className="container mx-auto px-4 max-w-4xl">
             <Card className="bg-gradient-to-r from-slate-700 via-primary to-secondary text-white border-0 shadow-2xl ring-1 ring-white/20">
               <CardContent className="p-8 text-center">
@@ -1138,8 +1104,7 @@ const Index = () => {
               </CardContent>
             </Card>
           </div>
-        </section>
-      )}
+        </section>}
 
       {/* Contact Me Section */}
       <section id="contact-section" className="relative py-16 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 backdrop-blur-sm" aria-label="Contact Information">
@@ -1165,8 +1130,12 @@ const Index = () => {
                   </div>
                   
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ backgroundColor: `hsl(var(--primary) / 0.1)` }}>
-                      <Mail className="w-6 h-6" style={{ color: `hsl(var(--primary))` }} />
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+                      backgroundColor: `hsl(var(--primary) / 0.1)`
+                    }}>
+                      <Mail className="w-6 h-6" style={{
+                        color: `hsl(var(--primary))`
+                      }} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-slate-800">Email</h3>
@@ -1187,17 +1156,9 @@ const Index = () => {
                 
                 {/* Advisor Photo */}
                 <div className="text-center">
-                  {advisorInfo.photoUrl ? (
-                    <img 
-                      src={advisorInfo.photoUrl} 
-                      alt={advisorInfo.name}
-                      className="w-48 h-48 mx-auto rounded-full object-cover mb-4"
-                    />
-                  ) : (
-                    <div className="w-48 h-48 mx-auto bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full flex items-center justify-center mb-4">
+                  {advisorInfo.photoUrl ? <img src={advisorInfo.photoUrl} alt={advisorInfo.name} className="w-48 h-48 mx-auto rounded-full object-cover mb-4" /> : <div className="w-48 h-48 mx-auto bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full flex items-center justify-center mb-4">
                       <Users className="w-24 h-24 text-primary opacity-60" />
-                    </div>
-                  )}
+                    </div>}
                   <h3 className="text-xl font-bold text-slate-800 mb-2">{advisorInfo.name}</h3>
                   <p className="text-slate-600">{advisorInfo.title}</p>
                   <p className="text-sm text-slate-500 mt-2">{advisorInfo.bio}</p>
@@ -1221,23 +1182,7 @@ const Index = () => {
       </footer>
 
       {/* Audio Player Component with tracking */}
-      <AudioPlayer 
-        audioRef={audioPlayer.audioRef} 
-        isPlaying={audioPlayer.isPlaying} 
-        duration={audioPlayer.duration} 
-        currentTime={audioPlayer.currentTime} 
-        volume={audioPlayer.volume} 
-        isVisible={audioPlayer.isVisible} 
-        isMinimized={audioPlayer.isMinimized} 
-        isLoading={audioPlayer.isLoading} 
-        error={audioPlayer.error} 
-        onTogglePlay={audioPlayer.togglePlay} 
-        onSeek={audioPlayer.seek} 
-        onVolumeChange={audioPlayer.changeVolume} 
-        onClose={audioPlayer.closePlayer}
-        onToggleMinimize={audioPlayer.toggleMinimize} 
-        onRetryLoad={audioPlayer.retryLoad} 
-      />
+      <AudioPlayer audioRef={audioPlayer.audioRef} isPlaying={audioPlayer.isPlaying} duration={audioPlayer.duration} currentTime={audioPlayer.currentTime} volume={audioPlayer.volume} isVisible={audioPlayer.isVisible} isMinimized={audioPlayer.isMinimized} isLoading={audioPlayer.isLoading} error={audioPlayer.error} onTogglePlay={audioPlayer.togglePlay} onSeek={audioPlayer.seek} onVolumeChange={audioPlayer.changeVolume} onClose={audioPlayer.closePlayer} onToggleMinimize={audioPlayer.toggleMinimize} onRetryLoad={audioPlayer.retryLoad} />
     </div>
   </TooltipProvider>;
 };
