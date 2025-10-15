@@ -45,7 +45,7 @@ const Index = () => {
     contact_button_type: "scroll",
     contact_button_url: undefined,
     show_podcast: true,
-    disclaimer_text: null,
+    disclaimer_text: "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.",
   });
 
   // Fetch advisor data from database
