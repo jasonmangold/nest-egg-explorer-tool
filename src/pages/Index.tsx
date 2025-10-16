@@ -402,19 +402,21 @@ const Index = () => {
     if (firstName && email) {
       const pdf = new jsPDF();
       const pageWidth = pdf.internal.pageSize.getWidth();
-
       let currentY = 20;
 
       // Title
       pdf.setFontSize(22);
       pdf.setTextColor(30, 41, 59);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Your Financial Fitness Score", pageWidth / 2, 20, { align: "center" });
-
+      pdf.text("Your Financial Fitness Score", pageWidth / 2, 20, {
+        align: "center"
+      });
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      pdf.text(`Assessment of your financial health across three key areas`, pageWidth / 2, 28, { align: "center" });
+      pdf.text(`Assessment of your financial health across three key areas`, pageWidth / 2, 28, {
+        align: "center"
+      });
       currentY += 15;
 
       // Your Inputs Section
@@ -423,13 +425,11 @@ const Index = () => {
       pdf.setFontSize(12);
       pdf.setTextColor(51, 65, 85); // slate-700
       pdf.text('Your Inputs', 20, currentY + 8);
-      
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
       pdf.text('Amount at Retirement:', 20, currentY + 16);
       pdf.setTextColor(30, 41, 59); // slate-800
       pdf.text(`$${currentSavings.toLocaleString()}`, 80, currentY + 16);
-      
       pdf.setTextColor(71, 85, 105);
       pdf.text('Monthly Spending:', 20, currentY + 23);
       pdf.setTextColor(30, 41, 59);
@@ -450,7 +450,6 @@ const Index = () => {
       pdf.setFontSize(14);
       pdf.setTextColor(5, 150, 105); // primary color
       pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, 20, currentY + 24);
-      
       pdf.setFontSize(9);
       pdf.setTextColor(100, 116, 139);
       pdf.text('Sustainable for 30 years with 3% annual increases', 20, currentY + 30);
@@ -463,9 +462,7 @@ const Index = () => {
       pdf.roundedRect(pageWidth / 2 + 5, currentY + 12, pageWidth / 2 - 20, 20, 3, 3, 'F');
       pdf.setFontSize(11);
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
-      const statusText = isMoneyLasting 
-        ? '✓ Money Lasts 30+ Years' 
-        : `⚠ Runs Out in ${yearsUntilEmpty}y ${monthsUntilEmpty}m`;
+      const statusText = isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Runs Out in ${yearsUntilEmpty}y ${monthsUntilEmpty}m`;
       pdf.text(statusText, pageWidth / 2 + 10, currentY + 22);
       currentY += 45;
 
@@ -512,18 +509,16 @@ const Index = () => {
       const photoX = 20;
       const maxPhotoHeight = 20;
       const maxPhotoWidth = 30;
-
       if (advisorInfo.photoUrl) {
         try {
           // Create image to get dimensions
           const img = new Image();
           img.src = advisorInfo.photoUrl;
-          
+
           // Calculate dimensions maintaining aspect ratio
           let photoWidth = maxPhotoWidth;
           let photoHeight = maxPhotoHeight;
           const aspectRatio = img.width / img.height;
-          
           if (aspectRatio > 1) {
             // Wider than tall
             photoHeight = maxPhotoWidth / aspectRatio;
@@ -531,10 +526,9 @@ const Index = () => {
             // Taller than wide
             photoWidth = maxPhotoHeight * aspectRatio;
           }
-          
+
           // Center vertically if smaller than max height
           const photoY = contactY + (maxPhotoHeight - photoHeight) / 2;
-          
           pdf.addImage(advisorInfo.photoUrl, 'JPEG', photoX, photoY, photoWidth, photoHeight);
         } catch (e) {
           // If image fails to load, draw a placeholder circle
@@ -549,7 +543,6 @@ const Index = () => {
 
       // Advisor info (right of photo)
       const textX = photoX + maxPhotoWidth + 5;
-
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(51, 65, 85);
@@ -565,24 +558,21 @@ const Index = () => {
       pdf.setTextColor(71, 85, 105);
       const wrappedTitle = pdf.splitTextToSize(advisorInfo.title, maxTitleWidth);
       pdf.text(wrappedTitle, textX, contactY + 11);
-
       pdf.setFontSize(8);
       pdf.setFont("helvetica", "bold");
       pdf.text("Phone:", col2X, contactY + 3);
       pdf.setFont("helvetica", "normal");
       pdf.text(advisorInfo.phone, col2X + 15, contactY + 3);
-
       pdf.setFont("helvetica", "bold");
       pdf.text("Email:", col2X, contactY + 9);
       pdf.setFont("helvetica", "normal");
       pdf.text(advisorInfo.email, col2X + 15, contactY + 9);
-
       pdf.setFont("helvetica", "bold");
       pdf.text("Office:", col2X, contactY + 15);
       pdf.setFont("helvetica", "normal");
       const addressLines = advisorInfo.address.split('\n');
       addressLines.forEach((line, index) => {
-        pdf.text(line, col2X + 15, contactY + 15 + (index * 4));
+        pdf.text(line, col2X + 15, contactY + 15 + index * 4);
       });
 
       // Client info at bottom of box
@@ -590,7 +580,6 @@ const Index = () => {
       pdf.setFont("helvetica", "italic");
       pdf.setTextColor(100, 116, 139);
       pdf.text(`Prepared for: ${firstName} (${email}) on ${new Date().toLocaleDateString()}`, textX, contactY + boxHeight - 7);
-      
       currentY = contactY + boxHeight + 8;
 
       // Disclaimer Section
@@ -599,7 +588,6 @@ const Index = () => {
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(51, 65, 85);
       pdf.text("Important Disclaimer", 15, disclaimerY);
-
       pdf.setFontSize(6.5);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
@@ -1010,15 +998,15 @@ const Index = () => {
           </div>
 
           {/* Podcast and CTA Section */}
-          {advisorInfo.show_podcast ? (
+          {advisorInfo.show_podcast ?
             // WHEN PODCAST IS SHOWING - Two column layout on desktop
             <div className="grid lg:grid-cols-2 gap-8 mt-12">
               {/* Podcast Section */}
               <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl">
                 <CardContent className="p-8">
                   <Headphones className="w-12 h-12 mb-4 opacity-90" />
-                  <h3 className="text-2xl font-bold mb-4">Financial Fitness Explainer Podcast</h3>
-                  <p className="text-white/90 mb-6">Listen to a deep dive explanation of the Financial Fitness calculator with example numbers.</p>
+                  <h3 className="text-2xl font-bold mb-4">Retirement Spending Podcast</h3>
+                  <p className="text-white/90 mb-6">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
                   <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50" onClick={handleListenNow}>
                     <Headphones className="mr-2 h-5 w-5" />
                     Listen Now
@@ -1030,20 +1018,15 @@ const Index = () => {
               <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl ring-1 ring-white/20">
                 <CardContent className="p-8">
                   <PiggyBank className="w-12 h-12 mb-4 opacity-90" />
-                  <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Financial Strategy?</h3>
-                  <p className="text-white/90 mb-6">
-                    Make informed decisions about retirement, life insurance, debt, and college savings today. A
-                    financial representative can help you create a comprehensive strategy that balances debt management
-                    with long-term financial security and wealth building.
-                  </p>
+                  <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
+                  <p className="text-white/90 mb-6">Schedule a meeting with a financial professional to create a personalized retirement strategy.</p>
                   <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
                     Find a Time
                     <ExternalLink className="w-4 h-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
-            </div>
-          ) : (
+            </div> :
             // WHEN PODCAST IS HIDDEN - Centered single card layout
             <div className="text-center mt-12">
               <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
@@ -1061,8 +1044,7 @@ const Index = () => {
                   </Button>
                 </CardContent>
               </Card>
-            </div>
-          )}
+            </div>}
         </div>
         </section>
       </main>
