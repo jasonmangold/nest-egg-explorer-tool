@@ -436,40 +436,66 @@ const Index = () => {
       pdf.text(`$${monthlySpending.toLocaleString()}`, 80, currentY + 23);
       currentY += 40;
 
-      // Your Results Section
-      pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.roundedRect(15, currentY, pageWidth - 30, 42, 3, 3, 'F');
+      // Your Results Section Header
       pdf.setFontSize(12);
       pdf.setTextColor(51, 65, 85);
-      pdf.text('Your Results', 20, currentY + 8);
+      pdf.setFont("helvetica", "bold");
+      pdf.text('Your Results', 15, currentY);
+      currentY += 8;
 
-      // Safe Monthly Amount
-      pdf.setFontSize(10);
-      pdf.setTextColor(71, 85, 105);
-      pdf.text('Safe Monthly Spending:', 20, currentY + 18);
-      pdf.setFontSize(16);
-      pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, 20, currentY + 28);
-      pdf.setFontSize(8);
-      pdf.setTextColor(100, 116, 139);
-      pdf.text('Sustainable for 30 years with 3% annual increases', 20, currentY + 35);
+      // Two side-by-side boxes
+      const boxWidth = (pageWidth - 35) / 2; // 15 left margin + 15 right margin + 5 gap
+      const resultsBoxHeight = 28;
+      const leftBoxX = 15;
+      const rightBoxX = leftBoxX + boxWidth + 5;
 
-      // Status indicator - improved layout
-      const statusColor: [number, number, number] = isMoneyLasting ? [5, 150, 105] : [220, 38, 38]; // primary or red
-      const statusBgColor: [number, number, number] = isMoneyLasting ? [236, 253, 245] : [254, 226, 226]; // green/red light
+      // Status indicator colors
+      const statusColor: [number, number, number] = isMoneyLasting ? [5, 150, 105] : [220, 38, 38];
+      const statusBgColor: [number, number, number] = isMoneyLasting ? [236, 253, 245] : [254, 226, 226];
 
-      const statusBoxWidth = 75;
-      const statusBoxX = pageWidth - 15 - statusBoxWidth;
-      
+      // Left Box - Status/Warning
       pdf.setFillColor(statusBgColor[0], statusBgColor[1], statusBgColor[2]);
-      pdf.roundedRect(statusBoxX, currentY + 15, statusBoxWidth, 18, 3, 3, 'F');
-      pdf.setFontSize(10);
+      pdf.roundedRect(leftBoxX, currentY, boxWidth, resultsBoxHeight, 3, 3, 'F');
+      
+      pdf.setFontSize(9);
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.setFont("helvetica", "bold");
-      const statusText = isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Runs Out in ${yearsUntilEmpty}y ${monthsUntilEmpty}m`;
-      pdf.text(statusText, statusBoxX + statusBoxWidth / 2, currentY + 26, { align: "center" });
+      const statusText = isMoneyLasting 
+        ? '✓ Money Lasts 30+ Years' 
+        : `⚠ Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`;
+      const statusLines = pdf.splitTextToSize(statusText, boxWidth - 8);
+      pdf.text(statusLines, leftBoxX + 4, currentY + 8);
+      
+      pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
-      currentY += 52;
+      const warningSubtext = isMoneyLasting 
+        ? 'Your retirement savings are sustainable' 
+        : 'Consider reducing spending or saving more to extend your money.';
+      const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
+      pdf.text(warningLines, leftBoxX + 4, currentY + 18);
+
+      // Right Box - Safe Monthly Spending
+      pdf.setFillColor(236, 253, 245); // Light green
+      pdf.roundedRect(rightBoxX, currentY, boxWidth, resultsBoxHeight, 3, 3, 'F');
+      
+      pdf.setFontSize(8);
+      pdf.setTextColor(5, 150, 105);
+      pdf.setFont("helvetica", "bold");
+      pdf.text('Safe Monthly Spending', rightBoxX + 4, currentY + 6);
+      
+      pdf.setFontSize(16);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, rightBoxX + 4, currentY + 16);
+      
+      pdf.setFontSize(7);
+      pdf.setFont("helvetica", "normal");
+      pdf.setTextColor(71, 85, 105);
+      const sustainableText = 'Sustainable for 30 years with 3% annual increases';
+      const sustainableLines = pdf.splitTextToSize(sustainableText, boxWidth - 8);
+      pdf.text(sustainableLines, rightBoxX + 4, currentY + 22);
+      
+      pdf.setFont("helvetica", "normal");
+      currentY += resultsBoxHeight + 10;
 
       // Add the improved larger graph
       if (hasCalculated && !needsCalculation) {
