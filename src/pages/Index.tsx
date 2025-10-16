@@ -408,13 +408,13 @@ const Index = () => {
       pdf.setFontSize(22);
       pdf.setTextColor(30, 41, 59);
       pdf.setFont("helvetica", "bold");
-      pdf.text("Your Financial Fitness Score", pageWidth / 2, 20, {
+      pdf.text("What Can I Safely Spend in Retirement?", pageWidth / 2, 20, {
         align: "center"
       });
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      pdf.text(`Assessment of your financial health across three key areas`, pageWidth / 2, 28, {
+      pdf.text("Your personalized retirement spending analysis", pageWidth / 2, 28, {
         align: "center"
       });
       currentY += 15;
@@ -438,7 +438,7 @@ const Index = () => {
 
       // Your Results Section
       pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.roundedRect(15, currentY, pageWidth - 30, 35, 3, 3, 'F');
+      pdf.roundedRect(15, currentY, pageWidth - 30, 42, 3, 3, 'F');
       pdf.setFontSize(12);
       pdf.setTextColor(51, 65, 85);
       pdf.text('Your Results', 20, currentY + 8);
@@ -446,25 +446,30 @@ const Index = () => {
       // Safe Monthly Amount
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105);
-      pdf.text('Safe Monthly Spending:', 20, currentY + 16);
-      pdf.setFontSize(14);
+      pdf.text('Safe Monthly Spending:', 20, currentY + 18);
+      pdf.setFontSize(16);
       pdf.setTextColor(5, 150, 105); // primary color
-      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, 20, currentY + 24);
-      pdf.setFontSize(9);
+      pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, 20, currentY + 28);
+      pdf.setFontSize(8);
       pdf.setTextColor(100, 116, 139);
-      pdf.text('Sustainable for 30 years with 3% annual increases', 20, currentY + 30);
+      pdf.text('Sustainable for 30 years with 3% annual increases', 20, currentY + 35);
 
-      // Status indicator
+      // Status indicator - improved layout
       const statusColor: [number, number, number] = isMoneyLasting ? [5, 150, 105] : [220, 38, 38]; // primary or red
       const statusBgColor: [number, number, number] = isMoneyLasting ? [236, 253, 245] : [254, 226, 226]; // green/red light
 
+      const statusBoxWidth = 75;
+      const statusBoxX = pageWidth - 15 - statusBoxWidth;
+      
       pdf.setFillColor(statusBgColor[0], statusBgColor[1], statusBgColor[2]);
-      pdf.roundedRect(pageWidth / 2 + 5, currentY + 12, pageWidth / 2 - 20, 20, 3, 3, 'F');
-      pdf.setFontSize(11);
+      pdf.roundedRect(statusBoxX, currentY + 15, statusBoxWidth, 18, 3, 3, 'F');
+      pdf.setFontSize(10);
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+      pdf.setFont("helvetica", "bold");
       const statusText = isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Runs Out in ${yearsUntilEmpty}y ${monthsUntilEmpty}m`;
-      pdf.text(statusText, pageWidth / 2 + 10, currentY + 22);
-      currentY += 45;
+      pdf.text(statusText, statusBoxX + statusBoxWidth / 2, currentY + 26, { align: "center" });
+      pdf.setFont("helvetica", "normal");
+      currentY += 52;
 
       // Add the improved larger graph
       if (hasCalculated && !needsCalculation) {
