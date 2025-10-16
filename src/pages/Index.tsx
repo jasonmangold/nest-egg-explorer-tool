@@ -1009,22 +1009,60 @@ const Index = () => {
             </Card>
           </div>
 
-          {/* CTA Section */}
-          <div className="text-center mt-12">
-            <Card className="bg-gradient-to-r from-primary via-secondary to-primary text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
-              <CardContent className="p-8">
-                <Users className="w-12 h-12 mx-auto mb-4 opacity-90" />
-                <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
-                <p className="text-white/90 mb-6">
-                  Schedule a meeting with a financial professional to create a personalized retirement strategy.
-                </p>
-                <Button size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
-                  Find a Time
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Podcast and CTA Section */}
+          {advisorInfo.show_podcast ? (
+            // WHEN PODCAST IS SHOWING - Two column layout on desktop
+            <div className="grid lg:grid-cols-2 gap-8 mt-12">
+              {/* Podcast Section */}
+              <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl">
+                <CardContent className="p-8">
+                  <Headphones className="w-12 h-12 mb-4 opacity-90" />
+                  <h3 className="text-2xl font-bold mb-4">Financial Fitness Explainer Podcast</h3>
+                  <p className="text-white/90 mb-6">Listen to a deep dive explanation of the Financial Fitness calculator with example numbers.</p>
+                  <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50" onClick={handleListenNow}>
+                    <Headphones className="mr-2 h-5 w-5" />
+                    Listen Now
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* CTA Section (Find a Time) */}
+              <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl ring-1 ring-white/20">
+                <CardContent className="p-8">
+                  <PiggyBank className="w-12 h-12 mb-4 opacity-90" />
+                  <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Financial Strategy?</h3>
+                  <p className="text-white/90 mb-6">
+                    Make informed decisions about retirement, life insurance, debt, and college savings today. A
+                    financial representative can help you create a comprehensive strategy that balances debt management
+                    with long-term financial security and wealth building.
+                  </p>
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
+                    Find a Time
+                    <ExternalLink className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            // WHEN PODCAST IS HIDDEN - Centered single card layout
+            <div className="text-center mt-12">
+              <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
+                <CardContent className="p-8">
+                  <PiggyBank className="w-12 h-12 mx-auto mb-4 opacity-90" />
+                  <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Financial Strategy?</h3>
+                  <p className="text-white/90 mb-6">
+                    Make informed decisions about retirement, life insurance, debt, and college savings today. A
+                    financial representative can help you create a comprehensive strategy that balances debt management
+                    with long-term financial security and wealth building.
+                  </p>
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
+                    Find a Time
+                    <ExternalLink className="w-4 h-4 ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
         </section>
       </main>
@@ -1173,24 +1211,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Podcast Section */}
-      {advisorInfo.show_podcast && <section className="relative py-16 bg-slate-50/60 backdrop-blur-sm" aria-label="Retirement Planning Podcast">
-          <div className="container mx-auto px-4 max-w-4xl">
-            <Card className="bg-gradient-to-r from-slate-700 via-primary to-secondary text-white border-0 shadow-2xl ring-1 ring-white/20">
-              <CardContent className="p-8 text-center">
-                <Headphones className="w-16 h-16 mx-auto mb-6 opacity-90" />
-                <h2 className="text-3xl font-bold mb-4">Retirement Spending Podcast</h2>
-                <p className="text-lg text-slate-100 mb-6 max-w-2xl mx-auto">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
-                <div className="flex justify-center">
-                  <Button size="lg" variant="secondary" className="bg-white text-slate-700 hover:bg-slate-50" onClick={handleListenNow}>
-                    <Headphones className="w-5 h-5 mr-2" />
-                    Listen Now
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>}
 
       {/* Contact Me Section */}
       <section id="contact-section" className="relative py-16 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 backdrop-blur-sm" aria-label="Contact Information">
