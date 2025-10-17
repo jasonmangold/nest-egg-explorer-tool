@@ -457,22 +457,30 @@ const Index = () => {
       pdf.setFillColor(statusBgColor[0], statusBgColor[1], statusBgColor[2]);
       pdf.roundedRect(leftBoxX, currentY, boxWidth, resultsBoxHeight, 3, 3, 'F');
       
-      pdf.setFontSize(9);
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.setFont("helvetica", "bold");
-      const statusText = isMoneyLasting 
-        ? '✓ Money Lasts 30+ Years' 
-        : `⚠ Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`;
-      const statusLines = pdf.splitTextToSize(statusText, boxWidth - 8);
-      pdf.text(statusLines, leftBoxX + 4, currentY + 8);
       
+      if (isMoneyLasting) {
+        // Success state - single line
+        pdf.setFontSize(9);
+        pdf.text('✓ Money Lasts 30+ Years', leftBoxX + 4, currentY + 10);
+      } else {
+        // Warning state - multi-line with proper layout
+        pdf.setFontSize(9);
+        // Line 1: Icon and "Money Runs Out in"
+        pdf.text('⚠ Money Runs Out in', leftBoxX + 4, currentY + 8);
+        // Line 2: Years and months (slightly indented)
+        pdf.text(`${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 6, currentY + 14);
+      }
+      
+      // Subtext
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
       const warningSubtext = isMoneyLasting 
         ? 'Your retirement savings are sustainable' 
         : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
-      pdf.text(warningLines, leftBoxX + 4, currentY + 18);
+      pdf.text(warningLines, leftBoxX + 4, currentY + 22);
 
       // Right Box - Safe Monthly Spending
       pdf.setFillColor(236, 253, 245); // Light green
