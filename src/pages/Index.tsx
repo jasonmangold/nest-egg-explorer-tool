@@ -459,11 +459,11 @@ const Index = () => {
       
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(10);
       
       if (isMoneyLasting) {
-        // Success state - single line
-        pdf.setFontSize(9);
-        pdf.text('✓ Money Lasts 30+ Years', leftBoxX + 4, currentY + 10);
+        // Success state - centered and prominent
+        pdf.text('Money Lasts 30+ Years', leftBoxX + 4, currentY + 9);
       } else {
         // Warning state - clear single statement
         pdf.setFontSize(9);
@@ -477,7 +477,7 @@ const Index = () => {
         ? 'Your retirement savings are sustainable' 
         : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
-      pdf.text(warningLines, leftBoxX + 4, currentY + 20);
+      pdf.text(warningLines, leftBoxX + 4, currentY + 19);
 
       // Right Box - Safe Monthly Spending
       pdf.setFillColor(236, 253, 245); // Light green
@@ -507,72 +507,65 @@ const Index = () => {
         try {
           const graphImage = await generateGraphImage();
           if (graphImage) {
-            // Larger dimensions for better visibility in PDF
-            const graphWidth = 120; // Much wider
-            const graphHeight = 80; // Much taller
-            const graphX = (pageWidth - graphWidth) / 2; // Center horizontally
+            // Compact dimensions to save space
+            const graphWidth = 110;
+            const graphHeight = 70;
+            const graphX = (pageWidth - graphWidth) / 2;
             pdf.addImage(graphImage, 'PNG', graphX, currentY, graphWidth, graphHeight);
-            currentY += graphHeight + 10;
+            currentY += graphHeight + 6;
           }
         } catch (error) {
           console.log('Could not add graph to PDF:', error);
-          currentY += 10;
+          currentY += 6;
         }
       }
 
-      // Assumptions section
-      pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.roundedRect(15, currentY, pageWidth - 30, 20, 3, 3, 'F');
+      // Assumptions section - more compact
+      pdf.setFillColor(248, 250, 252);
+      pdf.roundedRect(15, currentY, pageWidth - 30, 16, 3, 3, 'F');
       pdf.setFontSize(10);
       pdf.setTextColor(51, 65, 85);
-      pdf.text('Assumptions', 20, currentY + 8);
+      pdf.text('Assumptions', 20, currentY + 7);
       pdf.setFontSize(9);
       pdf.setTextColor(71, 85, 105);
-      pdf.text('30-year retirement  •  3% annual inflation  •  6% annual return', 20, currentY + 15);
-      currentY += 28;
+      pdf.text('30-year retirement  •  3% annual inflation  •  6% annual return', 20, currentY + 12);
+      currentY += 22;
 
       // Advisor Contact Info (with photo support)
       const contactY = currentY;
-      const boxHeight = 48;
+      const boxHeight = 42; // Reduced from 48
 
       // Box around contact info
-      pdf.setFillColor(240, 249, 255); // Light blue background
-      pdf.setDrawColor(59, 130, 246); // Blue border
+      pdf.setFillColor(240, 249, 255);
+      pdf.setDrawColor(59, 130, 246);
       pdf.setLineWidth(0.5);
       pdf.roundedRect(15, contactY - 5, pageWidth - 30, boxHeight, 2, 2, 'FD');
 
       // Add advisor photo if available (maintain aspect ratio)
       const photoX = 20;
-      const maxPhotoHeight = 20;
-      const maxPhotoWidth = 30;
+      const maxPhotoHeight = 18; // Reduced from 20
+      const maxPhotoWidth = 26; // Reduced from 30
       if (advisorInfo.photoUrl) {
         try {
-          // Create image to get dimensions
           const img = new Image();
           img.src = advisorInfo.photoUrl;
 
-          // Calculate dimensions maintaining aspect ratio
           let photoWidth = maxPhotoWidth;
           let photoHeight = maxPhotoHeight;
           const aspectRatio = img.width / img.height;
           if (aspectRatio > 1) {
-            // Wider than tall
             photoHeight = maxPhotoWidth / aspectRatio;
           } else {
-            // Taller than wide
             photoWidth = maxPhotoHeight * aspectRatio;
           }
 
-          // Center vertically if smaller than max height
           const photoY = contactY + (maxPhotoHeight - photoHeight) / 2;
           pdf.addImage(advisorInfo.photoUrl, 'JPEG', photoX, photoY, photoWidth, photoHeight);
         } catch (e) {
-          // If image fails to load, draw a placeholder circle
           pdf.setFillColor(167, 243, 208);
           pdf.circle(photoX + maxPhotoHeight / 2, contactY + maxPhotoHeight / 2, maxPhotoHeight / 2, 'F');
         }
       } else {
-        // Draw placeholder circle
         pdf.setFillColor(167, 243, 208);
         pdf.circle(photoX + maxPhotoHeight / 2, contactY + maxPhotoHeight / 2, maxPhotoHeight / 2, 'F');
       }
@@ -616,19 +609,9 @@ const Index = () => {
       pdf.setFont("helvetica", "italic");
       pdf.setTextColor(100, 116, 139);
       pdf.text(`Prepared for: ${firstName} (${email}) on ${new Date().toLocaleDateString()}`, textX, contactY + boxHeight - 7);
-      currentY = contactY + boxHeight + 8;
+      currentY = contactY + boxHeight + 6; // Reduced spacing
 
-      // Disclaimer Section - Check if we need a new page
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const disclaimerY = currentY;
-      const estimatedDisclaimerHeight = 20; // Estimate space needed for disclaimer
-      
-      // Add new page if disclaimer would go off the page
-      if (disclaimerY + estimatedDisclaimerHeight > pageHeight - 10) {
-        pdf.addPage();
-        currentY = 20;
-      }
-      
+      // Disclaimer Section - optimized to fit on first page
       pdf.setFontSize(8);
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(51, 65, 85);
