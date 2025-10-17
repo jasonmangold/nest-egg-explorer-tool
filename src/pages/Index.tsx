@@ -1046,7 +1046,7 @@ const Index = () => {
               </Card>
 
               {/* CTA Section (Find a Time) */}
-              <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl ring-1 ring-white/20">
+              <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl">
                 <CardContent className="p-8">
                   <PiggyBank className="w-12 h-12 mb-4 opacity-90" />
                   <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
@@ -1060,7 +1060,7 @@ const Index = () => {
             </div> :
             // WHEN PODCAST IS HIDDEN - Centered single card layout
             <div className="text-center mt-12">
-              <Card className="bg-gradient-to-r from-primary via-secondary to-primary/80 text-white border-0 shadow-2xl max-w-2xl mx-auto ring-1 ring-white/20">
+              <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl max-w-2xl mx-auto">
                 <CardContent className="p-8">
                   <PiggyBank className="w-12 h-12 mx-auto mb-4 opacity-90" />
                   <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Financial Strategy?</h3>
