@@ -783,28 +783,28 @@ const Index = () => {
       <main>
         <section className="relative pb-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold text-slate-800 mb-6 leading-tight">
+          <div className="text-center mb-8 sm:mb-12 px-2">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-slate-800 mb-4 sm:mb-6 leading-tight">
               What Can I Safely<br />
               <span className="text-primary">Spend in Retirement?</span>
             </h1>
-            <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+            <p className="text-base sm:text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
               Plan your retirement spending with confidence. Our calculator shows you how much you can spend monthly without running out of money.
             </p>
           </div>
 
           {/* Calculator Section */}
-          <div className="grid lg:grid-cols-2 gap-8 items-start">
+          <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 items-start px-2 sm:px-0">
             {/* Inputs */}
             <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
-              <CardHeader>
-                <CardTitle className="text-2xl text-slate-800">Your Financial Situation</CardTitle>
-                <CardDescription className="text-slate-600">Enter your current savings and spending goal to see your retirement projection</CardDescription>
+              <CardHeader className="px-4 sm:px-6">
+                <CardTitle className="text-xl sm:text-2xl text-slate-800">Your Financial Situation</CardTitle>
+                <CardDescription className="text-sm sm:text-base text-slate-600">Enter your current savings and spending goal to see your retirement projection</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="savings" className="text-base font-medium text-slate-700">Amount at Retirement</Label>
+                    <Label htmlFor="savings" className="text-sm sm:text-base font-medium text-slate-700">Amount at Retirement</Label>
                     <UITooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
@@ -815,14 +815,14 @@ const Index = () => {
                     </UITooltip>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="savings" type="text" value={formatNumber(currentSavings)} onChange={handleSavingsChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="500,000" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm sm:text-base">$</span>
+                    <Input id="savings" type="text" value={formatNumber(currentSavings)} onChange={handleSavingsChange} className="pl-8 text-base sm:text-lg h-11 sm:h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="500,000" aria-label="Total retirement savings amount" />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <Label htmlFor="spending" className="text-base font-medium text-slate-700">Monthly Spending Goal</Label>
+                    <Label htmlFor="spending" className="text-sm sm:text-base font-medium text-slate-700">Monthly Spending Goal</Label>
                     <UITooltip>
                       <TooltipTrigger>
                         <Info className="w-4 h-4 text-slate-400 hover:text-slate-600" />
@@ -833,27 +833,28 @@ const Index = () => {
                     </UITooltip>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500">$</span>
-                    <Input id="spending" type="text" value={formatNumber(monthlySpending)} onChange={handleSpendingChange} className="pl-8 text-lg h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="3,000" />
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 text-sm sm:text-base">$</span>
+                    <Input id="spending" type="text" value={formatNumber(monthlySpending)} onChange={handleSpendingChange} className="pl-8 text-base sm:text-lg h-11 sm:h-12 border-slate-200 focus:border-primary focus:ring-primary" placeholder="3,000" aria-label="Desired monthly spending in retirement" />
                   </div>
                 </div>
 
                 {/* Calculate Button */}
-                <div className="pt-4">
-                  <Button onClick={handleCalculate} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-12 text-lg font-semibold">
-                    <Calculator className="w-5 h-5 mr-2" />
-                    {hasCalculated && needsCalculation ? 'Recalculate My Plan' : 'Calculate My Retirement Plan'}
+                <div className="pt-2 sm:pt-4">
+                  <Button onClick={handleCalculate} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground h-11 sm:h-12 text-base sm:text-lg font-semibold touch-manipulation" aria-label="Calculate retirement plan">
+                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    <span className="hidden sm:inline">{hasCalculated && needsCalculation ? 'Recalculate My Plan' : 'Calculate My Retirement Plan'}</span>
+                    <span className="sm:hidden">{hasCalculated && needsCalculation ? 'Recalculate' : 'Calculate Plan'}</span>
                   </Button>
-                  {needsCalculation && <p className="text-sm text-amber-600 mt-2 text-center">
+                  {needsCalculation && <p className="text-xs sm:text-sm text-amber-600 mt-2 text-center">
                       Values changed - click to recalculate results
                     </p>}
                 </div>
 
                 {/* Assumptions Section */}
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-3 sm:pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
-                    <Info className="w-5 h-5 text-primary mr-2" />
-                    <h3 className="text-lg font-semibold text-slate-800">Calculation Assumptions</h3>
+                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-primary mr-2" />
+                    <h2 className="text-base sm:text-lg font-semibold text-slate-800">Calculation Assumptions</h2>
                   </div>
                   <div className="grid grid-cols-1 gap-3">
                     <div className="flex justify-between items-center p-3 bg-primary/10 rounded-lg">
@@ -876,12 +877,12 @@ const Index = () => {
                 </div>
 
                 {/* How It Works Section */}
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-3 sm:pt-4 border-t border-slate-200">
                   <div className="flex items-center mb-3">
-                    <Calculator className="w-5 h-5 text-primary mr-2" />
-                    <h3 className="text-lg font-semibold text-slate-800">How It Works</h3>
+                    <Calculator className="w-4 h-4 sm:w-5 sm:h-5 text-primary mr-2" />
+                    <h2 className="text-base sm:text-lg font-semibold text-slate-800">How It Works</h2>
                   </div>
-                  <div className="space-y-3 text-sm text-slate-600">
+                  <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm text-slate-600">
                     <p>• We calculate how your savings will change over 30 years of retirement</p>
                     <p>• Your spending increases each year with inflation (3% annually)</p>
                     <p>• Your remaining savings earn a 6% annual return</p>
@@ -893,13 +894,13 @@ const Index = () => {
 
             {/* Graph and Results */}
             <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
-              <CardHeader>
-                <CardTitle className="text-2xl text-slate-800">Retirement Spend-Down Projection</CardTitle>
-                <CardDescription className="text-slate-600">How your savings will change over 30 years</CardDescription>
+              <CardHeader className="px-4 sm:px-6">
+                <CardTitle className="text-xl sm:text-2xl text-slate-800">Retirement Spend-Down Projection</CardTitle>
+                <CardDescription className="text-sm sm:text-base text-slate-600">How your savings will change over 30 years</CardDescription>
               </CardHeader>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {hasCalculated && !needsCalculation ? <>
-                    <div className="h-80 -mx-2">
+                    <div className="h-64 sm:h-80 -mx-2">
                       <ResponsiveContainer width="100%" height="100%">
                         <LineChart data={projectionData} margin={{
                           top: 30,
@@ -966,27 +967,28 @@ const Index = () => {
                     </div>
                     
                     {/* Results Section */}
-                    <div className="mt-6 space-y-4">
-                      <div className={`p-4 rounded-lg ${isMoneyLasting ? 'bg-primary/10 border border-primary/20' : 'bg-red-50 border border-red-200'}`}>
-                        <h3 className={`font-semibold text-lg ${isMoneyLasting ? 'text-primary' : 'text-red-800'}`}>
+                    <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
+                      <div className={`p-3 sm:p-4 rounded-lg ${isMoneyLasting ? 'bg-primary/10 border border-primary/20' : 'bg-red-50 border border-red-200'}`}>
+                        <h2 className={`font-semibold text-base sm:text-lg ${isMoneyLasting ? 'text-primary' : 'text-red-800'}`}>
                           {isMoneyLasting ? '✓ Money Lasts 30+ Years' : `⚠ Money Runs Out in ${yearsUntilEmpty} year${yearsUntilEmpty !== 1 ? 's' : ''}${monthsUntilEmpty > 0 ? ` and ${monthsUntilEmpty} month${monthsUntilEmpty > 1 ? 's' : ''}` : ''}`}
-                        </h3>
-                        <p className={`text-sm ${isMoneyLasting ? 'text-primary' : 'text-red-600'}`}>
+                        </h2>
+                        <p className={`text-xs sm:text-sm mt-1 ${isMoneyLasting ? 'text-primary' : 'text-red-600'}`}>
                           {isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.'}
                         </p>
                       </div>
                       
-                      <div className="bg-primary/10 border border-primary/20 p-4 rounded-lg">
-                        <h3 className="font-semibold text-lg text-primary">Safe Monthly Spending</h3>
-                        <p className="text-2xl font-bold text-primary">${safeMonthlyAmount.toLocaleString()}</p>
-                        <p className="text-sm text-primary">Sustainable for 30 years with 3% annual increases</p>
+                      <div className="bg-primary/10 border border-primary/20 p-3 sm:p-4 rounded-lg">
+                        <h2 className="font-semibold text-base sm:text-lg text-primary">Safe Monthly Spending</h2>
+                        <p className="text-xl sm:text-2xl font-bold text-primary mt-1">${safeMonthlyAmount.toLocaleString()}</p>
+                        <p className="text-xs sm:text-sm text-primary mt-1">Sustainable for 30 years with 3% annual increases</p>
                       </div>
                       
                       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                         <DialogTrigger asChild>
-                          <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/10">
+                          <Button variant="outline" className="w-full border-primary/20 text-primary hover:bg-primary/10 h-10 sm:h-11 text-sm sm:text-base touch-manipulation" aria-label="Export retirement results as PDF">
                             <Download className="w-4 h-4 mr-2" />
-                            Export Results as PDF
+                            <span className="hidden sm:inline">Export Results as PDF</span>
+                            <span className="sm:hidden">Export PDF</span>
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-md">
@@ -1013,13 +1015,13 @@ const Index = () => {
                         </DialogContent>
                       </Dialog>
                     </div>
-                  </> : <div className="h-80 flex items-center justify-center">
+                  </> : <div className="h-64 sm:h-80 flex items-center justify-center px-4">
                     <div className="text-center text-slate-500">
-                      <Calculator className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                      <h3 className="text-xl font-semibold mb-2">
+                      <Calculator className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 opacity-50" />
+                      <h2 className="text-lg sm:text-xl font-semibold mb-2">
                         {needsCalculation ? 'Values Changed' : 'Ready to Calculate?'}
-                      </h3>
-                      <p>
+                      </h2>
+                      <p className="text-sm sm:text-base">
                         {needsCalculation ? 'Click "Recalculate" to see updated results' : 'Click "Calculate My Retirement Plan" to see your personalized projection'}
                       </p>
                     </div>
@@ -1031,15 +1033,15 @@ const Index = () => {
           {/* Podcast and CTA Section */}
           {advisorInfo.show_podcast ?
             // WHEN PODCAST IS SHOWING - Two column layout on desktop
-            <div className="grid lg:grid-cols-2 gap-8 mt-12">
+            <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 mt-8 sm:mt-12 px-2 sm:px-0">
               {/* Podcast Section */}
               <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl">
-                <CardContent className="p-8">
-                  <Headphones className="w-12 h-12 mb-4 opacity-90" />
-                  <h3 className="text-2xl font-bold mb-4">Retirement Spending Podcast</h3>
-                  <p className="text-white/90 mb-6">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
-                  <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50" onClick={handleListenNow}>
-                    <Headphones className="mr-2 h-5 w-5" />
+                <CardContent className="p-6 sm:p-8">
+                  <Headphones className="w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-90" aria-hidden="true" />
+                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Retirement Spending Podcast</h2>
+                  <p className="text-white/90 mb-4 sm:mb-6 text-sm sm:text-base">Discover how much you can safely spend in retirement by understanding this online calculator. We'll unpack why this tool is just a starting point, emphasizing the need for a personalized plan to build the retirement you envision.</p>
+                  <Button size="lg" className="bg-white text-emerald-700 hover:bg-emerald-50 w-full sm:w-auto h-11 sm:h-12 touch-manipulation" onClick={handleListenNow} aria-label="Listen to retirement podcast">
+                    <Headphones className="mr-2 h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
                     Listen Now
                   </Button>
                 </CardContent>
@@ -1047,31 +1049,31 @@ const Index = () => {
 
               {/* CTA Section (Find a Time) */}
               <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl">
-                <CardContent className="p-8">
-                  <PiggyBank className="w-12 h-12 mb-4 opacity-90" />
-                  <h3 className="text-2xl font-bold mb-4">Ready to Create Your Retirement Plan?</h3>
-                  <p className="text-white/90 mb-6">Schedule a meeting with a financial professional to create a personalized retirement strategy.</p>
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
+                <CardContent className="p-6 sm:p-8">
+                  <PiggyBank className="w-10 h-10 sm:w-12 sm:h-12 mb-3 sm:mb-4 opacity-90" aria-hidden="true" />
+                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Ready to Create Your Retirement Plan?</h2>
+                  <p className="text-white/90 mb-4 sm:mb-6 text-sm sm:text-base">Schedule a meeting with a financial professional to create a personalized retirement strategy.</p>
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto h-11 sm:h-12 touch-manipulation" onClick={handleContactClick} aria-label="Schedule appointment with financial advisor">
                     Find a Time
-                    <ExternalLink className="w-4 h-4 ml-2" />
+                    <ExternalLink className="w-4 h-4 ml-2" aria-hidden="true" />
                   </Button>
                 </CardContent>
               </Card>
             </div> :
             // WHEN PODCAST IS HIDDEN - Centered single card layout
-            <div className="text-center mt-12">
+            <div className="text-center mt-8 sm:mt-12 px-2 sm:px-0">
               <Card className="bg-gradient-to-br from-slate-700 via-emerald-700 to-teal-700 text-white border-0 shadow-2xl max-w-2xl mx-auto">
-                <CardContent className="p-8">
-                  <PiggyBank className="w-12 h-12 mx-auto mb-4 opacity-90" />
-                  <h3 className="text-2xl font-bold mb-4">Ready to Optimize Your Financial Strategy?</h3>
-                  <p className="text-white/90 mb-6">
+                <CardContent className="p-6 sm:p-8">
+                  <PiggyBank className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 opacity-90" aria-hidden="true" />
+                  <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Ready to Optimize Your Financial Strategy?</h2>
+                  <p className="text-white/90 mb-4 sm:mb-6 text-sm sm:text-base">
                     Make informed decisions about retirement, life insurance, debt, and college savings today. A
                     financial representative can help you create a comprehensive strategy that balances debt management
                     with long-term financial security and wealth building.
                   </p>
-                  <Button size="lg" className="bg-white text-primary hover:bg-white/90" onClick={handleContactClick}>
+                  <Button size="lg" className="bg-white text-primary hover:bg-white/90 w-full sm:w-auto h-11 sm:h-12 touch-manipulation" onClick={handleContactClick} aria-label="Schedule consultation with financial advisor">
                     Find a Time
-                    <ExternalLink className="w-4 h-4 ml-2" />
+                    <ExternalLink className="w-4 h-4 ml-2" aria-hidden="true" />
                   </Button>
                 </CardContent>
               </Card>
@@ -1081,15 +1083,15 @@ const Index = () => {
       </main>
 
       {/* Learn More and Related Topics Section */}
-      <section className="relative py-16 bg-gradient-to-br from-slate-200 via-primary/5 to-secondary/5 backdrop-blur-sm" aria-label="Educational Resources">
+      <section className="relative py-12 sm:py-16 bg-gradient-to-br from-slate-200 via-primary/5 to-secondary/5 backdrop-blur-sm" aria-label="Educational Resources">
         <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid lg:grid-cols-2 gap-12">
+          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12">
             {/* Learn More Section - Left Side */}
             <div>
-              <div className="text-center mb-8">
-                <BookOpen className="w-12 h-12 mx-auto text-primary mb-4" />
-                <h2 className="text-3xl font-bold text-slate-800 mb-4">Learn More About Retirement</h2>
-                <p className="text-lg text-slate-600">
+              <div className="text-center mb-6 sm:mb-8">
+                <BookOpen className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-primary mb-3 sm:mb-4" aria-hidden="true" />
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-3 sm:mb-4">Learn More About Retirement</h2>
+                <p className="text-base sm:text-lg text-slate-600 px-4">
                   Deepen your understanding with our comprehensive retirement planning resources.
                 </p>
               </div>
@@ -1144,10 +1146,10 @@ const Index = () => {
 
             {/* Related Topics Section - Right Side */}
             <div>
-              <div className="text-center mb-8">
-                <FileText className="w-12 h-12 mx-auto text-primary mb-4" />
-                <h2 className="text-3xl font-bold text-slate-800 mb-4">Related Financial Topics</h2>
-                <p className="text-lg text-slate-600">
+              <div className="text-center mb-6 sm:mb-8">
+                <FileText className="w-10 h-10 sm:w-12 sm:h-12 mx-auto text-primary mb-3 sm:mb-4" aria-hidden="true" />
+                <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-3 sm:mb-4">Related Financial Topics</h2>
+                <p className="text-base sm:text-lg text-slate-600 px-4">
                   Explore other important areas of financial planning to secure your future.
                 </p>
               </div>
@@ -1226,61 +1228,61 @@ const Index = () => {
 
 
       {/* Contact Me Section */}
-      <section id="contact-section" className="relative py-16 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 backdrop-blur-sm" aria-label="Contact Information">
+      <section id="contact-section" className="relative py-12 sm:py-16 bg-gradient-to-br from-primary/5 via-secondary/5 to-primary/5 backdrop-blur-sm" aria-label="Contact Information">
         <div className="container mx-auto px-4 max-w-4xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-800 mb-4">Contact Your Financial Professional</h2>
-            <p className="text-lg text-slate-600">Ready to discuss your retirement planning? Get in touch today.</p>
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 mb-3 sm:mb-4">Contact Your Financial Professional</h2>
+            <p className="text-base sm:text-lg text-slate-600 px-4">Ready to discuss your retirement planning? Get in touch today.</p>
           </div>
           
           <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
-            <CardContent className="p-8">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
+            <CardContent className="p-6 sm:p-8">
+              <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
                 {/* Contact Information */}
-                <div className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <Phone className="w-6 h-6 text-primary" />
+                <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800">Phone</h3>
-                      <p className="text-slate-600">{advisorInfo.phone}</p>
+                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Phone</h3>
+                      <a href={`tel:${advisorInfo.phone}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors">{advisorInfo.phone}</a>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{
+                  <div className="flex items-center space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{
                       backgroundColor: `hsl(var(--primary) / 0.1)`
                     }}>
-                      <Mail className="w-6 h-6" style={{
+                      <Mail className="w-5 h-5 sm:w-6 sm:h-6" style={{
                         color: `hsl(var(--primary))`
-                      }} />
+                      }} aria-hidden="true" />
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-slate-800">Email</h3>
-                      <p className="text-slate-600">{advisorInfo.email}</p>
+                    <div className="min-w-0">
+                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Email</h3>
+                      <a href={`mailto:${advisorInfo.email}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors break-all">{advisorInfo.email}</a>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <MapPin className="w-6 h-6 text-primary" />
+                  <div className="flex items-start space-x-3 sm:space-x-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-800">Office</h3>
-                      <p className="text-slate-600 whitespace-pre-line">{advisorInfo.address}</p>
+                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Office</h3>
+                      <address className="text-sm sm:text-base text-slate-600 whitespace-pre-line not-italic">{advisorInfo.address}</address>
                     </div>
                   </div>
                 </div>
                 
                 {/* Advisor Photo */}
-                <div className="text-center">
-                  {advisorInfo.photoUrl ? <img src={advisorInfo.photoUrl} alt={advisorInfo.name} className="w-48 h-48 mx-auto rounded-full object-cover mb-4" /> : <div className="w-48 h-48 mx-auto bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full flex items-center justify-center mb-4">
-                      <Users className="w-24 h-24 text-primary opacity-60" />
+                <div className="text-center order-1 md:order-2">
+                  {advisorInfo.photoUrl ? <img src={advisorInfo.photoUrl} alt={`${advisorInfo.name}, ${advisorInfo.title} - Professional headshot`} className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto rounded-full object-cover mb-3 sm:mb-4" loading="lazy" /> : <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto bg-gradient-to-br from-primary/20 to-secondary/30 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                      <Users className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-primary opacity-60" aria-hidden="true" />
                     </div>}
-                  <h3 className="text-xl font-bold text-slate-800 mb-2">{advisorInfo.name}</h3>
-                  <p className="text-slate-600">{advisorInfo.title}</p>
-                  <p className="text-sm text-slate-500 mt-2">{advisorInfo.bio}</p>
+                  <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-1 sm:mb-2">{advisorInfo.name}</h3>
+                  <p className="text-sm sm:text-base text-slate-600">{advisorInfo.title}</p>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 sm:mt-2 px-4">{advisorInfo.bio}</p>
                 </div>
               </div>
             </CardContent>
@@ -1289,11 +1291,11 @@ const Index = () => {
       </section>
 
       {/* Disclaimer */}
-      <footer className="relative py-12 bg-gradient-to-t from-slate-100/90 to-white/60 backdrop-blur-sm" role="contentinfo">
-        <div className="container mx-auto px-4 max-w-4xl">
+      <footer className="relative py-8 sm:py-12 bg-gradient-to-t from-slate-100/90 to-white/60 backdrop-blur-sm" role="contentinfo">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
           <div className="text-center">
-            <h3 className="text-lg font-semibold text-slate-800 mb-4">Important Disclaimer</h3>
-            <p className="text-sm text-slate-600 leading-relaxed">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-3 sm:mb-4">Important Disclaimer</h2>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
               {advisorInfo.disclaimer_text}
             </p>
           </div>
