@@ -465,12 +465,9 @@ const Index = () => {
         pdf.setFontSize(9);
         pdf.text('✓ Money Lasts 30+ Years', leftBoxX + 4, currentY + 10);
       } else {
-        // Warning state - multi-line with proper layout
+        // Warning state - clear single statement
         pdf.setFontSize(9);
-        // Line 1: Icon and "Money Runs Out in"
-        pdf.text('⚠ Money Runs Out in', leftBoxX + 4, currentY + 8);
-        // Line 2: Years and months (slightly indented)
-        pdf.text(`${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 6, currentY + 14);
+        pdf.text(`Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 10);
       }
       
       // Subtext
@@ -480,7 +477,7 @@ const Index = () => {
         ? 'Your retirement savings are sustainable' 
         : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
-      pdf.text(warningLines, leftBoxX + 4, currentY + 22);
+      pdf.text(warningLines, leftBoxX + 4, currentY + 20);
 
       // Right Box - Safe Monthly Spending
       pdf.setFillColor(236, 253, 245); // Light green
@@ -621,18 +618,27 @@ const Index = () => {
       pdf.text(`Prepared for: ${firstName} (${email}) on ${new Date().toLocaleDateString()}`, textX, contactY + boxHeight - 7);
       currentY = contactY + boxHeight + 8;
 
-      // Disclaimer Section
+      // Disclaimer Section - Check if we need a new page
+      const pageHeight = pdf.internal.pageSize.getHeight();
       const disclaimerY = currentY;
+      const estimatedDisclaimerHeight = 20; // Estimate space needed for disclaimer
+      
+      // Add new page if disclaimer would go off the page
+      if (disclaimerY + estimatedDisclaimerHeight > pageHeight - 10) {
+        pdf.addPage();
+        currentY = 20;
+      }
+      
       pdf.setFontSize(8);
       pdf.setFont("helvetica", "bold");
       pdf.setTextColor(51, 65, 85);
-      pdf.text("Important Disclaimer", 15, disclaimerY);
+      pdf.text("Important Disclaimer", 15, currentY);
       pdf.setFontSize(6.5);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
       const disclaimerText = advisorInfo.disclaimer_text || "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.";
       const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 30);
-      pdf.text(disclaimerLines, 15, disclaimerY + 5);
+      pdf.text(disclaimerLines, 15, currentY + 5);
 
       // Download the PDF
       pdf.save(`${firstName}_Retirement_Analysis.pdf`);
