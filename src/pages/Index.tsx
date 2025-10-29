@@ -468,7 +468,7 @@ const Index = () => {
       } else {
         // Warning state - clear single statement
         pdf.setFontSize(9);
-        pdf.text(`Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 10);
+        pdf.text(`Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 7);
       }
 
       // Subtext
