@@ -420,11 +420,14 @@ const Index = () => {
       currentY += 15;
 
       // Your Inputs Section
-      pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.roundedRect(15, currentY, pageWidth - 30, 30, 3, 3, 'F');
       pdf.setFontSize(12);
       pdf.setTextColor(51, 65, 85); // slate-700
-      pdf.text('Your Inputs', 20, currentY + 8);
+      pdf.setFont("helvetica", "bold");
+      pdf.text('Your Inputs', 15, currentY);
+      currentY += 8;
+      
+      pdf.setFillColor(248, 250, 252); // slate-50
+      pdf.roundedRect(15, currentY, pageWidth - 30, 30, 3, 3, 'F');
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
       pdf.text('Amount at Retirement:', 20, currentY + 16);
@@ -471,7 +474,7 @@ const Index = () => {
       // Subtext
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
-      const warningSubtext = isMoneyLasting ? 'Your retirement savings are sustainable' : 'Consider reducing spending or saving more to extend your money.';
+      const warningSubtext = isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
       pdf.text(warningLines, leftBoxX + 4, currentY + 19);
 
