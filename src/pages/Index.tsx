@@ -414,7 +414,7 @@ const Index = () => {
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      pdf.text("Your personalized retirement spending analysis", pageWidth / 2, 28, {
+      pdf.text("The graph below shows how long your retirement savings will last.", pageWidth / 2, 28, {
         align: "center"
       });
       currentY += 15;
