@@ -456,11 +456,9 @@ const Index = () => {
       // Left Box - Status/Warning
       pdf.setFillColor(statusBgColor[0], statusBgColor[1], statusBgColor[2]);
       pdf.roundedRect(leftBoxX, currentY, boxWidth, resultsBoxHeight, 3, 3, 'F');
-      
       pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
-      
       if (isMoneyLasting) {
         // Success state - centered and prominent
         pdf.text('Money Lasts 30+ Years', leftBoxX + 4, currentY + 9);
@@ -469,36 +467,30 @@ const Index = () => {
         pdf.setFontSize(9);
         pdf.text(`Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 10);
       }
-      
+
       // Subtext
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
-      const warningSubtext = isMoneyLasting 
-        ? 'Your retirement savings are sustainable' 
-        : 'Consider reducing spending or saving more to extend your money.';
+      const warningSubtext = isMoneyLasting ? 'Your retirement savings are sustainable' : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
       pdf.text(warningLines, leftBoxX + 4, currentY + 19);
 
       // Right Box - Safe Monthly Spending
       pdf.setFillColor(236, 253, 245); // Light green
       pdf.roundedRect(rightBoxX, currentY, boxWidth, resultsBoxHeight, 3, 3, 'F');
-      
       pdf.setFontSize(8);
       pdf.setTextColor(5, 150, 105);
       pdf.setFont("helvetica", "bold");
       pdf.text('Safe Monthly Spending', rightBoxX + 4, currentY + 6);
-      
       pdf.setFontSize(16);
       pdf.setFont("helvetica", "bold");
       pdf.text(`$${safeMonthlyAmount.toLocaleString()}`, rightBoxX + 4, currentY + 16);
-      
       pdf.setFontSize(7);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
       const sustainableText = 'Sustainable for 30 years with 3% annual increases';
       const sustainableLines = pdf.splitTextToSize(sustainableText, boxWidth - 8);
       pdf.text(sustainableLines, rightBoxX + 4, currentY + 22);
-      
       pdf.setFont("helvetica", "normal");
       currentY += resultsBoxHeight + 10;
 
@@ -549,7 +541,6 @@ const Index = () => {
         try {
           const img = new Image();
           img.src = advisorInfo.photoUrl;
-
           let photoWidth = maxPhotoWidth;
           let photoHeight = maxPhotoHeight;
           const aspectRatio = img.width / img.height;
@@ -558,7 +549,6 @@ const Index = () => {
           } else {
             photoWidth = maxPhotoHeight * aspectRatio;
           }
-
           const photoY = contactY + (maxPhotoHeight - photoHeight) / 2;
           pdf.addImage(advisorInfo.photoUrl, 'JPEG', photoX, photoY, photoWidth, photoHeight);
         } catch (e) {
@@ -893,7 +883,7 @@ const Index = () => {
             <Card className="bg-white/95 backdrop-blur-lg border-0 shadow-xl ring-1 ring-slate-200/50">
               <CardHeader className="px-4 sm:px-6">
                 <CardTitle className="text-xl sm:text-2xl text-slate-800">Retirement Spend-Down Projection</CardTitle>
-                <CardDescription className="text-sm sm:text-base text-slate-600">How your savings will change over 30 years</CardDescription>
+                <CardDescription className="text-sm sm:text-base text-slate-600">The graph below shows how long your retirement savings will last.</CardDescription>
               </CardHeader>
               <CardContent className="p-4 sm:p-6">
                 {hasCalculated && !needsCalculation ? <>
