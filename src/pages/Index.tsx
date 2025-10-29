@@ -463,12 +463,17 @@ const Index = () => {
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       if (isMoneyLasting) {
-        // Success state - centered and prominent
-        pdf.text('Money Lasts 30+ Years', leftBoxX + 4, currentY + 9);
+        // Success state - 3 line format
+        pdf.setFontSize(8);
+        pdf.text('Money Lasts:', leftBoxX + 4, currentY + 6);
+        pdf.setFontSize(16);
+        pdf.text('30+ Years', leftBoxX + 4, currentY + 16);
       } else {
-        // Warning state - clear single statement
-        pdf.setFontSize(9);
-        pdf.text(`Money Runs Out in ${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 7);
+        // Warning state - 3 line format matching safe spending box
+        pdf.setFontSize(8);
+        pdf.text('Money Runs Out In:', leftBoxX + 4, currentY + 6);
+        pdf.setFontSize(16);
+        pdf.text(`${yearsUntilEmpty} years and ${monthsUntilEmpty} months`, leftBoxX + 4, currentY + 16);
       }
 
       // Subtext
