@@ -48,7 +48,7 @@ const Index = () => {
     contact_button_type: "scroll",
     contact_button_url: undefined,
     show_podcast: true,
-    disclaimer_text: "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations."
+    disclaimer_text: "The values shown are hypothetical illustrations and not a promise of future performance. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations."
   });
 
   // Fetch advisor data from database
@@ -612,7 +612,7 @@ const Index = () => {
       pdf.setFontSize(6.5);
       pdf.setFont("helvetica", "normal");
       pdf.setTextColor(71, 85, 105);
-      const disclaimerText = advisorInfo.disclaimer_text || "Calculator results are hypothetical and for illustrative purposes only. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.";
+      const disclaimerText = advisorInfo.disclaimer_text || "The values shown are hypothetical illustrations and not a promise of future performance. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations.";
       const disclaimerLines = pdf.splitTextToSize(disclaimerText, pageWidth - 30);
       pdf.text(disclaimerLines, 15, currentY + 5);
 
