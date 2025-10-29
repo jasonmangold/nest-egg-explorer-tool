@@ -481,7 +481,7 @@ const Index = () => {
       pdf.setFont("helvetica", "normal");
       const warningSubtext = isMoneyLasting ? 'Your spending plan looks sustainable for a 30-year retirement.' : 'Consider reducing spending or saving more to extend your money.';
       const warningLines = pdf.splitTextToSize(warningSubtext, boxWidth - 8);
-      pdf.text(warningLines, leftBoxX + 4, currentY + 19);
+      pdf.text(warningLines, leftBoxX + 4, currentY + 22);
 
       // Right Box - Safe Monthly Spending
       pdf.setFillColor(236, 253, 245); // Light green
