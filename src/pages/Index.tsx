@@ -427,7 +427,7 @@ const Index = () => {
       currentY += 8;
       
       pdf.setFillColor(248, 250, 252); // slate-50
-      pdf.roundedRect(15, currentY, pageWidth - 30, 30, 3, 3, 'F');
+      pdf.roundedRect(15, currentY, pageWidth - 30, 22, 3, 3, 'F');
       pdf.setFontSize(10);
       pdf.setTextColor(71, 85, 105); // slate-600
       pdf.text('Amount at Retirement:', 20, currentY + 8);
@@ -437,7 +437,7 @@ const Index = () => {
       pdf.text('Monthly Spending:', 20, currentY + 15);
       pdf.setTextColor(30, 41, 59);
       pdf.text(`$${monthlySpending.toLocaleString()}`, 80, currentY + 15);
-      currentY += 40;
+      currentY += 30;
 
       // Your Results Section Header
       pdf.setFontSize(12);
