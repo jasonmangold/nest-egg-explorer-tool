@@ -15,6 +15,14 @@ import { useAudioPlayer } from '@/hooks/useAudioPlayer';
 import { openPDFByTitle } from '@/hooks/useEducationPDFs';
 import { supabase } from "@/integrations/supabase/client";
 import { useTheme } from "@/contexts/ThemeContext";
+
+// TypeScript interfaces
+interface AdvisorContact {
+  phone: string;
+  email: string;
+  address: string;
+}
+
 const Index = () => {
   // Advisor Information - fetched dynamically from database
   const {
@@ -27,9 +35,6 @@ const Index = () => {
     name: string;
     title: string;
     bio: string;
-    phone: string;
-    email: string;
-    address: string;
     photoUrl: string;
     logo_url: string;
     contact_button_type: 'scroll' | 'phone' | 'email' | 'website';
@@ -40,9 +45,6 @@ const Index = () => {
     name: "Sarah Johnson, CFP®",
     title: "Certified Financial Planner",
     bio: "15+ years experience helping clients achieve their goals",
-    phone: "(555) 123-4567",
-    email: "advisor@financialplanning.com",
-    address: "123 Financial Street\nSuite 456\nFinancial City, FC 12345",
     photoUrl: "",
     logo_url: "/lovable-uploads/d95ac3ea-3a71-4c6a-8e8f-a574c47981ec.png",
     contact_button_type: "scroll",
@@ -50,6 +52,11 @@ const Index = () => {
     show_podcast: true,
     disclaimer_text: "The values shown are hypothetical illustrations and not a promise of future performance. They are not intended to provide financial advice. Contact a financial professional for more personalized recommendations."
   });
+
+  // Contact information state (only loaded for admin users)
+  const [contact, setContact] = useState<AdvisorContact | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [advisorId, setAdvisorId] = useState<string | null>(null);
 
   // Fetch advisor data from database
   useEffect(() => {
@@ -63,9 +70,6 @@ const Index = () => {
           name: (data as any).name,
           title: (data as any).title,
           bio: (data as any).bio,
-          phone: (data as any).phone,
-          email: (data as any).email,
-          address: (data as any).address,
           photoUrl: (data as any).profile_picture_url || "",
           logo_url: (data as any).logo_url,
           contact_button_type: (data as any).contact_button_type as 'scroll' | 'phone' | 'email' | 'website',
@@ -73,6 +77,7 @@ const Index = () => {
           show_podcast: (data as any).show_podcast ?? true,
           disclaimer_text: (data as any).disclaimer_text
         });
+        setAdvisorId((data as any).id);
         setColors({
           primary: (data as any).theme_primary_color,
           secondary: (data as any).theme_secondary_color
@@ -81,6 +86,44 @@ const Index = () => {
     };
     fetchAdvisor();
   }, [advisorSlug, setColors]);
+
+  // Check if user is admin and fetch contact info
+  useEffect(() => {
+    const checkAdminAndFetchContact = async () => {
+      // Check if user is logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !advisorId) return;
+
+      // Check if user has admin role
+      const { data: roleData } = await supabase
+        .from('user_roles' as any)
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+
+      if (roleData) {
+        setIsAdmin(true);
+        
+        // Fetch contact information
+        const { data: contactData } = await supabase
+          .from('advisor_contacts' as any)
+          .select('phone, email, address')
+          .eq('advisor_id', advisorId)
+          .maybeSingle();
+
+        if (contactData) {
+          setContact({
+            phone: (contactData as any).phone,
+            email: (contactData as any).email,
+            address: (contactData as any).address
+          });
+        }
+      }
+    };
+
+    checkAdminAndFetchContact();
+  }, [advisorId]);
   const [currentSavings, setCurrentSavings] = useState(0);
   const [monthlySpending, setMonthlySpending] = useState(0);
   const [firstName, setFirstName] = useState("");
@@ -585,22 +628,26 @@ const Index = () => {
       pdf.setTextColor(71, 85, 105);
       const wrappedTitle = pdf.splitTextToSize(advisorInfo.title, maxTitleWidth);
       pdf.text(wrappedTitle, textX, contactY + 11);
-      pdf.setFontSize(8);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Phone:", col2X, contactY + 3);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(advisorInfo.phone, col2X + 15, contactY + 3);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Email:", col2X, contactY + 9);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(advisorInfo.email, col2X + 15, contactY + 9);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Office:", col2X, contactY + 15);
-      pdf.setFont("helvetica", "normal");
-      const addressLines = advisorInfo.address.split('\n');
-      addressLines.forEach((line, index) => {
-        pdf.text(line, col2X + 15, contactY + 15 + index * 4);
-      });
+
+      // Only show contact info if admin and contact data is available
+      if (isAdmin && contact) {
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Phone:", col2X, contactY + 3);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(contact.phone, col2X + 15, contactY + 3);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Email:", col2X, contactY + 9);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(contact.email, col2X + 15, contactY + 9);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Office:", col2X, contactY + 15);
+        pdf.setFont("helvetica", "normal");
+        const addressLines = contact.address.split('\n');
+        addressLines.forEach((line, index) => {
+          pdf.text(line, col2X + 15, contactY + 15 + index * 4);
+        });
+      }
 
       // Client info at bottom of box
       pdf.setFontSize(7);
@@ -679,10 +726,18 @@ const Index = () => {
         scrollToContact();
         break;
       case 'phone':
-        window.location.href = `tel:${advisorInfo.phone}`;
+        if (contact?.phone) {
+          window.location.href = `tel:${contact.phone}`;
+        } else {
+          scrollToContact();
+        }
         break;
       case 'email':
-        window.location.href = `mailto:${advisorInfo.email}`;
+        if (contact?.email) {
+          window.location.href = `mailto:${contact.email}`;
+        } else {
+          scrollToContact();
+        }
         break;
       case 'website':
         if (advisorInfo.contact_button_url) {
@@ -1235,39 +1290,49 @@ const Index = () => {
               <div className="grid md:grid-cols-2 gap-6 sm:gap-8 items-center">
                 {/* Contact Information */}
                 <div className="space-y-4 sm:space-y-6 order-2 md:order-1">
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
+                  {isAdmin && contact ? (
+                    <>
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm sm:text-base text-slate-800">Phone</h3>
+                          <a href={`tel:${contact.phone}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors">{contact.phone}</a>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{
+                          backgroundColor: `hsl(var(--primary) / 0.1)`
+                        }}>
+                          <Mail className="w-5 h-5 sm:w-6 sm:h-6" style={{
+                            color: `hsl(var(--primary))`
+                          }} aria-hidden="true" />
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-sm sm:text-base text-slate-800">Email</h3>
+                          <a href={`mailto:${contact.email}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors break-all">{contact.email}</a>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start space-x-3 sm:space-x-4">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-sm sm:text-base text-slate-800">Office</h3>
+                          <address className="text-sm sm:text-base text-slate-600 whitespace-pre-line not-italic">{contact.address}</address>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-slate-600 text-sm sm:text-base">
+                        Contact information is available to authorized users only.
+                      </p>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Phone</h3>
-                      <a href={`tel:${advisorInfo.phone}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors">{advisorInfo.phone}</a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{
-                      backgroundColor: `hsl(var(--primary) / 0.1)`
-                    }}>
-                      <Mail className="w-5 h-5 sm:w-6 sm:h-6" style={{
-                        color: `hsl(var(--primary))`
-                      }} aria-hidden="true" />
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Email</h3>
-                      <a href={`mailto:${advisorInfo.email}`} className="text-sm sm:text-base text-slate-600 hover:text-primary transition-colors break-all">{advisorInfo.email}</a>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start space-x-3 sm:space-x-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-primary" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-sm sm:text-base text-slate-800">Office</h3>
-                      <address className="text-sm sm:text-base text-slate-600 whitespace-pre-line not-italic">{advisorInfo.address}</address>
-                    </div>
-                  </div>
+                  )}
                 </div>
                 
                 {/* Advisor Photo */}
