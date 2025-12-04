@@ -32,6 +32,16 @@ interface Advisor {
   address: string;
 }
 
+interface ContentTemplate {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  category: string;
+  document_title: string;
+  display_order: number;
+}
+
 const Index = () => {
   // Advisor Information - fetched dynamically from database
   const {
@@ -56,6 +66,47 @@ const Index = () => {
   });
 
   const [advisorNotFound, setAdvisorNotFound] = useState(false);
+  const [learnMoreTemplates, setLearnMoreTemplates] = useState<ContentTemplate[]>([]);
+  const [relatedTopicsTemplates, setRelatedTopicsTemplates] = useState<ContentTemplate[]>([]);
+
+  // Icon mapping for content templates
+  const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    TrendingDown,
+    Calculator,
+    PiggyBank,
+    Shield,
+    Users,
+    BookOpen,
+    FileText,
+  };
+
+  // Fetch content templates
+  useEffect(() => {
+    const fetchContentTemplates = async () => {
+      const siteId = 'd0cf800e-ed7b-42c7-bb61-d38a7527dfa0';
+      
+      const { data, error } = await (supabase as any)
+        .from('content_templates')
+        .select('*')
+        .eq('site_id', siteId)
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching content templates:', error);
+        return;
+      }
+
+      if (data) {
+        const learnMore = data.filter((t: ContentTemplate) => t.category === 'learn_more');
+        const related = data.filter((t: ContentTemplate) => t.category === 'related_topics');
+        setLearnMoreTemplates(learnMore);
+        setRelatedTopicsTemplates(related);
+      }
+    };
+
+    fetchContentTemplates();
+  }, []);
 
   // Fetch advisor data from database using RPC function
   useEffect(() => {
@@ -1157,50 +1208,25 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <TrendingDown className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Retirement Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3">Discover why early retirement planning is essential for long-term financial security.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('The Need for Retirement Planning', 'read-report-1')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <Calculator className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">IRA's Compared</h3>
-                        <p className="text-slate-600 text-sm mb-3">Compare Traditional and Roth IRA options to choose the best retirement savings strategy.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('How a Roth IRA Works', 'read-report-2')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <PiggyBank className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">An Overview of Social Security Benefits</h3>
-                        <p className="text-slate-600 text-sm mb-3">Discover how Social Security works and strategies to maximize your benefits.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick('Social Security Retirement Claiming Strategies for Married Couples', 'read-report-3')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
+                {learnMoreTemplates.map((template, index) => {
+                  const IconComponent = iconMap[template.icon] || BookOpen;
+                  return (
+                    <Card key={template.id} className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
+                      <CardContent className="p-4 h-full flex flex-col justify-between">
+                        <div className="flex items-start space-x-3">
+                          <IconComponent className="w-6 h-6 text-primary mt-1 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-base mb-2 text-slate-800">{template.title}</h3>
+                            <p className="text-slate-600 text-sm mb-3">{template.description}</p>
+                          </div>
+                        </div>
+                        <Button variant="outline" size="sm" className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28" onClick={() => handleEducationalClick(template.document_title, `read-report-${index + 1}`)}>
+                          Read Report
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
 
@@ -1215,71 +1241,38 @@ const Index = () => {
               </div>
               
               <div className="space-y-4">
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div style={{
-                        color: `hsl(var(--primary))`
-                      }}>
-                        <TrendingDown className="w-6 h-6 mt-1 flex-shrink-0" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Choose the Financial Planning Team</h3>
-                        <p className="text-slate-600 text-sm mb-3">Selecting the right professionals to help guide your financial journey.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="self-start w-28" style={{
-                      borderColor: `hsl(var(--primary) / 0.2)`,
-                      color: `hsl(var(--primary))`
-                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('Managing Your Debt', 'read-report-4')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div style={{
-                        color: `hsl(var(--primary))`
-                      }}>
-                        <Shield className="w-6 h-6 mt-1 flex-shrink-0" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">The Need for Responsible Planning</h3>
-                        <p className="text-slate-600 text-sm mb-3">Protect your family's financial future with the right life insurance coverage.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="self-start w-28" style={{
-                      borderColor: `hsl(var(--primary) / 0.2)`,
-                      color: `hsl(var(--primary))`
-                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('How Individual Disability Income Insurance Works', 'read-report-5')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
-                
-                <Card className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
-                  <CardContent className="p-4 h-full flex flex-col justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div style={{
-                        color: `hsl(var(--primary))`
-                      }}>
-                        <Users className="w-6 h-6 mt-1 flex-shrink-0" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-base mb-2 text-slate-800">Basic Investment Tools</h3>
-                        <p className="text-slate-600 text-sm mb-3">Understanding fundamental investment options to build your portfolio.</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="self-start w-28" style={{
-                      borderColor: `hsl(var(--primary) / 0.2)`,
-                      color: `hsl(var(--primary))`
-                    }} onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} onClick={() => handleEducationalClick('General Purposes of Life Insurance', 'read-report-6')}>
-                      Read Report
-                    </Button>
-                  </CardContent>
-                </Card>
+                {relatedTopicsTemplates.map((template, index) => {
+                  const IconComponent = iconMap[template.icon] || FileText;
+                  return (
+                    <Card key={template.id} className="hover:shadow-lg transition-all duration-300 bg-white/90 backdrop-blur-sm border-0 ring-1 ring-slate-200/50 hover:ring-primary/30 h-40">
+                      <CardContent className="p-4 h-full flex flex-col justify-between">
+                        <div className="flex items-start space-x-3">
+                          <div style={{ color: `hsl(var(--primary))` }}>
+                            <IconComponent className="w-6 h-6 mt-1 flex-shrink-0" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-base mb-2 text-slate-800">{template.title}</h3>
+                            <p className="text-slate-600 text-sm mb-3">{template.description}</p>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="self-start w-28" 
+                          style={{
+                            borderColor: `hsl(var(--primary) / 0.2)`,
+                            color: `hsl(var(--primary))`
+                          }} 
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`} 
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'} 
+                          onClick={() => handleEducationalClick(template.document_title, `read-report-related-${index + 1}`)}
+                        >
+                          Read Report
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>
