@@ -30,6 +30,10 @@ import {
   Phone,
   Mail,
   MapPin,
+  Target,
+  Scale,
+  Banknote,
+  Coins,
 } from "lucide-react";
 import jsPDF from "jspdf";
 import AudioPlayer from "@/components/AudioPlayer";
@@ -58,9 +62,9 @@ interface ContentTemplate {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  category: string;
-  document_title: string;
+  icon_name: string;
+  section_type: string;
+  report_url: string;
   sort_order: number;
 }
 
@@ -97,6 +101,10 @@ const Index = () => {
     Users,
     BookOpen,
     FileText,
+    Target,
+    Scale,
+    Banknote,
+    Coins,
   };
 
   // Fetch content templates
@@ -117,8 +125,8 @@ const Index = () => {
       }
 
       if (data) {
-        const learnMore = data.filter((t: ContentTemplate) => t.category === "learn_more");
-        const related = data.filter((t: ContentTemplate) => t.category === "related_topics");
+        const learnMore = data.filter((t: ContentTemplate) => t.section_type === "learn_more");
+        const related = data.filter((t: ContentTemplate) => t.section_type === "related_topics");
         setLearnMoreTemplates(learnMore);
         setRelatedTopicsTemplates(related);
       }
@@ -1426,7 +1434,7 @@ const Index = () => {
 
                 <div className="space-y-4">
                   {learnMoreTemplates.map((template, index) => {
-                    const IconComponent = iconMap[template.icon] || BookOpen;
+                    const IconComponent = iconMap[template.icon_name] || BookOpen;
                     return (
                       <Card
                         key={template.id}
@@ -1444,7 +1452,7 @@ const Index = () => {
                             variant="outline"
                             size="sm"
                             className="border-primary/20 text-primary hover:bg-primary/10 self-start w-28"
-                            onClick={() => handleEducationalClick(template.document_title, `read-report-${index + 1}`)}
+                            onClick={() => handleEducationalClick(template.report_url, `read-report-${index + 1}`)}
                           >
                             Read Report
                           </Button>
@@ -1472,7 +1480,7 @@ const Index = () => {
 
                 <div className="space-y-4">
                   {relatedTopicsTemplates.map((template, index) => {
-                    const IconComponent = iconMap[template.icon] || FileText;
+                    const IconComponent = iconMap[template.icon_name] || FileText;
                     return (
                       <Card
                         key={template.id}
@@ -1499,7 +1507,7 @@ const Index = () => {
                             onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = `hsl(var(--primary) / 0.1)`)}
                             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                             onClick={() =>
-                              handleEducationalClick(template.document_title, `read-report-related-${index + 1}`)
+                              handleEducationalClick(template.report_url, `read-report-related-${index + 1}`)
                             }
                           >
                             Read Report
